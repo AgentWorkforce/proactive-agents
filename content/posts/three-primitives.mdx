@@ -93,6 +93,10 @@ The agent code that sits in the middle of that is shockingly small. A handler. A
 
 That is the wedge. Not "multi-agent coordination," not "stateful agents," not "agent orchestration." Just: *give the agent a clock, an inbox, and a place to live, and let it act when something moves.*
 
+<Callout tone="cool" label="The third-party reading">
+A 2024 paper from Tsinghua and Huawei &mdash; [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) &mdash; formalises the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn&rsquo;t find it until after we&rsquo;d shipped most of this. Worth a read.
+</Callout>
+
 </Scene>
 
 ## Why we&rsquo;re writing this down

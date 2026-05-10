@@ -17,59 +17,31 @@ export default function AboutPage() {
         <p>
           Proactive Agents is the developer-facing home of{" "}
           <a href="https://github.com/AgentWorkforce">AgentWorkforce</a>. We
-          build the infrastructure that lets cloud agents act on their own
-          &mdash; on schedules, on data changes, on inbound messages &mdash;
-          without the team shipping the agent having to build the webhook
-          plumbing, the queue, the state layer, or the durability ring.
+          ship the infrastructure that lets cloud agents act on their own
+          &mdash; on schedules, on data changes, on inbound messages.
         </p>
 
-        <h2>What we make</h2>
         <p>
-          A small constellation of repos that, together, form a proactive
-          runtime. The clock is{" "}
-          <code>relaycron</code>. The watcher is <code>relayfile</code>. The
-          inbox is <code>relaycast</code>. The hosted control plane is{" "}
-          <code>cloud</code>. The reference SDK we dogfood is{" "}
-          <code>agent-assistant</code>. Around them sit{" "}
-          <code>ricky</code> for durability, <code>burn</code> for spend
-          guardrails, and <code>relayauth</code> for scoped tokens.
-        </p>
-        <p>
-          You can use them together, or pick one. They&rsquo;re
-          framework-agnostic &mdash; OpenAI, Anthropic, LangGraph, Mastra, your
-          own &mdash; and language-agnostic where it matters. The wedge is
-          push, persistence, and durability, not a particular SDK.
+          A small set of repos: <code>relaycron</code> (the clock),{" "}
+          <code>relayfile</code> (the watcher), <code>relaycast</code> (the
+          inbox), <code>cloud</code> (the runtime), with{" "}
+          <code>ricky</code>, <code>burn</code>, and <code>relayauth</code>{" "}
+          for the durability ring. Use them together or pick one.
+          Framework-agnostic.
         </p>
 
         <h2>Who it&rsquo;s for</h2>
         <p>
-          Teams shipping cloud agents <em>as a product.</em> If your agent runs
-          on a customer&rsquo;s laptop, you don&rsquo;t need us &mdash; the
-          local filesystem already does most of what we offer. If your agent
-          runs in your cloud and acts on someone else&rsquo;s data, we are
-          probably the cheapest version of the thing you would otherwise build
-          for two months and then maintain forever.
+          Teams shipping cloud agents as a product &mdash; the kind that run
+          in your infrastructure and act on someone else&rsquo;s data. Not
+          local dev tools. Not no-code visual builders.
         </p>
 
-        <h2>Who it&rsquo;s not for</h2>
+        <h2>How we write</h2>
         <p>
-          Visual workflow builders. No-code agent platforms. Internal G&amp;A
-          ops automation for procurement, legal, or finance. Those are real
-          markets, well-served by other vendors. We are deliberately
-          developer-first.
-        </p>
-
-        <h2>How we work in public</h2>
-        <p>
-          The essays in this folio are how we think out loud. They&rsquo;re
-          adapted from internal positioning docs, postmortems, and design
-          discussions we&rsquo;d normally keep in PRs. We publish them because
-          the developers we want to build with tend to think the same way and
-          appreciate seeing the seams.
-        </p>
-        <p>
-          New essays appear on the first Sunday of the month. Sometimes we miss
-          a Sunday. We have stopped apologising for this.
+          The essays are adapted from positioning docs, postmortems, and
+          design notes that usually live in PRs. We publish them because the
+          developers we want to build with tend to think the same way.
         </p>
       </div>
 
