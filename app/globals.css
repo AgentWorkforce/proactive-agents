@@ -1,0 +1,222 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --color-paper: #fbf6ec;
+  --color-paper-deep: #f4ecdc;
+  --color-ink: #2a2521;
+  --color-ink-soft: #4d4640;
+  --color-ink-faint: #8a7f74;
+  --color-rule: #e8ddc8;
+
+  --color-peach: #ffd6bf;
+  --color-butter: #fbe7a6;
+  --color-sage: #c8dcbf;
+  --color-lavender: #dccaee;
+  --color-rose: #f2c4cd;
+  --color-sky: #bedcef;
+  --color-terracotta: #d98a6b;
+  --color-moss: #6c8a5e;
+  --color-plum: #7a5d8c;
+
+  --radius-blob: 64% 36% 70% 30% / 50% 60% 40% 50%;
+}
+
+:root {
+  color-scheme: light;
+  --background: var(--color-paper);
+  --foreground: var(--color-ink);
+}
+
+html, body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Hand-drawn paper grain — applied as a fixed overlay in layout */
+.paper-grain {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.18  0 0 0 0 0.15  0 0 0 0 0.13  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 240px 240px;
+}
+
+/* Soft gradient orbs for the background */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(70px);
+  opacity: 0.55;
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* Wobbly hand-drawn underline */
+.scribble-underline {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'><path d='M2 7 Q 30 1 60 6 T 120 6 T 198 5' stroke='%23d98a6b' stroke-width='2.4' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 0.5em;
+  padding-bottom: 0.15em;
+}
+
+/* Highlighter mark */
+.scribble-highlight {
+  background-image: linear-gradient(120deg, transparent 0, transparent 4%, rgba(251, 231, 166, 0.75) 4%, rgba(251, 231, 166, 0.75) 96%, transparent 96%);
+  background-repeat: no-repeat;
+  background-size: 100% 60%;
+  background-position: 0 75%;
+  padding: 0 0.15em;
+}
+
+/* Drop cap */
+.dropcap::first-letter {
+  font-family: var(--font-display);
+  font-weight: 400;
+  float: left;
+  font-size: 4.5rem;
+  line-height: 0.85;
+  padding: 0.35rem 0.6rem 0 0;
+  color: var(--color-terracotta);
+}
+
+/* Reveal-on-scroll base state — GSAP toggles `is-in` */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 1.1s cubic-bezier(.2,.7,.2,1), transform 1.1s cubic-bezier(.2,.7,.2,1);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Tilt utility — applied per-element with --tilt */
+.tilt { transform: rotate(var(--tilt, 0deg)); }
+
+/* Selection */
+::selection {
+  background: rgba(217, 138, 107, 0.3);
+  color: var(--color-ink);
+}
+
+/* Smooth scroll, but respect motion preferences */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+/* Prose tweaks for the post body */
+.prose-essay {
+  font-family: var(--font-serif);
+  font-size: 1.18rem;
+  line-height: 1.72;
+  color: var(--color-ink);
+  font-feature-settings: "ss01", "onum", "kern";
+
+  /* Maggie-style "main column + full bleed" grid:
+     paragraphs sit in the narrow `main` track,
+     <Scene> blocks (.scene-block) span `full` for the sticky figure layout. */
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(1rem, 1fr)
+    [main-start] minmax(0, 640px)
+    [main-end] minmax(1rem, 1fr)
+    [full-end];
+}
+.prose-essay > * { grid-column: main; min-width: 0; }
+.prose-essay > .scene-block { grid-column: full; }
+.prose-essay > .full-bleed { grid-column: full; }
+.prose-essay p { margin: 1.4em 0; }
+.prose-essay h2 {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  line-height: 1.15;
+  margin: 2.6em 0 0.8em;
+  color: var(--color-ink);
+  letter-spacing: -0.01em;
+}
+.prose-essay h3 {
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  margin: 2em 0 0.5em;
+  color: var(--color-ink);
+}
+.prose-essay a {
+  color: var(--color-terracotta);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(217, 138, 107, 0.4);
+}
+.prose-essay a:hover { text-decoration-color: var(--color-terracotta); }
+.prose-essay blockquote {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.6rem;
+  line-height: 1.35;
+  border: none;
+  margin: 2.4em -2rem;
+  padding: 0 2rem;
+  color: var(--color-ink-soft);
+  position: relative;
+}
+.prose-essay blockquote::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 0.4em;
+  bottom: 0.4em;
+  width: 3px;
+  background: var(--color-terracotta);
+  border-radius: 2px;
+}
+.prose-essay code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--color-paper-deep);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  color: var(--color-plum);
+}
+.prose-essay pre {
+  background: #1f1b18;
+  color: #efe3cf;
+  padding: 1.2rem 1.4rem;
+  border-radius: 12px;
+  overflow-x: auto;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 2em 0;
+}
+.prose-essay pre code { background: transparent; color: inherit; padding: 0; }
+.prose-essay ul, .prose-essay ol { margin: 1.2em 0; padding-left: 1.4em; }
+.prose-essay li { margin: 0.4em 0; }
+.prose-essay hr {
+  border: none;
+  text-align: center;
+  margin: 3em 0;
+}
+.prose-essay hr::before {
+  content: "✦   ✦   ✦";
+  color: var(--color-terracotta);
+  letter-spacing: 0.6em;
+  font-size: 0.8rem;
+}

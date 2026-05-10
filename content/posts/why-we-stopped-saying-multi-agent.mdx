@@ -1,0 +1,67 @@
+---
+title: "Why we stopped saying multi-agent coordination"
+summary: "We had the wrong elephant. Multi-agent coordination is real, but it's a property of a runtime, not a category to sell. Here's what changed when we stopped leading with it."
+date: "2026-03-09"
+accent: "butter"
+dropcap: false
+---
+
+For about a year, we described what we were building as a *multi-agent coordination layer.* It was technically accurate. It was also, we eventually realised, the wrong pitch.
+
+This is a short note about why &mdash; and what changed when we stopped.
+
+## The problem with the pitch
+
+Three things, mostly.
+
+**One: almost nobody is actually running multi-agent systems in production yet.** Some teams are. Most are not. Most teams are building *one* agent, sometimes two that don&rsquo;t talk, and trying very hard to get *that* into production without it falling over. Selling them coordination is selling for a future they have not yet hit.
+
+**Two: the phrase pattern-matches to the wrong drawer.** When a developer hears "multi-agent coordination," they reach for *frameworks* &mdash; LangGraph, CrewAI, AutoGen, Mastra. Not infrastructure. So we kept getting filed alongside SDKs we don&rsquo;t actually compete with. The conversation would start in the wrong place and we&rsquo;d spend the first ten minutes correcting it.
+
+**Three: it understates the product.** Multi-agent coordination is a thing our runtime supports. It is not the *most important* thing it supports. The most important thing is making *one* agent proactive. Multi-agent comes for free once shared state is real-time &mdash; two agents watching the same workspace is a multi-agent system, mechanically &mdash; but it&rsquo;s the second-order story, not the first.
+
+## What we say now
+
+We say we build *proactive agents.* The runtime is a proactive runtime. The product is the runtime.
+
+This sounds like a small thing. It is not.
+
+The first thing it does is rename the market we&rsquo;re in. Reactive agents are the dominant pattern; everyone shipping an agent has a reactive one and is, on some level, embarrassed about it. The phrase "proactive agent" picks a fight with that pattern. It says *here is what your agent should be, and here is what it currently is, and here is the gap.*
+
+The second thing it does is admit that single-agent customers are still the bulk of the market. They become first-class. A team building one agent that needs to be triggered on schedule, on data change, and on message? That&rsquo;s a proactive agent. They get the runtime. Multi-agent is what happens later, if ever.
+
+The third thing it does is make the architecture &mdash; the thing we already built &mdash; legible. The repos finally tell the truth:
+
+| Old framing | What it actually is |
+|---|---|
+| Scheduling service | The clock |
+| Integration filesystem | The watcher |
+| Headless Slack | The inbox |
+| Hosted control plane | The runtime |
+| Workflow reliability | The durability ring |
+
+Nothing about the code changed. The names changed. The story changed. The conversation changes too.
+
+<Callout tone="warm" label="A small confession">
+We had this argument internally for months before we did it. The hold-out concern was that "proactive" is squishy &mdash; that it doesn&rsquo;t mean anything specific. The answer turned out to be that *it&rsquo;s squishy alone, and sharp in a triple.* Cron alone is not proactive. A webhook alone is not proactive. A persistent agent inbox alone is not proactive. Wired together with durable state, the triple is unmistakable.
+</Callout>
+
+## What we kept
+
+We kept everything technical. None of the actual product changed. Pricing didn&rsquo;t change. The ICP didn&rsquo;t change. The integrations roadmap didn&rsquo;t change.
+
+What changed is which sentence comes first.
+
+> Old first sentence: *We&rsquo;re a multi-agent coordination layer for cloud agent products.*
+>
+> New first sentence: *We make agents proactive &mdash; schedules, triggers, watchers, durable wake/sleep. Framework-agnostic.*
+
+The old sentence asked the listener to imagine a system they don&rsquo;t have yet. The new sentence describes the agent they&rsquo;re writing right now and the next thing it needs.
+
+## What we&rsquo;re betting on
+
+We&rsquo;re betting that *proactive* becomes a category the way *frontend cloud* became a category &mdash; by being the obvious word for a thing developers were already trying to do, and by being unowned at the moment we plant the flag.
+
+There&rsquo;s a 2024 paper from Tsinghua and Huawei that uses the word *proactive* in exactly the sense we mean it. There&rsquo;s an empty slot in dev tooling for someone to be the proactive runtime. There&rsquo;s a body of work we&rsquo;ve already shipped that maps onto the concept one-to-one.
+
+The flag goes here. Multi-agent coordination is what it&rsquo;s standing on.
