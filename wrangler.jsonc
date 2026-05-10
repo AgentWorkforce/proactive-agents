@@ -1,0 +1,8 @@
+{
+  // Cloudflare Pages project config used by `wrangler pages deploy`.
+  // The build output (Next.js static export) lives in ./out.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "proactive-agents",
+  "pages_build_output_dir": "./out",
+  "compatibility_date": "2026-05-10"
+}
