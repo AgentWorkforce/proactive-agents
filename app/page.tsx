@@ -130,7 +130,7 @@ export default async function Home() {
 
               <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-sm text-ink-soft">
                 <span className="flex items-center gap-2">
-                  <Sparkle className="h-3 w-3" /> Works with OpenAI, Anthropic, LangGraph, Mastra, agent-assistant
+                  <Sparkle className="h-3 w-3" /> Works with OpenAI, Anthropic, LangGraph, Mastra
                 </span>
               </div>
             </div>
@@ -143,7 +143,7 @@ export default async function Home() {
                     From the team
                   </p>
                   <p className="mt-3 font-serif text-[1.05rem] leading-relaxed text-ink">
-                    &ldquo;We spent two years building the same webhook
+                    &ldquo;We spent six months building the same webhook
                     pipeline at three companies. Then we built it once,
                     properly, and put it under every agent we could find.&rdquo;
                   </p>

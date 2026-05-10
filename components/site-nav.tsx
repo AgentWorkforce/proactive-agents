@@ -11,9 +11,9 @@ export function SiteNav() {
             Proactive Agents
           </span>
         </Link>
-        <nav className="flex items-center gap-7 text-[13px] uppercase tracking-[0.18em] text-ink-soft">
-          <Link href="/" className="hover:text-terracotta transition-colors">
-            Manifesto
+        <nav className="flex items-center gap-6 text-[13px] uppercase tracking-[0.18em] text-ink-soft sm:gap-7">
+          <Link href="/posts" className="hover:text-terracotta transition-colors">
+            Essays
           </Link>
           <Link href="/#three-primitives" className="hover:text-terracotta transition-colors hidden sm:inline">
             Primitives
