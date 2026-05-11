@@ -44,6 +44,11 @@
       "id": "AgentWorkforce/proactive-agents#essay-authoring",
       "source": "https://github.com/AgentWorkforce/proactive-agents#essay-authoring",
       "description": "Essay authoring patterns for this site: Scene scrollytelling, figure creation, Callout usage, embedded media, and a pre-publish checklist. Load this skill when writing or editing any MDX essay."
+    },
+    {
+      "id": "AgentWorkforce/proactive-agents#content-system",
+      "source": "https://github.com/AgentWorkforce/proactive-agents#content-system",
+      "description": "Strategic content production system: writer context packet, bookmarkability rubric, avoid-slop patterns, and viral postmortem. Load when planning, drafting, scoring, or reviewing any post."
     }
   ],
   "inputs": {

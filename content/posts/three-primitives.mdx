@@ -24,7 +24,7 @@ Polling is the *symptom*. The disease is missing primitives.
 
 </Scene>
 
-<Scene side="right" figure={<ProactiveFigure />} caption="Push beats poll. Always.">
+<Scene side="right" figure={<ProactiveFigure />} caption="Push beats poll — most of the time.">
 
 ## The first primitive: a way to wake up
 
@@ -37,6 +37,8 @@ A proactive agent needs to know when to run. Not "every five minutes" — *when 
 Reactive agents only honour the third one, and they don't even honour it well — they wait to be *invoked,* not to be *spoken to.*
 
 The shift is small in description and large in consequence. The agent stops being a function someone calls. It starts being a participant in a system.
+
+Push isn't free, though. Webhooks fail in ways polling doesn't — provider outages drop events, out-of-order delivery breaks naive consumers, replay storms ruin your queue depth. The honest answer is push usually beats poll for proactive agents, but the failure modes are real and we catalogue them in [Where push architectures break](/posts/push-breaks-too).
 
 </Scene>
 

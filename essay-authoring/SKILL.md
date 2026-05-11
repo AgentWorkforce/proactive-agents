@@ -1,3 +1,10 @@
+---
+name: essay-authoring
+description: Essay authoring patterns for the Proactive Agents site — Scene scrollytelling, custom SVG figures, Callout/PullQuote/Sidenote usage, embedded media, and a pre-publish voice checklist. Load when writing or editing any MDX essay.
+metadata:
+  tags: mdx, essay, scrollytelling, figures, editorial, voice
+---
+
 # Essay Authoring Skill
 
 When writing or editing an MDX essay for this site, follow these patterns to produce rich, scrollytelling-style content with sticky figures, callouts, and embedded media.
