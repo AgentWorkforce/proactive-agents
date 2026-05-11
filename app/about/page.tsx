@@ -32,11 +32,19 @@ export default function AboutPage() {
 
         <h2>Who&rsquo;s behind it</h2>
         <p>
-          Run by <a href="https://github.com/AgentWorkforce">AgentWorkforce</a>.
-          We build infrastructure for proactive agents and run into the hard
-          parts of this work every week. The essays are adapted from
-          positioning docs, postmortems, and design notes that would otherwise
-          live in PRs.
+          Written by{" "}
+          <a href="https://github.com/khaliqgant">Khaliq Gant</a>, co-founder
+          of <a href="https://github.com/AgentWorkforce">AgentWorkforce</a>.
+          Before this, three years as the first hire at{" "}
+          <a href="https://nango.dev">Nango</a> &mdash; the market leader in
+          third-party integrations &mdash; where most of the day-job was
+          getting the right context to AI: webhooks, normalised payloads, the
+          long tail of provider quirks. The hard parts of proactive agents
+          are, mostly, the same hard parts dressed up in a different jacket.
+        </p>
+        <p>
+          The essays are adapted from positioning docs, postmortems, and
+          design notes that would otherwise live in PRs.
         </p>
 
         <h2>How we publish</h2>
