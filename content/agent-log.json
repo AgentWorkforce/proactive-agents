@@ -1,5 +1,15 @@
 [
   {
+    "id": "1778490426868-weekly-digest-tzk9kb",
+    "timestamp": "2026-05-11T09:07:06.868Z",
+    "agent": "weekly-digest",
+    "trigger": "time",
+    "action": "Skipped — quiet week",
+    "summary": "No new mentions across 4 sources. Nothing filed.",
+    "outcome": "skipped",
+    "skippedReason": "no signal"
+  },
+  {
     "id": "1778489800560-weekly-digest-umcywi",
     "timestamp": "2026-05-11T08:56:40.560Z",
     "agent": "weekly-digest",
