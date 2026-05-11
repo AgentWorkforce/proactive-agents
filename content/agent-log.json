@@ -1,0 +1,88 @@
+[
+  {
+    "id": "2026-05-11-sunday-ping-001",
+    "timestamp": "2026-05-11T13:00:00Z",
+    "agent": "sunday-ping",
+    "trigger": "time",
+    "action": "Sent Sunday ping",
+    "summary": "Read this week's digest, picked the 'restraint as a research problem' thread as the strongest angle, drafted an outline, sent it to Slack with a one-tap 'accept' button.",
+    "outcome": "success",
+    "links": [
+      { "label": "This week's digest", "url": "https://github.com/AgentWorkforce/proactive-agents/issues/12" }
+    ]
+  },
+  {
+    "id": "2026-05-10-weekly-digest-001",
+    "timestamp": "2026-05-10T09:00:00Z",
+    "agent": "weekly-digest",
+    "trigger": "time",
+    "action": "Filed weekly digest",
+    "summary": "Found 14 mentions across the web and r/LocalLLaMA, r/AI_Agents, r/MachineLearning. Deduped, grouped by topic (3 clusters: tool-use cadence, restraint, push vs poll), filed as one rolling issue.",
+    "outcome": "success",
+    "links": [
+      { "label": "Issue #12", "url": "https://github.com/AgentWorkforce/proactive-agents/issues/12" }
+    ]
+  },
+  {
+    "id": "2026-05-09-manual-chatbot-001",
+    "timestamp": "2026-05-09T18:42:00Z",
+    "agent": "manual-chatbot",
+    "trigger": "message",
+    "action": "Answered a Slack DM",
+    "summary": "Question: 'what's the difference between proactive and event-driven?' — answered with a two-paragraph distinction citing the manifesto, flagged the framing of 'event-driven' as ambiguous between push-architecture and pub-sub.",
+    "outcome": "success",
+    "links": [
+      { "label": "Cited essay", "url": "/posts/three-primitives" }
+    ]
+  },
+  {
+    "id": "2026-05-08-pr-reviewer-002",
+    "timestamp": "2026-05-08T22:14:00Z",
+    "agent": "pr-reviewer",
+    "trigger": "change",
+    "action": "Reviewed PR #18",
+    "summary": "Caught two dead links (one to a moved arXiv mirror), suggested tightening the lead by 30 words, posted the deploy preview screenshot diff against main.",
+    "outcome": "success",
+    "links": [
+      { "label": "PR #18", "url": "https://github.com/AgentWorkforce/proactive-agents/pull/18" }
+    ]
+  },
+  {
+    "id": "2026-05-07-notion-to-blog-001",
+    "timestamp": "2026-05-07T11:25:00Z",
+    "agent": "notion-to-blog",
+    "trigger": "change",
+    "action": "Skipped — page still draft",
+    "summary": "Page 'Why context is the agent's whole job' moved into Editing in Notion, but tag is still 'draft'. Nothing published. Will re-evaluate when status flips to 'ready'.",
+    "outcome": "skipped",
+    "skippedReason": "tag != ready",
+    "links": [
+      { "label": "Notion page", "url": "https://notion.so/example" }
+    ]
+  },
+  {
+    "id": "2026-05-04-notion-to-blog-001",
+    "timestamp": "2026-05-04T09:30:00Z",
+    "agent": "notion-to-blog",
+    "trigger": "change",
+    "action": "Published essay",
+    "summary": "New page in Notion 'Drafts → Ready' database tagged ready. Converted to MDX, applied the site's Scene + Sidenote conventions, opened a PR with the post.",
+    "outcome": "success",
+    "links": [
+      { "label": "Published post", "url": "/posts/three-primitives" },
+      { "label": "Source PR", "url": "https://github.com/AgentWorkforce/proactive-agents/pull/15" }
+    ]
+  },
+  {
+    "id": "2026-05-03-weekly-digest-001",
+    "timestamp": "2026-05-03T09:00:00Z",
+    "agent": "weekly-digest",
+    "trigger": "time",
+    "action": "Filed weekly digest",
+    "summary": "Quiet week — only 4 mentions, no new clusters. Filed a short digest with a note that we may want to drop frequency to bi-weekly if signal stays low.",
+    "outcome": "success",
+    "links": [
+      { "label": "Issue #11", "url": "https://github.com/AgentWorkforce/proactive-agents/issues/11" }
+    ]
+  }
+]

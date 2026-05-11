@@ -40,9 +40,6 @@ yarn-error.log*
 .wrangler/
 .dev.vars
 
-# AgentWorkforce internal tooling (not site content)
-.agentworkforce/
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts

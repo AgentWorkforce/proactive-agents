@@ -18,6 +18,9 @@ export function SiteNav() {
           <Link href="/#triggers" className="hover:text-terracotta transition-colors hidden sm:inline">
             Triggers
           </Link>
+          <Link href="/agent" className="hover:text-terracotta transition-colors">
+            Agent
+          </Link>
           <Link href="/about" className="hover:text-terracotta transition-colors">
             About
           </Link>
