@@ -104,14 +104,18 @@ export default async function AgentPage() {
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />
         <p className="mt-8 font-serif text-lg leading-relaxed text-ink-soft">
-          A proactive agent runs this site &mdash; or rather, several agents do.
-          They watch a Notion database, scan the web for mentions, draft posts,
-          comment on PRs, answer DMs. This page is what they did, in order, with
-          links so you can verify the receipts.
+          Proactive agents run pieces of this site &mdash; for now, one of them
+          does. The <em>weekly digest</em> agent wakes every Saturday, scans
+          the web and Reddit for proactive-agent mentions, clusters what it
+          finds, and files a single GitHub issue. The other agents in the
+          roster are scaffolded but not yet wired to a runtime; they&rsquo;ll
+          appear here as they come online.
         </p>
         <p className="mt-3 font-serif text-base leading-relaxed text-ink-faint">
           A reactive agent fires when called. A proactive agent has to{" "}
-          <em>not</em> fire most of the time. Both are visible below.
+          <em>not</em> fire most of the time. Both outcomes are visible below
+          &mdash; every entry, including the skips, with a link so you can
+          verify the receipts.
         </p>
       </div>
 
@@ -136,25 +140,56 @@ export default async function AgentPage() {
           ✦ The roster
         </h2>
         <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-          {Object.entries(AGENT_META).map(([key, m]) => (
-            <li
-              key={key}
-              className={`rounded-2xl ${ACCENT_BG[m.accent]} relative overflow-hidden p-5`}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent" />
-              <div className="relative flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink/80">
-                    {TRIGGER_META[m.trigger].symbol} {TRIGGER_META[m.trigger].label}-triggered
-                  </p>
-                  <h3 className="mt-1 font-display text-xl text-ink">{m.title}</h3>
-                  <p className="mt-1.5 font-serif text-[0.95rem] leading-snug text-ink/85">
+          {Object.entries(AGENT_META).map(([key, m]) => {
+            const isLive = m.status === "live";
+            return (
+              <li
+                key={key}
+                className={`rounded-2xl ${
+                  isLive ? ACCENT_BG[m.accent] : "bg-paper-deep/40 border border-rule"
+                } relative overflow-hidden p-5`}
+              >
+                {isLive && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent" />
+                )}
+                <div className="relative">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p
+                      className={`font-mono text-xs uppercase tracking-[0.22em] ${
+                        isLive ? "text-ink/80" : "text-ink-faint"
+                      }`}
+                    >
+                      {TRIGGER_META[m.trigger].symbol}{" "}
+                      {TRIGGER_META[m.trigger].label}-triggered
+                    </p>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] ${
+                        isLive
+                          ? "bg-ink/85 text-paper"
+                          : "border border-rule bg-paper text-ink-faint"
+                      }`}
+                    >
+                      {isLive ? "live" : "scaffolded"}
+                    </span>
+                  </div>
+                  <h3
+                    className={`mt-2 font-display text-xl ${
+                      isLive ? "text-ink" : "text-ink-soft"
+                    }`}
+                  >
+                    {m.title}
+                  </h3>
+                  <p
+                    className={`mt-1.5 font-serif text-[0.95rem] leading-snug ${
+                      isLive ? "text-ink/85" : "text-ink-faint"
+                    }`}
+                  >
                     {m.blurb}
                   </p>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       </section>
 
