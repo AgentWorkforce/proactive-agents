@@ -18,6 +18,8 @@ const SLUGS: Record<string, React.ComponentType> = {
   "the-prompt-cant-save-you": PromptCrackArt,
   "magical-agents": MagicalWandArt,
   "the-wish-list": WishListArt,
+  "chatgpt-pulse": PulseCardArt,
+  "proactive-agent-landscape": LandscapeCardArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -240,6 +242,36 @@ function PromptCrackArt() {
   );
 }
 
+function PulseCardArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Pulse / heartbeat line */}
+          <path
+            d="M-55 0 L-30 0 L-20 -25 L-10 20 L0 -15 L10 10 L20 0 L55 0"
+            strokeWidth="2"
+          />
+          {/* Small cards below */}
+          <rect x="-35" y="20" width="22" height="30" rx="2" strokeWidth="1.2" />
+          <rect x="-8" y="20" width="22" height="30" rx="2" strokeWidth="1.2" />
+          <rect x="19" y="20" width="22" height="30" rx="2" strokeWidth="1.2" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 function MagicalWandArt() {
   return (
     <svg
@@ -306,6 +338,46 @@ function WishListArt() {
               <line x1="-10" y1={y} x2={20 + (i % 2 === 0 ? 6 : 0)} y2={y} strokeWidth="1" />
             </g>
           ))}
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function LandscapeCardArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Grid lines */}
+          <line x1="-50" y1="-30" x2="50" y2="-30" strokeWidth="0.8" />
+          <line x1="-50" y1="-10" x2="50" y2="-10" strokeWidth="0.8" />
+          <line x1="-50" y1="10" x2="50" y2="10" strokeWidth="0.8" />
+          <line x1="-50" y1="30" x2="50" y2="30" strokeWidth="0.8" />
+          <line x1="-15" y1="-45" x2="-15" y2="40" strokeWidth="0.8" />
+          <line x1="15" y1="-45" x2="15" y2="40" strokeWidth="0.8" />
+          <line x1="40" y1="-45" x2="40" y2="40" strokeWidth="0.8" />
+          {/* Dots for scores */}
+          <circle cx="-15" cy="-30" r="3" fill={C.ink} stroke="none" />
+          <circle cx="15" cy="-30" r="3" fill={C.ink} stroke="none" />
+          <circle cx="40" cy="-30" r="3" fill={C.ink} stroke="none" />
+          <circle cx="-15" cy="-10" r="3" fill={C.ink} stroke="none" />
+          <circle cx="-15" cy="10" r="3" fill={C.ink} stroke="none" />
+          <circle cx="15" cy="10" r="3" fill={C.ink} stroke="none" />
+          <circle cx="40" cy="10" r="3" fill={C.ink} stroke="none" />
+          <circle cx="-15" cy="30" r="3" fill={C.ink} stroke="none" />
+          <circle cx="15" cy="30" r="3" fill={C.ink} stroke="none" />
+          <circle cx="40" cy="30" r="3" fill={C.ink} stroke="none" />
         </g>
       </g>
     </svg>

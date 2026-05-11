@@ -67,7 +67,7 @@ export default async function AgentPage() {
   const thisWeek = log.filter((e) => new Date(e.timestamp) >= weekStart);
 
   const stats = [
-    { label: "Actions this week", value: thisWeek.length },
+    { label: thisWeek.length === 1 ? "Action this week" : "Actions this week", value: thisWeek.length },
     {
       label: "Time-triggered",
       value: thisWeek.filter((e) => e.trigger === "time").length,

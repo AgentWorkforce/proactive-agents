@@ -616,6 +616,186 @@ export function PatternConvergeFigure() {
   );
 }
 
+/** ChatGPT Pulse — nightly clock with morning cards. */
+export function PulseClockFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="pcfgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.sky} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.rose} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="145" r="105" fill="url(#pcfgrad)" />
+      {/* Moon — overnight processing */}
+      <g transform="translate(160, 80)">
+        <circle r="22" fill={C.butter} stroke={C.ink} strokeWidth="1.2" />
+        <circle cx="8" cy="-8" r="18" fill="url(#pcfgrad)" />
+        <text y="38" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>overnight</text>
+      </g>
+      {/* Arrow down */}
+      <g stroke={C.terracotta} strokeWidth="1.6" fill="none" strokeLinecap="round">
+        <path d="M160 125 L160 150" />
+        <path d="M155 144 L160 152 L165 144" />
+      </g>
+      {/* Morning cards */}
+      {[0, 1, 2].map((i) => (
+        <g key={i} transform={`translate(${95 + i * 50}, 175)`}>
+          <rect x="-18" y="-22" width="36" height="44" rx="5" fill={C.paper} stroke={C.ink} strokeWidth={i === 1 ? "2" : "1.2"} />
+          <line x1="-10" y1="-10" x2="10" y2="-10" stroke={C.faint} strokeWidth="0.8" />
+          <line x1="-10" y1="-2" x2="8" y2="-2" stroke={C.faint} strokeWidth="0.8" />
+          <line x1="-10" y1="6" x2="6" y2="6" stroke={C.faint} strokeWidth="0.8" />
+        </g>
+      ))}
+      <text x="160" y="240" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>morning cards</text>
+      {/* Missing primitives — greyed out */}
+      <g transform="translate(75, 275)">
+        <circle r="14" fill={C.butter} stroke={C.ink} strokeWidth="1.2" />
+        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>clock</text>
+      </g>
+      <g transform="translate(160, 275)">
+        <circle r="14" fill="none" stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 2" />
+        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>watcher</text>
+      </g>
+      <g transform="translate(245, 275)">
+        <circle r="14" fill="none" stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 2" />
+        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>inbox</text>
+      </g>
+    </svg>
+  );
+}
+
+/** What Pulse could be — all three primitives active. */
+export function PulseCompleteFigure() {
+  const items = [
+    { x: 80, y: 90, label: "clock", sub: "nightly + real-time", fill: C.butter },
+    { x: 240, y: 90, label: "watcher", sub: "change events", fill: C.sage },
+    { x: 160, y: 220, label: "inbox", sub: "deliver anywhere", fill: C.lavender },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="pcomplete" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#pcomplete)" />
+      {/* Connecting lines */}
+      <g stroke={C.terracotta} strokeWidth="1.6" strokeDasharray="4 4">
+        <line x1="80" y1="90" x2="240" y2="90" />
+        <line x1="80" y1="90" x2="160" y2="220" />
+        <line x1="240" y1="90" x2="160" y2="220" />
+      </g>
+      {/* Center label */}
+      <text x="160" y="152" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.terracotta}>proactive</text>
+      {items.map((it) => (
+        <g key={it.label}>
+          <circle cx={it.x} cy={it.y} r="38" fill={it.fill} stroke={C.ink} strokeWidth="1.8" />
+          <text x={it.x} y={it.y - 4} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{it.label}</text>
+          <text x={it.x} y={it.y + 12} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>{it.sub}</text>
+        </g>
+      ))}
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.terracotta}>
+        useful → indispensable
+      </text>
+    </svg>
+  );
+}
+
+/** Landscape grid — players scored against three primitives. */
+export function LandscapeGridFigure() {
+  const cols = [
+    { x: 140, label: "clock", fill: C.butter },
+    { x: 200, label: "watcher", fill: C.sage },
+    { x: 260, label: "inbox", fill: C.lavender },
+  ];
+  const rows = [
+    { y: 100, name: "Pulse", scores: [true, false, false] },
+    { y: 130, name: "Orbit", scores: [true, true, false] },
+    { y: 160, name: "Remy", scores: [true, true, true] },
+    { y: 190, name: "Perplexity", scores: [true, true, true] },
+    { y: 220, name: "Managerbot", scores: [true, true, true] },
+    { y: 250, name: "CodeWords", scores: [true, false, false] },
+    { y: 280, name: "Relay", scores: [true, true, true] },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="lggrad" cx="50%" cy="40%" r="60%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.paper} stopOpacity="0.2" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="55" width="300" height="255" rx="12" fill="url(#lggrad)" />
+      {cols.map((c) => (
+        <g key={c.label}>
+          <circle cx={c.x} cy="72" r="10" fill={c.fill} stroke={C.ink} strokeWidth="1" />
+          <text x={c.x} y="76" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>{c.label}</text>
+        </g>
+      ))}
+      {rows.map((r) => (
+        <g key={r.name}>
+          <text x="75" y={r.y + 4} textAnchor="end" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>{r.name}</text>
+          {r.scores.map((s, i) => (
+            <g key={i}>
+              {s ? (
+                <circle cx={cols[i].x} cy={r.y} r="6" fill={cols[i].fill} stroke={C.ink} strokeWidth="1" />
+              ) : (
+                <circle cx={cols[i].x} cy={r.y} r="6" fill="none" stroke={C.faint} strokeWidth="1" strokeDasharray="2 2" />
+              )}
+            </g>
+          ))}
+        </g>
+      ))}
+      <text x="160" y="30" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>landscape scorecard</text>
+      <text x="160" y="45" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>May 2026</text>
+    </svg>
+  );
+}
+
+/** Landscape layers — horizontal / vertical / infrastructure. */
+export function LandscapeLayersFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="llgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="160" r="110" fill="url(#llgrad)" />
+      {/* Infrastructure layer */}
+      <rect x="40" y="220" width="240" height="50" rx="8" fill={C.peach} stroke={C.ink} strokeWidth="1.8" />
+      <text x="160" y="242" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>infrastructure</text>
+      <text x="160" y="258" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>clock + watcher + inbox</text>
+      {/* Vertical agents */}
+      <rect x="45" y="130" width="100" height="70" rx="8" fill={C.sage} stroke={C.ink} strokeWidth="1.4" />
+      <text x="95" y="160" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>vertical</text>
+      <text x="95" y="175" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>Managerbot</text>
+      <text x="95" y="186" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>Writer</text>
+      {/* Horizontal assistants */}
+      <rect x="175" y="130" width="100" height="70" rx="8" fill={C.sky} stroke={C.ink} strokeWidth="1.4" />
+      <text x="225" y="160" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>horizontal</text>
+      <text x="225" y="175" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>Pulse, Orbit</text>
+      <text x="225" y="186" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>Remy, Hatch</text>
+      {/* Connectors */}
+      <g stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 3">
+        <line x1="95" y1="200" x2="95" y2="220" />
+        <line x1="225" y1="200" x2="225" y2="220" />
+      </g>
+      {/* Top label */}
+      <text x="160" y="80" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>end users</text>
+      <g stroke={C.faint} strokeWidth="1" strokeDasharray="3 3">
+        <line x1="95" y1="90" x2="95" y2="130" />
+        <line x1="225" y1="90" x2="225" y2="130" />
+      </g>
+      {/* Title */}
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>three layers of the stack</text>
+    </svg>
+  );
+}
+
 /** Runtime — full architecture (heart in the middle). */
 export function RuntimeFigure() {
   const blocks = [

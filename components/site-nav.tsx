@@ -18,6 +18,9 @@ export function SiteNav() {
           <Link href="/posts" className="hover:text-terracotta transition-colors">
             Essays
           </Link>
+          <Link href="/market" className="hover:text-terracotta transition-colors">
+            Market
+          </Link>
           <Link href="/agent" className="hover:text-terracotta transition-colors">
             Agent
           </Link>

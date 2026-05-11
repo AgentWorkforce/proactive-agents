@@ -1,0 +1,100 @@
+---
+title: "Who's building proactive agents? A May 2026 landscape"
+summary: "Every major AI lab is building proactive agents. Here's who shipped what, how they score on the three primitives, and where the gaps still are. Updated May 2026."
+date: "2026-05-11"
+accent: "sage"
+dropcap: true
+---
+
+Six months ago, proactive AI was a research concept. Today, every major AI lab either has a proactive agent product in market or has one in internal testing. The convergence is striking: OpenAI, Google, Anthropic, Meta, Perplexity, and several startups are all building agents that act without being asked.
+
+This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **watcher** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
+
+*Last updated: May 11, 2026.*
+
+<Scene figure={<LandscapeGridFigure />} caption="The landscape scored against three primitives.">
+
+## The scorecard
+
+<table>
+<thead>
+<tr><th>Product</th><th>Company</th><th>Clock</th><th>Watcher</th><th>Inbox</th><th>Stage</th></tr>
+</thead>
+<tbody>
+<tr><td>ChatGPT Pulse</td><td>OpenAI</td><td>&#10003;</td><td>&#10007;</td><td>&#10007;</td><td>Shipped (Pro)</td></tr>
+<tr><td>Orbit</td><td>Anthropic</td><td>&#10003;</td><td>&#10003;</td><td>Partial</td><td>Announced</td></tr>
+<tr><td>Remy</td><td>Google</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Internal dogfood</td></tr>
+<tr><td>Hatch</td><td>Meta</td><td>&#10003;</td><td>&#10003;</td><td>Partial</td><td>Internal testing</td></tr>
+<tr><td>Computer / Comet</td><td>Perplexity</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
+<tr><td>Managerbot</td><td>Block (Square)</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Open beta</td></tr>
+<tr><td>Cody</td><td>CodeWords.ai</td><td>&#10003;</td><td>Partial</td><td>Partial</td><td>Beta</td></tr>
+<tr><td>Playbooks</td><td>Writer</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
+<tr><td>Agent Relay</td><td>Agent Relay</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipping</td></tr>
+</tbody>
+</table>
+
+A pattern is visible: nearly everyone has the clock. The watcher and the inbox are where products diverge, and where the real difficulty lives.
+
+<Callout tone="thought" label="The clock is table stakes">
+Every product on this list runs on a schedule. That's the easy primitive to build. The products that score highest are the ones that also detect changes in real time and deliver results wherever they're useful, not just inside their own app.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure={<LandscapeLayersFigure />} caption="Horizontal assistants vs. vertical agents vs. infrastructure.">
+
+## The big labs
+
+**[ChatGPT Pulse](https://openai.com/index/introducing-chatgpt-pulse/) (OpenAI)** launched in September 2025 as part of ChatGPT Pro. It processes chat history, Gmail, and Google Calendar overnight, then delivers 5 to 10 personalized morning cards. The personalization is genuinely impressive. The architecture is [clock-only](/posts/chatgpt-pulse): no real-time change detection, no delivery outside the ChatGPT app.
+
+**[Orbit](https://www.testingcatalog.com/anthropic-is-working-on-orbit-its-upcoming-proactive-assistant/) (Anthropic)** was unveiled at the Code with Claude conference in May 2026. It generates proactive briefings from connected tools (Gmail, Slack, GitHub, Calendar, Drive, Figma) on a timezone-aware schedule. "Orbit apps" let users pin specific insight views. It has the watcher, which puts it ahead of Pulse architecturally, though the inbox is still limited to the Claude interface.
+
+**[Remy](https://www.droid-life.com/2026/05/07/google-ai-agent-remy/) (Google)** is the most ambitious on paper. A Gemini-powered "24/7 personal agent" that monitors signals across Gmail, Calendar, Docs, Drive, Keep, Tasks, GitHub, WhatsApp, Spotify, and Photos. It anticipates needs and executes multi-step workflows proactively. Currently in internal dogfood (employee-only Gemini app on phones), expected to surface publicly around Google I/O. If the integration depth is real, Remy has all three primitives working within the Google ecosystem.
+
+**[Hatch](https://aiautomationglobal.com/blog/google-remy-meta-hatch-personal-ai-agents-race-2026) (Meta)** is a general-purpose consumer agent trained in practice environments that replicate DoorDash, Etsy, and Reddit. It learns preferences, persists memory across conversations, and decides when to act without prompting. A separate Instagram shopping agent is also in development. Internal testing targets end of June 2026. The proactive design is there, but the delivery channels are still Meta-surface-only.
+
+## The shipping products
+
+**Perplexity** has moved furthest, fastest. Perplexity Computer orchestrates 19 models for long-running autonomous tasks. Comet handles browser-based agent work. Push notifications go to email and mobile. Samsung Galaxy integration embeds Perplexity into Notes, Clock, Gallery, Reminder, and Calendar. All three primitives are present and actively used.
+
+**[Block's Managerbot](https://venturebeat.com/data/block-introduces-managerbot-a-proactive-square-ai-agent-and-the-clearest)** is the strongest vertical proof point. Built into Square POS, it monitors seller business data continuously, identifies problems, and proposes solutions. It handles shift scheduling (analyzes forecasts, generates optimized schedules), inventory management, and marketing (drafts win-back campaigns targeting the best customer segments). Available to 1M+ US sellers in open beta, with GA expected June 2026. This is proactive AI delivering measurable business value, not just interesting cards.
+
+**[Writer's Playbooks](https://writer.com/blog/writer-agent-skills-playbooks-press-release/)** are event-driven enterprise workflows: listen for triggers (emails arriving, sales calls completing, files landing), then execute multi-step automations. All three primitives, focused on enterprise teams. The least consumer-visible product on this list, and potentially the most revenue-generating.
+
+<Callout tone="warm" label="The vertical advantage">
+Managerbot and Writer share something the horizontal assistants don't have: a bounded problem space. When you know the user is a restaurant owner or a marketing team, you can make stronger assumptions about what "proactive" means. The horizontal assistants have to figure out what matters to each user from scratch.
+</Callout>
+
+</Scene>
+
+## The startups
+
+**[CodeWords.ai](https://www.codewords.ai/)** raised a $9M seed led by Visionaries Club, with angels from the CEOs of Miro, ElevenLabs, Personio, Zalando, and Supercell. Their agent Cody takes natural-language instructions, asks clarifying questions, writes Python logic, and deploys automations on their infrastructure. 3,000+ integrations, runs 24/7. The positioning is explicitly proactive: "The best operators don't wait to be asked."
+
+The target audience is non-technical operators, which is a different market segment than developer-focused tools. The open question is depth: 3,000+ integrations could mean deep event subscriptions or thin polling wrappers. At beta stage, there's no public data on reliability or error recovery for the 24/7 agents.
+
+<Callout tone="cool" label="Disclosure">
+We build [Agent Relay](https://agentrelay.com), a developer SDK that provides the clock, watcher, and inbox as composable primitives. It sits at the infrastructure layer, not the application layer. This analysis applies the same framework to everyone on the list, including us.
+</Callout>
+
+## What the convergence tells us
+
+Every product on this list arrived at roughly the same architecture independently. Scheduled execution, change detection, multi-channel delivery. The [three-primitives framework](/posts/three-primitives) wasn't predictive so much as descriptive: this is simply what proactive agents need to work.
+
+The differences are in coverage and depth:
+
+- **Coverage**: How many data sources can the agent watch? Google has a natural advantage with Remy because it already owns the data. Everyone else is integrating third-party APIs one at a time.
+- **Depth**: Is the watcher doing real-time event streaming or periodic polling? The user experience is completely different. A four-hour-old alert is not the same as a real-time notification.
+- **Delivery**: Can results go where the action is (Slack, email, tickets), or are they trapped in the product's own UI? Most horizontal assistants are still trapped.
+
+The products that nail all three at depth will be the ones people reorganize their workflows around. The ones that ship a clock and call it proactive will end up feeling like [another tab to check](/posts/chatgpt-pulse).
+
+## What to watch next
+
+**Google I/O** (late May 2026) will likely show Remy publicly for the first time. If Google ships deep integration across its own ecosystem, the bar for everyone else goes up immediately.
+
+**Meta Hatch** targeting end of June means two billion Instagram users could have a proactive agent within months. The scale implications are hard to overstate, even if the initial capabilities are narrow.
+
+**Block Managerbot GA** in June will produce the first real usage data from a vertical proactive agent at scale. If Square sellers measurably benefit, expect every vertical SaaS company to start building their own version.
+
+The landscape is moving fast. I'll keep this page updated as products ship and the primitives picture changes.
