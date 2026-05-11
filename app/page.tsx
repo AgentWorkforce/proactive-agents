@@ -343,6 +343,45 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* BUILD IN PUBLIC */}
+      <section className="relative mt-32 sm:mt-40">
+        <div className="mx-auto max-w-4xl px-6 sm:px-10">
+          <div className="reveal relative overflow-hidden rounded-[2rem] border border-rule bg-paper-deep/50 px-8 py-12 sm:px-14 sm:py-16">
+            <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-butter/60 blur-3xl" />
+            <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-sage/50 blur-3xl" />
+            <div className="relative grid gap-8 md:grid-cols-12 md:items-center">
+              <div className="md:col-span-8">
+                <p className="font-display text-sm uppercase tracking-[0.28em] text-terracotta">
+                  ✦ Build in public
+                </p>
+                <h2 className="mt-3 font-display text-[clamp(1.8rem,3.6vw,2.4rem)] leading-[1.1] tracking-tight text-ink">
+                  This site is run by a proactive agent.
+                </h2>
+                <p className="mt-4 font-serif text-[1.02rem] leading-relaxed text-ink-soft">
+                  We dogfood the architecture the manual argues for. A scheduled
+                  agent watches the web for mentions of <em>proactive agents</em>,
+                  clusters them, and files a single rolling issue every Saturday.
+                  More agents are scaffolded; they come online as the runtime does.
+                  Every action it takes &mdash; including the times it correctly
+                  decides not to act &mdash; is on a public log.
+                </p>
+              </div>
+              <div className="md:col-span-4 md:justify-self-end">
+                <Link
+                  href="/agent"
+                  className="group inline-flex items-center gap-3 rounded-full bg-ink px-6 py-3 text-sm font-medium tracking-wide text-paper transition-transform hover:-translate-y-0.5"
+                >
+                  See the receipts
+                  <span aria-hidden className="transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ESSAYS */}
       <section className="relative mt-32 sm:mt-40">
         <div className="mx-auto max-w-5xl px-6 sm:px-10">
