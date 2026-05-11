@@ -37,7 +37,7 @@ export function SiteFooter() {
             Crafted by{" "}
             <a
               href="https://github.com/AgentWorkforce"
-              className="text-ink-soft hover:text-terracotta transition-colors"
+              className="text-terracotta hover:underline"
             >
               AgentWorkforce
             </a>
