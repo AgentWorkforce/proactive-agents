@@ -32,8 +32,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Proactive Agents — a slow journal",
-  description: "A quiet corner of the web. Essays on attention, craft, and the texture of ordinary days.",
+  title: "Proactive Agents — a magical experience",
+  description: "A proactive agent makes an AI agent feel alive and like a teammate",
 };
 
 export default function RootLayout({

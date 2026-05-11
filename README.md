@@ -9,4 +9,7 @@ npm install
 npm run dev    # http://localhost:3000
 ```
 
-Built with Next.js, Tailwind, GSAP, and MDX. Deployed as a static export to Cloudflare Pages on push to `main`.
+# What is it?
+A proactive agent is an agent that doesn't wait for input but rather acts without prompting.
+
+This makes for a magical agent experience.

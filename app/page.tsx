@@ -3,7 +3,6 @@ import { getAllPosts, formatDate } from "@/lib/posts";
 import { BackgroundOrbs } from "@/components/background-orbs";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { Squiggle, Sparkle } from "@/components/decorations";
-import { CodeCard } from "@/components/code-card";
 
 const ACCENT_BG: Record<string, string> = {
   peach: "bg-peach/60",
@@ -16,10 +15,43 @@ const ACCENT_BG: Record<string, string> = {
 
 const TILTS = ["-1.4deg", "0.8deg", "-0.6deg", "1.2deg"];
 
-const PRIMITIVES = [
-  { name: "relaycron", role: "the clock", accent: "butter", snippet: 'cron.schedule("0 9 * * *", agent)' },
-  { name: "relayfile", role: "the watcher", accent: "sage", snippet: 'file.on("change", agent)' },
-  { name: "relaycast", role: "the inbox", accent: "lavender", snippet: 'cast.on("message", agent)' },
+const TRIGGERS = [
+  {
+    role: "Time",
+    accent: "butter",
+    blurb:
+      "The agent runs on a schedule it keeps for itself. Every fifteen minutes, every Monday at nine, every quiet hour past midnight.",
+    snippet: 'time.every("15 min", agent)',
+  },
+  {
+    role: "Change",
+    accent: "sage",
+    blurb:
+      "The agent watches the world for a delta. A ticket moves, a record updates, a file appears — and it wakes the moment it happens.",
+    snippet: 'world.on("change", agent)',
+  },
+  {
+    role: "Message",
+    accent: "lavender",
+    blurb:
+      "Someone — a human, another agent, a system — addresses the agent directly. It answers in its own time, not on a polling cycle.",
+    snippet: 'inbox.on("message", agent)',
+  },
+];
+
+const HARD_PARTS = [
+  {
+    label: "Wake-ups are infrastructure",
+    body: "Polling is easy; push is hard. Stable URLs, signature schemes, normalised events, durable triggers — none of it ships in a model SDK. Someone has to build it.",
+  },
+  {
+    label: "State is harder than it looks",
+    body: "Between wake-ups the agent has to remember what it saw, what it acted on, what it&rsquo;s still in the middle of. Most agents wake up amnesiac and re-read the world from scratch.",
+  },
+  {
+    label: "Restraint is a research problem",
+    body: "An agent that fires too often loses trust faster than one that misses things. Calibrated restraint is a known-hard problem even at the frontier — GPT-4o tops out around 65% on it.",
+  },
 ];
 
 export default async function Home() {
@@ -45,17 +77,23 @@ export default async function Home() {
             <br />
             to be asked.
           </h1>
-          <p className="mt-10 max-w-xl font-serif text-xl leading-relaxed text-ink-soft">
-            The runtime for proactive agents &mdash; schedules, triggers,
-            watchers, durable wake/sleep. Framework-agnostic.
+          <p className="mt-10 max-w-2xl font-serif text-xl leading-relaxed text-ink-soft">
+            A proactive agent doesn&rsquo;t wait for a prompt. It watches the
+            world, notices what changed, and acts on its own &mdash; the
+            shift from <span className="italic">reactive tool</span> to{" "}
+            <span className="scribble-highlight">teammate that feels alive.</span>
+          </p>
+          <p className="mt-5 max-w-2xl font-serif text-lg leading-relaxed text-ink-faint">
+            This site is a working manual on what proactive agents are, why
+            they matter, and how to think about building them.
           </p>
 
           <div className="mt-12 flex flex-wrap items-center gap-6">
             <Link
-              href="#primitives"
+              href="#triggers"
               className="group inline-flex items-center gap-3 rounded-full bg-ink px-6 py-3 text-sm font-medium tracking-wide text-paper transition-transform hover:-translate-y-0.5"
             >
-              See the primitives
+              What makes them proactive
               <span aria-hidden className="transition-transform group-hover:translate-x-1">
                 →
               </span>
@@ -108,83 +146,92 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* PRIMITIVES */}
-      <section id="primitives" className="relative mt-32 sm:mt-40">
+      {/* THE THREE TRIGGERS */}
+      <section id="triggers" className="relative mt-32 sm:mt-40">
         <div className="mx-auto max-w-5xl px-6 sm:px-10">
           <div className="reveal mx-auto max-w-2xl text-center">
             <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
-              ✦ The triple
+              ✦ The three triggers
             </p>
             <h2 className="mt-3 font-display text-[clamp(2rem,4.6vw,3rem)] leading-[1.06] tracking-tight text-ink">
-              A clock, a watcher, an inbox.
+              What makes an agent proactive.
             </h2>
+            <p className="mt-6 font-serif text-lg leading-relaxed text-ink-soft">
+              A proactive agent isn&rsquo;t defined by what model it runs or
+              what framework it&rsquo;s built on. It&rsquo;s defined by{" "}
+              <span className="italic">how it wakes up</span>. There are only
+              three ways.
+            </p>
           </div>
 
           <ul className="mt-14 grid gap-6 md:grid-cols-3">
-            {PRIMITIVES.map((p, i) => (
-              <li key={p.name} className="reveal">
+            {TRIGGERS.map((t, i) => (
+              <li key={t.role} className="reveal">
                 <div
-                  className={`tilt rounded-2xl ${ACCENT_BG[p.accent]} relative overflow-hidden p-6`}
+                  className={`tilt rounded-2xl ${ACCENT_BG[t.accent]} relative overflow-hidden p-7`}
                   style={{ "--tilt": TILTS[i] } as React.CSSProperties}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent" />
                   <div className="relative">
                     <p className="font-mono text-xs uppercase tracking-[0.22em] text-ink/80">
-                      {p.role}
+                      Trigger {i + 1}
                     </p>
-                    <h3 className="mt-2 font-display text-2xl text-ink">{p.name}</h3>
+                    <h3 className="mt-2 font-display text-3xl text-ink">{t.role}</h3>
+                    <p className="mt-3 font-serif text-[0.98rem] leading-relaxed text-ink/85">
+                      {t.blurb}
+                    </p>
                     <pre className="mt-5 overflow-x-auto rounded-lg bg-ink/85 px-3 py-2.5 font-mono text-[12px] leading-relaxed text-paper">
-                      <code>{p.snippet}</code>
+                      <code>{t.snippet}</code>
                     </pre>
                   </div>
                 </div>
               </li>
             ))}
           </ul>
+
+          <p className="reveal mx-auto mt-10 max-w-2xl text-center font-serif text-[1.02rem] leading-relaxed text-ink-soft">
+            A truly proactive agent listens for all three. Pick one and
+            you&rsquo;ve made a smarter cron job; pick two and you&rsquo;ve
+            made a chatbot that polls. The composition is what counts.
+          </p>
         </div>
       </section>
 
-      {/* CODE: BEFORE/AFTER */}
+      {/* WHY MOST AGENTS ARE STILL REACTIVE */}
       <section className="relative mt-32 sm:mt-40">
         <div className="mx-auto max-w-5xl px-6 sm:px-10">
           <div className="reveal mx-auto max-w-2xl text-center">
             <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
-              ✦ The webhook tax
+              ✦ The hard parts
             </p>
             <h2 className="mt-3 font-display text-[clamp(2rem,4.6vw,3rem)] leading-[1.06] tracking-tight text-ink">
-              Eight weeks, or one afternoon.
+              Why most agents are still reactive.
             </h2>
+            <p className="mt-6 font-serif text-lg leading-relaxed text-ink-soft">
+              Anyone shipping an agent today wants it to be proactive. Most
+              aren&rsquo;t. The reasons are not philosophical &mdash;
+              they&rsquo;re engineering.
+            </p>
           </div>
 
-          <div className="mt-12 grid gap-6 lg:grid-cols-2">
-            <div className="reveal">
-              <CodeCard label="Without the runtime" filename="server.ts" tone="paper">
-{`app.post("/webhooks/linear", raw, async (req, res) => {
-  // verify HMAC, respond <2s, enqueue, dedupe,
-  // filter, fetch full payload, load context, fire agent
-  // ...for every provider, with their own quirks.
-});`}
-              </CodeCard>
-            </div>
-            <div className="reveal">
-              <CodeCard label="With the runtime" filename="agent.ts" tone="ink">
-{`import { workspace } from "@proactive/runtime";
-
-workspace("acme/ops").on("change", async (file) => {
-  await agent.handle(file);
-});`}
-              </CodeCard>
-            </div>
-          </div>
-
-          <p className="reveal mx-auto mt-8 max-w-xl text-center font-serif text-[1.02rem] leading-relaxed text-ink-soft">
-            Endpoints, signatures, dedupe, registration, normalisation
-            &mdash; handled. Adding a provider is a config line.{" "}
-            <Link href="/posts/the-webhook-tax" className="text-terracotta underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta">
-              Read the full breakdown
-            </Link>
-            .
-          </p>
+          <ol className="mt-14 grid gap-8 md:grid-cols-3">
+            {HARD_PARTS.map((h, i) => (
+              <li key={h.label} className="reveal">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-4xl italic text-terracotta">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="font-display text-xl leading-tight text-ink">
+                    {h.label}
+                  </h3>
+                </div>
+                <p
+                  className="mt-3 font-serif text-[1rem] leading-relaxed text-ink-soft"
+                  dangerouslySetInnerHTML={{ __html: h.body }}
+                />
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
