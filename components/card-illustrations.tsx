@@ -20,6 +20,8 @@ const SLUGS: Record<string, React.ComponentType> = {
   "the-wish-list": WishListArt,
   "chatgpt-pulse": PulseCardArt,
   "proactive-agent-landscape": LandscapeCardArt,
+  "building-weekly-digest": DigestCardArt,
+  "push-breaks-too": PushBreaksArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -378,6 +380,85 @@ function LandscapeCardArt() {
           <circle cx="-15" cy="30" r="3" fill={C.ink} stroke="none" />
           <circle cx="15" cy="30" r="3" fill={C.ink} stroke="none" />
           <circle cx="40" cy="30" r="3" fill={C.ink} stroke="none" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function DigestCardArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Funnel shape — sources narrowing to output */}
+          <path d="M-55 -40 L-20 0 L-55 40" strokeWidth="1.6" />
+          <path d="M55 -40 L20 0 L55 40" strokeWidth="1.6" />
+          {/* Source dots on the left */}
+          <circle cx="-55" cy="-30" r="3" fill={C.ink} stroke="none" />
+          <circle cx="-55" cy="-10" r="3" fill={C.ink} stroke="none" />
+          <circle cx="-55" cy="10" r="3" fill={C.ink} stroke="none" />
+          <circle cx="-55" cy="30" r="3" fill={C.ink} stroke="none" />
+          {/* Arrow out the right */}
+          <line x1="20" y1="0" x2="55" y2="0" strokeWidth="2" />
+          <path d="M48 -6 L56 0 L48 6" strokeWidth="1.8" />
+          {/* Small issue rectangle */}
+          <rect x="60" y="-12" width="24" height="24" rx="3" strokeWidth="1.4" />
+          <line x1="65" y1="-4" x2="79" y2="-4" strokeWidth="0.8" />
+          <line x1="65" y1="2" x2="76" y2="2" strokeWidth="0.8" />
+          <line x1="65" y1="8" x2="73" y2="8" strokeWidth="0.8" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function PushBreaksArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Arrow shaft — push direction */}
+          <line x1="-50" y1="0" x2="30" y2="0" strokeWidth="2" />
+          <path d="M22 -8 L32 0 L22 8" strokeWidth="2" />
+          {/* Crack / break in the arrow */}
+          <path
+            d="M-8 -18 L-2 -6 L-10 0 L0 6 L-6 18"
+            strokeWidth="2.2"
+          />
+          {/* Lightning / break marks */}
+          <line x1="-18" y1="-14" x2="-12" y2="-8" strokeWidth="1.2" />
+          <line x1="6" y1="-12" x2="10" y2="-6" strokeWidth="1.2" />
+          <line x1="-14" y1="10" x2="-8" y2="14" strokeWidth="1.2" />
+          {/* Small x marks for failures */}
+          <g strokeWidth="1.8">
+            <line x1="42" y1="-18" x2="50" y2="-10" />
+            <line x1="50" y1="-18" x2="42" y2="-10" />
+          </g>
+          <g strokeWidth="1.8">
+            <line x1="42" y1="10" x2="50" y2="18" />
+            <line x1="50" y1="10" x2="42" y2="18" />
+          </g>
         </g>
       </g>
     </svg>

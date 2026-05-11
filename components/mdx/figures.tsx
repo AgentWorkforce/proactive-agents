@@ -754,6 +754,175 @@ export function LandscapeGridFigure() {
   );
 }
 
+/** Push failure modes — webhook pipeline with break points. */
+export function PushFailureFigure() {
+  const stages = [
+    { x: 45, label: "provider" },
+    { x: 115, label: "deliver" },
+    { x: 185, label: "parse" },
+    { x: 255, label: "process" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="pfgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.rose} stopOpacity="0.8" />
+          <stop offset="100%" stopColor={C.peach} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="145" r="105" fill="url(#pfgrad)" />
+      {/* Pipeline stages */}
+      {stages.map((s, i) => (
+        <g key={s.label}>
+          <rect
+            x={s.x - 28}
+            y={100}
+            width="56"
+            height="32"
+            rx="6"
+            fill={C.paper}
+            stroke={C.ink}
+            strokeWidth="1.4"
+          />
+          <text
+            x={s.x}
+            y={120}
+            textAnchor="middle"
+            fontFamily="var(--font-mono)"
+            fontSize="9"
+            fill={C.ink}
+          >
+            {s.label}
+          </text>
+          {i < stages.length - 1 && (
+            <g stroke={C.faint} strokeWidth="1.2" fill="none" strokeLinecap="round">
+              <line x1={s.x + 28} y1={116} x2={stages[i + 1].x - 28} y2={116} />
+            </g>
+          )}
+        </g>
+      ))}
+      {/* Break indicators — X marks at failure points */}
+      {[80, 150, 220].map((x, i) => (
+        <g key={i} stroke={C.terracotta} strokeWidth="2.2" strokeLinecap="round">
+          <line x1={x - 5} y1={108} x2={x + 5} y2={118} />
+          <line x1={x + 5} y1={108} x2={x - 5} y2={118} />
+        </g>
+      ))}
+      {/* Failure labels below */}
+      {[
+        { x: 80, label: "outage" },
+        { x: 150, label: "timeout" },
+        { x: 220, label: "schema" },
+      ].map((f) => (
+        <text
+          key={f.label}
+          x={f.x}
+          y={155}
+          textAnchor="middle"
+          fontFamily="var(--font-mono)"
+          fontSize="8"
+          fill={C.terracotta}
+        >
+          {f.label}
+        </text>
+      ))}
+      {/* Missed events below pipeline */}
+      <g transform="translate(160, 200)">
+        <rect x="-70" y="-15" width="140" height="30" rx="6" fill="none" stroke={C.faint} strokeWidth="1" strokeDasharray="3 2" />
+        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>events silently lost</text>
+      </g>
+      {/* Recovery poll at bottom */}
+      <g transform="translate(160, 250)">
+        <rect x="-55" y="-12" width="110" height="24" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>reconciliation poll</text>
+      </g>
+      <g stroke={C.moss} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <path d="M160 215 L160 238" />
+        <path d="M155 232 L160 238 L165 232" />
+      </g>
+      <text x="160" y="295" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.terracotta}>
+        three places to break, silently
+      </text>
+    </svg>
+  );
+}
+
+/** Event ordering — out-of-order webhook delivery. */
+export function OrderingFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="ofgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.rose} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="145" r="105" fill="url(#ofgrad)" />
+      {/* Provider side — events sent in order */}
+      <g transform="translate(60, 70)">
+        <text x="0" y="-6" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>sent</text>
+        {["1 created", "2 updated", "3 closed"].map((label, i) => (
+          <g key={label}>
+            <rect x="-38" y={i * 28} width="76" height="22" rx="4" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+            <text x="0" y={i * 28 + 15} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{label}</text>
+          </g>
+        ))}
+      </g>
+      {/* Crossing arrows — events arrive out of order */}
+      <g stroke={C.terracotta} strokeWidth="1.4" fill="none" strokeLinecap="round">
+        <path d="M100 81 Q 160 105 220 109" />
+        <path d="M100 109 Q 160 100 220 81" />
+        <path d="M100 137 Q 160 130 220 137" />
+        {/* arrowheads */}
+        <path d="M213 105 L220 109 L213 113" />
+        <path d="M213 77 L220 81 L213 85" />
+        <path d="M213 133 L220 137 L213 141" />
+      </g>
+      {/* Agent side — events received scrambled */}
+      <g transform="translate(260, 70)">
+        <text x="0" y="-6" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>received</text>
+        {["3 closed", "1 created", "2 updated"].map((label, i) => (
+          <g key={label}>
+            <rect
+              x="-38"
+              y={i * 28}
+              width="76"
+              height="22"
+              rx="4"
+              fill={i === 0 ? C.rose : C.paper}
+              stroke={i === 0 ? C.terracotta : C.ink}
+              strokeWidth={i === 0 ? "1.8" : "1.2"}
+            />
+            <text x="0" y={i * 28 + 15} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{label}</text>
+          </g>
+        ))}
+      </g>
+      {/* Question mark for the confused agent */}
+      <g transform="translate(160, 210)">
+        <circle r="22" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+        <text y="2" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>agent</text>
+        <text x="26" y="-14" fontFamily="var(--font-display)" fontSize="16" fill={C.terracotta}>?</text>
+      </g>
+      {/* Burst indicator */}
+      <g transform="translate(160, 265)">
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => (
+          <rect
+            key={i}
+            x={-52 + i * 16}
+            y={-8}
+            width="12"
+            height={8 + (i === 3 ? 18 : i === 2 || i === 4 ? 12 : i === 1 || i === 5 ? 6 : 2)}
+            rx="2"
+            fill={i === 3 ? C.terracotta : C.faint}
+            opacity={i === 3 ? 1 : 0.5}
+          />
+        ))}
+        <text y="30" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>queue depth spike</text>
+      </g>
+    </svg>
+  );
+}
+
 /** Landscape layers — horizontal / vertical / infrastructure. */
 export function LandscapeLayersFigure() {
   return (
@@ -792,6 +961,111 @@ export function LandscapeLayersFigure() {
       </g>
       {/* Title */}
       <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>three layers of the stack</text>
+    </svg>
+  );
+}
+
+/** Digest pipeline — sources fan out, dedup, cluster, publish. */
+export function DigestPipelineFigure() {
+  const sources = [
+    { x: 40, y: 60, label: "brave" },
+    { x: 40, y: 100, label: "brave" },
+    { x: 40, y: 140, label: "reddit" },
+    { x: 40, y: 180, label: "reddit" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="dpgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.8" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#dpgrad)" />
+      {/* Source boxes */}
+      {sources.map((s, i) => (
+        <g key={i}>
+          <rect x={s.x - 28} y={s.y - 12} width="56" height="24" rx="5" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+          <text x={s.x} y={s.y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>
+            {s.label}{i < 2 ? ` q${i + 1}` : ""}
+          </text>
+        </g>
+      ))}
+      {/* Fan-in arrows to dedup */}
+      <g stroke={C.faint} strokeWidth="1" fill="none" strokeLinecap="round">
+        {sources.map((s, i) => (
+          <line key={i} x1={s.x + 28} y1={s.y} x2={130} y2={120} />
+        ))}
+      </g>
+      {/* Dedup box */}
+      <rect x="130" y="105" width="60" height="30" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+      <text x="160" y="118" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>dedup</text>
+      <text x="160" y="128" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>seen.json</text>
+      {/* Arrow to cluster */}
+      <g stroke={C.terracotta} strokeWidth="1.4" fill="none" strokeLinecap="round">
+        <path d="M190 120 L220 120" />
+        <path d="M214 115 L220 120 L214 125" />
+      </g>
+      {/* Cluster box */}
+      <rect x="220" y="105" width="70" height="30" rx="6" fill={C.butter} stroke={C.ink} strokeWidth="1.5" />
+      <text x="255" y="118" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>cluster</text>
+      <text x="255" y="128" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>gemini flash</text>
+      {/* Arrow down to output */}
+      <g stroke={C.terracotta} strokeWidth="1.4" fill="none" strokeLinecap="round">
+        <path d="M255 135 L255 175" />
+        <path d="M250 169 L255 177 L260 169" />
+      </g>
+      {/* GitHub issue box */}
+      <rect x="215" y="180" width="80" height="34" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="2" />
+      <text x="255" y="196" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>github issue</text>
+      <text x="255" y="207" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>weekly-digest</text>
+      {/* Cron trigger label */}
+      <text x="40" y="40" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>cron: sat 09:00</text>
+      <g stroke={C.terracotta} strokeWidth="1" fill="none" strokeLinecap="round" strokeDasharray="3 3">
+        <line x1="40" y1="44" x2="40" y2="48" />
+      </g>
+      <text x="160" y="295" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.terracotta}>
+        sources → dedup → cluster → issue
+      </text>
+    </svg>
+  );
+}
+
+/** Digest timeline — bugs discovered over first weeks. */
+export function DigestTimelineFigure() {
+  const events = [
+    { week: "W1", label: "env() bug", y: 70, fill: C.rose },
+    { week: "W2", label: "reddit 429s", y: 120, fill: C.peach },
+    { week: "W2", label: "narrow queries", y: 170, fill: C.peach },
+    { week: "W3", label: "hallucinated cluster", y: 220, fill: C.butter },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="dtgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.rose} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.butter} stopOpacity="0.35" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#dtgrad)" />
+      {/* Timeline spine */}
+      <line x1="80" y1="55" x2="80" y2="245" stroke={C.ink} strokeWidth="1.5" />
+      {/* Events */}
+      {events.map((e, i) => (
+        <g key={i}>
+          <circle cx="80" cy={e.y} r="6" fill={e.fill} stroke={C.ink} strokeWidth="1.2" />
+          <text x="72" y={e.y + 4} textAnchor="end" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>{e.week}</text>
+          <line x1="86" y1={e.y} x2="105" y2={e.y} stroke={C.faint} strokeWidth="0.8" />
+          <rect x="105" y={e.y - 11} width="120" height="22" rx="5" fill={C.paper} stroke={C.ink} strokeWidth="1" />
+          <text x="165" y={e.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{e.label}</text>
+        </g>
+      ))}
+      {/* Status labels */}
+      <text x="80" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>W4: stable</text>
+      <circle cx="80" cy="258" r="4" fill={C.sage} stroke={C.ink} strokeWidth="1" />
+      <text x="160" y="305" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.terracotta}>
+        four bugs in three weeks
+      </text>
     </svg>
   );
 }

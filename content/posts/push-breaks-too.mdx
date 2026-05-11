@@ -1,0 +1,137 @@
+---
+title: "Where push architectures break"
+summary: "We've spent five essays explaining why polling fails. Here's where push fails too, because a series that only criticizes one side isn't engineering, it's marketing."
+date: "2026-05-11"
+accent: "rose"
+dropcap: true
+---
+
+We have spent the last several posts making a case for push-based, event-driven architectures. Polling is wasteful. Cron loops are fragile. Webhooks deliver change the moment it happens, and agents should wake on events, not timers. All of that is true, and we stand by it.
+
+But a series that only documents the failure modes of the approach you don't like, without acknowledging the failure modes of the approach you do like, is advocacy dressed up as engineering. So here is the other side.
+
+Push architectures break. They break in specific, painful, sometimes spectacular ways. Some of these we've encountered firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax). Others we know from operating webhook-heavy systems at [Nango](https://nango.dev) and from studying how teams handle them in production.
+
+<Scene figure={<PushFailureFigure />} caption="The failure modes nobody warns you about.">
+
+## Provider reliability is not your reliability
+
+The first thing you learn about webhooks in production is that you are outsourcing your availability to every provider you integrate with. When [Notion](https://notion.so) has a bad hour, you don't get those events. They don't retry. They don't queue. They don't even tell you they failed. You have an IP allowlist and a prayer.
+
+[GitHub](https://github.com) gives you three delivery attempts. If all three fail because your endpoint was down for five minutes during a deploy, those events are gone. You can check the webhook delivery log in Settings, see the failures, and manually redeliver them one by one. For ten events, that's annoying. For two hundred, you're writing a script.
+
+[Linear](https://linear.app) retries for two hours, which sounds generous until a partial outage on their end generates a burst of retries alongside the normal event flow. Now you're handling the real events and the ghosts at the same time, and your deduplication layer had better be solid.
+
+[Jira](https://www.atlassian.com/software/jira) doesn't retry at all. If you missed it, you missed it.
+
+The counterpoint is that polling would have caught all of these. A poll runs on your schedule, against the current state, and picks up whatever is there. If the provider was down for an hour, you get the resulting state on the next sweep. You don't get the intermediate transitions, but you get the outcome.
+
+<Callout tone="thought" label="The asymmetry">
+Push gives you transitions in real time but is fragile to provider outages. Poll gives you outcomes on a delay but is resilient to them. Neither gives you both, and pretending otherwise is how you end up with missing data.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure={<OrderingFigure />} caption="Events arrive when the provider feels like sending them.">
+
+## Ordering, replays, and thundering herds
+
+Webhooks arrive in whatever order the provider sends them. An "issue closed" event can land before the "issue created" event if the provider's internal pipeline batches them differently or routes them through separate queues. Your agent receives a close event for an entity it has never seen. What does it do?
+
+The careful answer is: buffer it, wait for the creation event, then process both in order. The real answer, for most teams, is: crash, log a confusing error, and move on. You find out weeks later when someone asks why a ticket was never tracked.
+
+Out-of-order delivery means your agent needs a local model of entity state that can handle gaps, a reconciliation pass that fills them, and enough retained context to decide whether a gap matters. This is real engineering work, and it compounds across providers.
+
+### Replay storms
+
+Worse than missing events is getting all of them at once. A provider has an incident, recovers, and replays twelve hours of queued webhooks in a burst. Your queue depth goes from 3 to 4,000 in under a minute. Your worker auto-scales, maybe, if you configured that. But the worker takes a Redis lock per entity to prevent concurrent processing of the same ticket, and now four hundred workers are contending on twenty locks. Throughput drops. Latency spikes. Your monitoring fires every alert you have.
+
+This pattern is well-documented in production webhook systems. The standard mitigations are partitioned locks (by entity type rather than global), increased lock granularity, and autoscaling rules that can handle burst multiples of steady-state load. But most teams don't invest in these until they've lived through a replay, because steady-state operation never exercises the burst path.
+
+### Thundering herds
+
+Even without a provider incident, bulk operations generate the same spike pattern. Someone imports 300 tickets from a CSV. A project manager moves 50 issues between boards. An admin changes a field across an entire workspace. Each of those individual changes fires a webhook. Your agent, which handles 10 events per minute comfortably, now has 300 in the queue.
+
+You need backpressure. You need rate limiting on the consumer side, not just the producer side. You need graceful degradation: the ability to process the burst slowly rather than falling over entirely. Most webhook tutorials don't mention any of this, because most webhook tutorials stop at "receive event, log body, return 200."
+
+</Scene>
+
+<PullQuote>
+Steady-state operation never exercises the burst path. You discover your scaling bottlenecks during replays, when a provider recovers and sends twelve hours of queued events in under a minute.
+</PullQuote>
+
+## Debugging the invisible
+
+When a polled agent misses something, the debugging story is simple. Run the poll manually. Watch what comes back. Compare it to what you expected. The feedback loop is immediate. You are calling a known API with known parameters and getting a deterministic response.
+
+When a push agent misses something, the story is different. The event was sent (maybe), received (maybe), parsed (maybe), enqueued (maybe), and processed (maybe). The failure could be at any of those steps, and the only way to know which one is to have stored the raw payload at ingestion and built enough observability to trace the event through every stage of your pipeline.
+
+This means you need replay infrastructure: the ability to take a raw webhook payload from your storage, re-inject it into the processing pipeline, and watch what happens. You need this for debugging, for development, and for incident response. Building it is not difficult, but it is another piece of infrastructure that polling doesn't require, because with polling the "replay" is just running the poll again.
+
+<Callout tone="cool" label="The observability tax">
+Push-based systems need investment in tracing and payload storage that poll-based systems mostly avoid. If you are not logging raw webhook bodies with timestamps, event IDs, and processing outcomes, you will eventually face an incident you cannot diagnose. Budget for it up front.
+</Callout>
+
+<Scene figure={<PushFailureFigure />} caption="Silent schema changes break parsers you forgot you had.">
+
+## Schema drift
+
+Providers change their webhook payloads. Sometimes they add fields. Sometimes they rename them. Sometimes they change the shape of a nested object. They give you ninety days notice if you're lucky. [Stripe](https://stripe.com) is good about this and pins payloads to your API version. Most providers are not Stripe.
+
+With polling, schema drift is painful but visible. You call the API, you get back the new schema, your parser breaks loudly, you fix it. The current API version is the only version you ever see.
+
+With webhooks, schema drift is silent. Your parser was written against the old schema. The new payload arrives, the changed field parses to null or falls into a catch-all, your agent acts on incomplete data, and nobody notices until a user reports something wrong. The failure doesn't look like an error. It looks like slightly wrong data, for days, until someone notices.
+
+The mitigation is a schema regression test per provider: store a sample payload, run the parser against it on every CI build, and fail loudly when the shape changes. Simple to build, but most teams don't think to build it until after the first silent break.
+
+</Scene>
+
+<Scene side="right" figure={<OrderingFigure />} caption="Sometimes the right answer is a cron job.">
+
+## When polling is genuinely better
+
+There are cases where push is the wrong tool, and recognizing them saves you from building complexity you don't need.
+
+**Batch digests.** If your agent produces a Monday-morning summary of last week's activity, it doesn't need real-time events. It needs a single sweep of the relevant APIs, once, at 7 AM. A cron job and a well-structured API call will outperform an event-driven pipeline that accumulates, deduplicates, and aggregates a week of webhooks.
+
+**Long compute without freshness requirements.** An agent that analyzes a codebase for security patterns, generates a report, and emails it to the team doesn't benefit from sub-second event delivery. It benefits from a clean snapshot of the current state, taken at a predictable time. Polling gives you that snapshot naturally.
+
+**Providers with limited or complex push support.** [HubSpot](https://hubspot.com) private integrations don't get webhooks. Some internal tools expose REST APIs but nothing event-driven. Even providers that do offer push (like [Google Drive's push notifications](https://developers.google.com/workspace/drive/api/guides/push)) sometimes require enough setup (channel registration, renewal, verification) that polling is simpler for low-volume use cases. For these providers, polling is a reasonable default, and wrapping a poll in an event-shaped abstraction just adds indirection without adding value.
+
+**Early prototyping.** When you're trying to figure out whether an agent idea works at all, the last thing you want is to build webhook infrastructure. Poll the API, process the results, see if the agent's behavior makes sense. You can add push later, once you know the idea is worth the engineering investment.
+
+<Callout tone="warm" label="Honesty about defaults">
+We default to push for most of the agents we design, because latency and transition visibility matter. But some agents (like the [weekly-digest agent](/posts/building-weekly-digest)) run on pure cron, and they're better for it. The architecture should follow the requirement, not the other way around.
+</Callout>
+
+</Scene>
+
+## The mitigation playbook
+
+Listing failure modes without listing mitigations would be its own kind of incomplete. Here's what a production-grade webhook pipeline needs to handle each of the problems above.
+
+<table>
+  <thead>
+    <tr><th>Failure mode</th><th>Mitigation</th><th>Cost</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Provider outage / missed events</td><td>Reconciliation poll every 15 minutes per provider</td><td>Additional API calls, cursor state</td></tr>
+    <tr><td>Replay storm</td><td>Queue depth circuit breaker, partitioned locks</td><td>Redis config, autoscaling rules</td></tr>
+    <tr><td>Out-of-order delivery</td><td>Entity-level version vector, buffered reconciliation</td><td>State per entity, delayed processing</td></tr>
+    <tr><td>Thundering herd</td><td>Consumer-side rate limiter, backpressure via queue pause</td><td>Slower burst processing</td></tr>
+    <tr><td>Silent schema drift</td><td>Stored sample payloads, schema regression tests</td><td>Test maintenance per provider</td></tr>
+    <tr><td>Debug difficulty</td><td>Raw payload storage (7 day retention), replay endpoint</td><td>Storage cost, replay tooling</td></tr>
+  </tbody>
+</table>
+
+The reconciliation poll deserves special attention. The pattern (common at companies like [Nango](https://nango.dev) and Merge) is to run a lightweight poll alongside the webhook pipeline for every provider. It doesn't replace the webhook; it catches what the webhook missed. If the reconciliation poll finds a state change that no webhook delivered, it synthesizes an event and injects it into the same processing pipeline. The agent never knows the difference.
+
+In practice, this means running both architectures. Push for speed and transition visibility. Poll for resilience and gap-filling. A fifteen-minute reconciliation cycle means worst-case staleness for a missed webhook is fifteen minutes, not infinite.
+
+## The real tradeoff
+
+Push architectures are better for agents that need to act on changes as they happen and see what something changed *from*, not just what it is now. That conviction is why the [three primitives](/posts/three-primitives) center on push.
+
+But push is not free. It requires infrastructure for replay, observability for debugging, reconciliation for reliability, and backpressure for resilience. Every one of those is engineering work that a pure polling architecture avoids.
+
+The teams that do well with push are the ones that budget for the failure modes from the start, not the ones who discover them in production.

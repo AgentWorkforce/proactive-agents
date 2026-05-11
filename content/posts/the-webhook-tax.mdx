@@ -22,7 +22,7 @@ For one provider:
 
 2. **Signature verification.** Each provider does this differently. Linear is HMAC-SHA256 with a header named `X-Linear-Signature`. GitHub is HMAC-SHA256 with `X-Hub-Signature-256`. Slack is HMAC-SHA256 *plus a timestamp* to prevent replay. Notion has no signing — you're supposed to allow-list IPs. Each one has its own quirks (Linear sends the timestamp in a separate header that you also have to include in the signed payload; GitHub gives you `sha1` and `sha256` and the older one is still default in some webhooks).
 
-3. **Sub-2-second response.** Most providers retry aggressively if you don't respond in time. Linear retries for two hours. Stripe retries with exponential backoff for three days. If your endpoint blocks on anything — including the LLM call — you will get duplicate deliveries, and lots of them.
+3. **Sub-2-second response.** Most providers retry aggressively if you don't respond in time. Linear retries for two hours. Stripe retries with exponential backoff for three days. If your endpoint blocks on anything (including the LLM call), you will get duplicate deliveries, and lots of them.
 
 4. **A queue.** Because of #3, you cannot process the webhook inline. You have to ack-and-enqueue. That means Redis, SQS, or equivalent. Plus a worker. Plus dead-letter handling.
 
@@ -30,7 +30,7 @@ For one provider:
 
 6. **Filtering.** The webhook fires for many event types. You probably care about three. The rest you have to either filter out at the registration step (each provider exposes this differently) or at the worker (which means paying to receive and parse them).
 
-7. **Payload completion.** Most webhook payloads are *partial.* Linear's issue webhook gives you the changed fields, not the full issue. You will need to call the API to get the complete object — and you will need to handle the fact that by the time your call lands, the issue may have changed again.
+7. **Payload completion.** Most webhook payloads are *partial.* Linear's issue webhook gives you the changed fields, not the full issue. You will need to call the API to get the complete object. And you will need to handle the fact that by the time your call lands, the issue may have changed again.
 
 8. **State for the agent.** The webhook tells you *what changed.* Your agent needs to know *where it left off* the last time it touched this entity. That's a database. With migrations. And concurrent-write handling. And a backup strategy.
 
@@ -38,7 +38,7 @@ For one provider:
 
 10. **Observability.** Webhook failures fail silently from the user's perspective. You need dashboards. You need alerts on dead-letter queue depth. You need to be able to *replay* a specific webhook delivery for debugging, which means storing raw payloads with sufficient retention.
 
-That is one provider.
+All of that, for one provider.
 
 </Scene>
 
@@ -71,13 +71,13 @@ In practice, **the path from "we want our agent to react to changes across four 
 
 ## The providers that don't even give you a webhook
 
-That's the cost when a provider *does* offer webhooks. Many don't — or their webhooks are so limited they might as well not exist.
+All of the above assumes the provider actually offers webhooks. Many don't, or their webhooks are so limited they might as well not exist.
 
-Google Workspace has push notifications for some resources through the Google Cloud Pub/Sub system, but you need a GCP project, a subscription, and a service account just to receive them. Calendar changes are supported. Google Docs changes are not. If you want to know when a doc was edited, you poll the Drive Activity API.
+Google Workspace has push notifications through the [Drive API's push channel](https://developers.google.com/workspace/drive/api/guides/push), but the setup is heavier than a simple webhook: you need a verified domain, channel registration, periodic renewal (channels expire), and the notifications only tell you *that* a file changed, not *what* changed. You still need a follow-up API call to get the diff. Calendar changes work through a similar channel system. The infrastructure exists, but it's closer to building a subscription service than wiring up an endpoint.
 
 Salesforce has Streaming API and Change Data Capture, but both require persistent connections (CometD or gRPC) rather than simple HTTP callbacks. You're not wiring up an endpoint — you're maintaining a long-lived subscriber process that reconnects on failure and manages its own replay cursor.
 
-HubSpot has webhooks, but only for CRM objects and only if you're building a public app registered through their developer portal. Private integrations — the kind most agent builders start with — don't get webhooks at all. You poll.
+HubSpot has webhooks, but only for CRM objects and only if you're building a public app registered through their developer portal. Private integrations, the kind most agent builders start with, don't get webhooks at all. You poll.
 
 For these providers, the fallback is always the same: **scheduled syncs.**
 
@@ -85,7 +85,7 @@ For these providers, the fallback is always the same: **scheduled syncs.**
 
 ## The scheduled sync tax
 
-A scheduled sync means running a job on a cron — every minute, every five minutes, every hour — that calls the provider's API, compares the current state to the last known state, and surfaces what changed. It sounds simpler than webhooks. In some ways it's harder.
+A scheduled sync means running a job on a cron (every minute, every five minutes, every hour) that calls the provider's API, compares the current state to the last known state, and surfaces what changed. You trade one set of problems for another.
 
 **Cursor management.** Every sync needs a checkpoint: a timestamp, a page token, a cursor ID. You fetch records newer than your checkpoint, process them, then advance the checkpoint. If the process crashes between processing and advancing, you'll re-process records on the next run. If it advances before processing completes, you'll miss records. This is the same exactly-once delivery problem that webhooks have, except now you're the one implementing it from scratch.
 
@@ -95,9 +95,9 @@ A scheduled sync means running a job on a cron — every minute, every five minu
 
 **Latency tradeoff.** The faster you poll, the closer you get to real-time — and the faster you burn through rate limits. Most teams settle on five-minute intervals as a compromise. That means your proactive agent can be up to five minutes late on every reaction. For a deploy notification, five minutes is fine. For a security alert, five minutes is a long time.
 
-**Infrastructure.** A scheduled sync needs: a cron runner (or a serverless timer), the sync logic per provider, a database for checkpoints and last-known state, a diffing layer to detect changes, and the same queue-and-worker setup you'd need for webhooks — because you still can't process synchronously if the LLM call takes ten seconds.
+**Infrastructure.** A scheduled sync needs: a cron runner (or a serverless timer), the sync logic per provider, a database for checkpoints and last-known state, a diffing layer to detect changes, and the same queue-and-worker setup you'd need for webhooks, because you still can't process synchronously if the LLM call takes ten seconds.
 
-<Callout tone="thought" label="The uncomfortable math">
+<Callout tone="thought" label="The real math">
 If a provider offers webhooks, you need eight to ten pieces of infrastructure per provider. If it doesn't, you need roughly the same amount of infrastructure — just different infrastructure. Either way, the cost is measured in weeks per provider, and the ongoing maintenance never stops.
 </Callout>
 
@@ -119,11 +119,36 @@ The initial build is just where the maintenance starts.
 
 - Providers change their schemas. They give you ninety days notice if you're lucky. You will, at some point, ship a quiet break.
 - Your dev tunnel URL changes. You re-register. You forget to re-register one of the four. You discover it three days later.
-- A provider has an incident and replays twelve hours of webhooks at once. Your queue depth alarm fires. You learn, at 2 AM, that your worker doesn't scale horizontally because of a Redis lock you forgot.
+- A provider has an incident and replays twelve hours of webhooks at once. Your queue depth spikes before your autoscaling catches up.
 - A teammate adds a fifth provider. Two of the ten items are subtly wrong because they were copy-pasted.
 - Your model picks up a new schema. Old serialized payloads in the dead-letter queue are now unparseable.
 
-None of this is bad engineering — it's just what the work actually looks like when you do it honestly. And it keeps going.
+None of this is bad engineering. It's just what the work actually looks like when you do it honestly. And it keeps going.
+
+## What does this actually cost to run?
+
+It's worth putting numbers on the ongoing cost, since most discussions focus on the build and ignore what comes after.
+
+A polling-based agent watching four providers every five minutes makes 4,608 API calls per day. At typical rate limits, that's fine for one agent. At ten agents across three workspaces, you're at 138,240 calls per day, and you're bumping into per-account rate limits on Notion (3 req/sec) and HubSpot (4 req/sec). Most of those calls return "nothing changed." You're paying for compute and API overhead to learn, repeatedly, that the world is still the same.
+
+An event-driven agent only wakes when something moves. Our weekly-digest agent, which watches four sources and clusters mentions into a GitHub issue, costs effectively nothing to run: ~8 Brave Search queries per week (free tier), one Gemini Flash call for clustering (fractions of a cent), and two GitHub API calls. Total monthly cost: under a dollar. The cron trigger is a single HTTP request from the scheduler.
+
+The cost difference widens as you add providers. Each polled provider multiplies your API call volume linearly. Each watched provider adds a webhook endpoint that sits idle until something happens. The infrastructure cost (queue, worker, dedup store) is roughly the same either way. The API and compute cost diverges fast.
+
+<table>
+  <thead>
+    <tr><th>Cost driver</th><th>Polling (4 providers, 5-min interval)</th><th>Event-driven (4 providers)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>API calls/day</td><td>~4,608</td><td>Proportional to actual changes</td></tr>
+    <tr><td>Compute</td><td>Cron runner + workers, always active</td><td>Workers wake on events only</td></tr>
+    <tr><td>LLM inference</td><td>Per poll cycle (even when nothing changed)</td><td>Per event (only when something happened)</td></tr>
+    <tr><td>Storage</td><td>Checkpoint DB + last-known state per entity</td><td>Dedup store + event log</td></tr>
+    <tr><td>Rate limit pressure</td><td>Constant, scales with agent count</td><td>Bursty, scales with change volume</td></tr>
+  </tbody>
+</table>
+
+The honest caveat: event-driven architectures trade steady-state cost for burst cost. A bulk import that fires 500 webhooks in a minute will spike your compute and LLM spend in ways that a five-minute poll never would. You need backpressure and spend guardrails for those moments. But the baseline cost of "watch four providers and act when something changes" is dramatically lower when you're not polling.
 
 ## The watcher as a primitive
 
@@ -131,6 +156,6 @@ This is why we think of change detection as a primitive — something that belon
 
 A proactive agent needs a *watcher:* a single interface that says "something changed in a system you care about" with enough context for the agent to act on it. Whether that change came from a webhook, a streaming API, a polling sync, or a Pub/Sub subscription is an implementation detail the agent shouldn't have to know.
 
-The [three primitives](/posts/three-primitives) we keep coming back to — a clock, a watcher, an inbox — exist because each one represents a class of infrastructure that's genuinely hard to build, genuinely undifferentiated, and genuinely required for an agent to be proactive.
+The [three primitives](/posts/three-primitives) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
 
 The webhook tax is what happens when you build the watcher from scratch, one provider at a time.

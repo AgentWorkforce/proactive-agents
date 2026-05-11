@@ -1,0 +1,138 @@
+---
+title: "Building the weekly-digest agent: a production postmortem"
+summary: "The weekly-digest agent runs every Saturday, scans four sources for mentions, clusters them by topic, and files a GitHub issue. Here's what worked, what broke, and what production actually looks like."
+date: "2026-05-11"
+accent: "sage"
+dropcap: true
+---
+
+The weekly-digest agent is a Cloudflare Pages Function wired to cron (`0 9 * * 6` — Saturday mornings). It fans out across four sources looking for mentions of "proactive agents," deduplicates what it finds against previous results, clusters the survivors by topic using an LLM, and upserts a single GitHub issue labeled `weekly-digest`. A run takes about twelve seconds.
+
+I'm writing about it because every other post on this site is theoretical. We talk about [the three primitives](/posts/three-primitives), about [the webhook tax](/posts/the-webhook-tax), about what a [magical agent would do](/posts/magical-agents) if it existed. The weekly-digest agent is the one we actually built and tested. It has a git history with embarrassing commits and a log line that reads: "Found 30 new mention(s) across 4 sources, deduped, clustered into 4 topic(s)."
+
+So here are the receipts.
+
+<Scene figure={<DigestPipelineFigure />} caption="The full pipeline — sources to GitHub issue.">
+
+## How it works
+
+The trigger is cron: `0 9 * * 6`. A [relaycron](https://github.com/AgentWorkforce/relaycron) HTTP webhook fires the Cloudflare function. The function does four things in sequence, though the first step fans out in parallel.
+
+**Step 1: Gather.** The agent queries [Brave Search](https://brave.com/search/api/) with two terms ("proactive agents" and "proactive AI agent") and hits [Reddit](https://www.reddit.com)'s JSON API for three subreddits: r/LocalLLaMA, r/AI_Agents, and r/MachineLearning. All four requests go out simultaneously via `Promise.allSettled()`, so a single flaky source doesn't block the rest.
+
+**Step 2: Dedup.** The agent loads `/_internal/weekly-digest/seen.json` from the repo's virtual filesystem (VFS backed by GitHub, using `ctx.files.read`). Any URL that appeared in a prior run gets dropped. This is the simplest possible dedup: a flat JSON file of URLs, updated after each successful run.
+
+**Step 3: Cluster.** The surviving mentions go to [OpenRouter](https://openrouter.ai/) calling `google/gemini-2.5-flash` at temperature 0.2 with JSON mode enabled. The system prompt says one thing clearly: "False positives are worse than misses." We'd rather surface three real clusters than five where two are noise.
+
+**Step 4: Publish.** The agent upserts a single rolling GitHub issue per ISO week, tagged with the `weekly-digest` label. One issue, updated in place if the agent runs again. No Slack pings, no email, no notification firehose.
+
+If no fresh mentions survive dedup, the agent logs "skipped — quiet week" and returns early. No issue is created for empty weeks.
+
+Here's what the output actually looks like in the GitHub issue:
+
+```
+Weekly digest — week of 2026-05-03
+
+### Proactive agent architectures (3)
+- OpenAI's push toward proactive AI — `brave`
+  > Pulse represents OpenAI's first real attempt at proactive delivery
+- Building always-on agents with webhooks — `reddit`
+  > Thread discussing webhook vs polling for agent triggers
+- Proactive Agent Skill v3.1 released — `brave`
+
+### Agent reliability patterns (2)
+- Why your AI agent needs a WAL — `reddit`
+  > Discussion of write-ahead logging for agent state persistence
+- Checkpoint-based agent recovery — `brave`
+```
+
+Each cluster gets a heading with a count, each mention gets a linked title with the source and an excerpt. The whole thing is scannable in under a minute.
+
+<Callout tone="thought" label="Why Promise.allSettled">
+`Promise.all` would abort the entire gather step if Reddit returned a 503. `Promise.allSettled` lets the agent collect whatever succeeded and move on. Three out of four sources is still a useful digest. One out of four is still better than nothing.
+</Callout>
+
+</Scene>
+
+## What worked immediately
+
+Some parts of this agent were surprisingly painless. Worth noting, because "everything is hard" isn't true and pretending otherwise is its own kind of dishonesty.
+
+**The cron trigger just worked.** We wired it to relaycron, pointed it at the function URL, and the first test run completed without incident. Cron is solved infrastructure, and when you lean on something solved, it shows.
+
+**The fan-out pattern was right from the start.** `Promise.allSettled` was an obvious choice, but sometimes the obvious choice is obvious because it's correct. We never had to revisit the gather step's concurrency model. Each source returns its results independently, failures are isolated, and the merge step downstream doesn't care which sources contributed.
+
+**Dedup via a flat JSON file is laughably simple and works fine.** At our scale (roughly 30 mentions per week, maybe 1,500 per year), a flat file of URLs is perfectly adequate. There's no bloom filter, no Redis set, no expiry policy. The file grows by a few kilobytes per week and we can read the whole thing in a glance. Sometimes the right data structure is a list.
+
+<Scene side="right" figure={<DigestTimelineFigure />} caption="A timeline of things that broke — in order of discovery.">
+
+## What broke
+
+The first week the agent ran, it produced nothing. The second week, it produced garbage. The third week, it worked. Here's what happened in between.
+
+**`env()` vs `process.env`.** The first production bug was the dumbest one. The agent code used `process.env.BRAVE_API_KEY`, which works fine in Node.js. It does not work on [Cloudflare Workers](https://developers.cloudflare.com/workers/), where secrets are accessed via the `env()` binding passed to the handler function. The fix was a one-line change. The debugging took an hour because the error wasn't "key not found," it was a silent empty string that made Brave return zero results with a 200 status.
+
+**Reddit's JSON API is unreliable.** Our primary source for Reddit data is appending `.json` to subreddit URLs. Simple, no auth required, and it works most of the time. The problem is "most of the time." Reddit returns 429s during traffic spikes and occasionally serves HTML error pages when you ask for JSON. We added a fallback: if the Reddit endpoint returns a 4xx or 5xx, the agent re-queries via Brave using `site:reddit.com/r/LocalLLaMA` as the search term. The fallback finds fewer results but never fails silently.
+
+**Search recall was too narrow.** The original queries were too specific. "Proactive agent runtime" returned almost nothing because nobody outside our site uses that phrase. We widened to "proactive agents" and "proactive AI agent," which brought in more noise but also more signal. The clustering step handles the noise; the gather step's job is not to be clever about filtering.
+
+<Callout tone="warm" label="The quiet-week problem">
+For two weeks in April, the agent found zero new mentions after dedup. The log said "skipped — quiet week" and that was it. My first instinct was that something was broken. It wasn't. Sometimes nobody is talking about your topic. The agent handled that correctly by doing nothing, which was the right behavior and also a little humbling.
+</Callout>
+
+**Gemini Flash hallucinated a cluster once.** In week three, the clustering step returned a topic called "Enterprise adoption trends" containing two links. One was a Reddit comment about LLaMA quantization that mentioned "proactive" in an unrelated sentence. The other was a Brave result about proactive customer service bots, which has nothing to do with proactive agents in our sense. The temperature was already 0.2. We tightened the system prompt to emphasize that fewer clusters with high confidence beats more clusters with mixed relevance. The hallucinated cluster hasn't reappeared, but I wouldn't call the problem solved.
+
+</Scene>
+
+## The delivery choice
+
+When we designed the output channel, the obvious option was Slack. Post the digest to a `#mentions` channel, let people discuss it. We went with GitHub Issues instead, and the reasoning was about human behavior more than technology.
+
+A Slack message demands attention the moment it arrives. It generates a reply thread. People debate whether mention #14 is actually relevant. The digest becomes a synchronous discussion instead of an asynchronous reference. A GitHub issue sits there. You read it when you have time. You close it when the week is over.
+
+<PullQuote>
+The delivery channel shapes behavior more than the content does. A digest in Slack becomes a conversation. A digest in a GitHub issue becomes a reference.
+</PullQuote>
+
+The restraint is deliberate. The agent files a curated summary somewhere durable and searchable, and goes quiet. Production agents should be boring. The exciting ones are the ones that break.
+
+<Callout tone="cool" label="The delivery primitive matters">
+This maps directly back to the [three primitives](/posts/three-primitives). The clock is cron. The watcher is Brave + Reddit. The inbox is GitHub Issues. Choosing GitHub over Slack changed the agent's behavior more than any prompt tuning did, because it changed how humans interacted with the output.
+</Callout>
+
+## Costs
+
+I want to be specific about this because "AI agents are expensive" is a common assumption that doesn't hold at this scale.
+
+<table>
+  <thead>
+    <tr><th>Resource</th><th>Usage</th><th>Cost</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://brave.com/search/api/">Brave Search API</a></td><td>~8 queries/month (2 per run × 4 Saturdays)</td><td>Free tier (2,000/month)</td></tr>
+    <tr><td><a href="https://openrouter.ai/">OpenRouter</a> (Gemini Flash)</td><td>1 call/week, small payload</td><td>Fractions of a cent</td></tr>
+    <tr><td><a href="https://docs.github.com/en/rest">GitHub API</a></td><td>1–2 calls/week (read issue + upsert)</td><td>Free</td></tr>
+    <tr><td>Cloudflare Pages Function</td><td>4 invocations/month, ~12s each</td><td>Free tier</td></tr>
+    <tr><td>VFS (GitHub repo storage)</td><td>One small JSON file</td><td>Free</td></tr>
+  </tbody>
+</table>
+
+Total monthly cost: effectively zero. The Brave free tier gives us 250x more queries than we use. The OpenRouter call costs less than a penny. The GitHub API has no meaningful rate limit at this volume. The Cloudflare function runs for under a minute per month total.
+
+At this price point, the "is this worth running?" question never comes up. The agent costs less per month than the electricity to think about whether to keep it.
+
+## What we'd change
+
+Three things, in order of likelihood we'll actually do them.
+
+**Better clustering validation.** The Gemini Flash hallucination wasn't catastrophic, but it eroded trust for a week. We're considering a second pass where the agent checks each cluster's links against the cluster label and drops any that don't cohere. This doubles the LLM cost from "nearly nothing" to "nearly nothing times two," so the cost argument is irrelevant. The engineering time to wire it up is the real constraint.
+
+**Source expansion.** Hacker News is an obvious addition. So is Twitter/X, though the API pricing makes it impractical on a free-tier budget. We could add a Brave `site:news.ycombinator.com` query for close to zero cost. The gather step's fan-out design makes adding sources trivial to implement, which was the whole point of that architecture.
+
+**Data-triggered runs.** Right now the agent is purely cron-driven. If a mention spikes on a Wednesday, we don't know until Saturday. For some sources, a data trigger would make more sense: watch an RSS feed or a webhook and fire the pipeline when something appears, not when the clock ticks. This is the M2 roadmap for us, replacing some cron triggers with real-time [watcher](/posts/three-primitives) events. The weekly cadence would remain as the default for sources that don't support push.
+
+<Callout tone="thought" label="The production test">
+If you want to know whether your agent architecture holds up, build something that runs unattended for a month. Not a demo. Not a benchmark. Something with a cron expression and a git history. The bugs you find will be different from the ones you expected, and the design decisions that matter will surprise you.
+</Callout>
+
+The weekly-digest agent is not sophisticated. A cron job, four API calls, a dedup file, one LLM call, and a GitHub issue. When it runs, the digest is usually four clusters and a handful of links. Some runs turn up nothing. Both outcomes are fine, because the agent's job is to look so we don't have to, and to stay quiet when there's nothing worth saying.

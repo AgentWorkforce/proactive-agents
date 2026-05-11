@@ -1,6 +1,6 @@
 ---
 title: "The proactive agent wish list"
-summary: "A personal list of agents I want but don't have yet — across music, news, money, and work. Every entry needs the same three things. That's the tell."
+summary: "A personal list of agents I want but don't have yet, across music, news, money, and work. Every entry needs the same three things."
 date: "2026-05-11"
 accent: "butter"
 dropcap: true
@@ -8,7 +8,7 @@ dropcap: true
 
 I keep a running list of agents I wish existed. Not the kind that writes my emails or generates a marketing plan from a bullet list — the kind that watches for things I care about and tells me when something moves. This is that list.
 
-Every entry is specific. Every entry is technically possible with today's APIs and models. And every entry, as it turns out, needs the same three pieces of infrastructure.
+Each entry is specific and technically possible with today's APIs and models. And each one, as it turns out, needs the same three pieces of infrastructure.
 
 <Scene figure={<WishlistCategoriesFigure />} caption="Five domains, one pattern.">
 
@@ -72,15 +72,39 @@ Every entry is specific. Every entry is technically possible with today's APIs a
 Every single entry requires a **watcher** (something observing changes in an external system), a **clock** (when to batch, summarize, or digest), and an **inbox** (where to deliver the result). The mix differs — Spotify leans clock-heavy with its weekly digest, error monitoring leans watcher-heavy with real-time alerts — but all three primitives are present in every case.
 
 <Callout tone="warm" label="The honest gap">
-Most of these don't exist yet. Not because the AI isn't good enough — GPT-4 class models can handle every reasoning step on this list. They don't exist because nobody has built the watcher for Spotify's catalog API, or the normalized change events for Sentry, or the inbox that lets an agent deliver a digest to my phone at a time I chose. The missing piece is always infrastructure.
+The weekly-digest agent on this site implements two items from this list (HN and Reddit monitoring). The rest are adapter problems, not capability problems. GPT-4 class models can handle every reasoning step on this list. What's missing is the per-provider plumbing: the normalized change events for Spotify's catalog, the inbox that delivers a digest to my phone at a time I chose. Each new adapter takes weeks to get right.
 </Callout>
 
 </Scene>
 
+## Two of these already exist
+
+The HN and Reddit items from this list already have a working implementation. The [weekly-digest agent](/posts/building-weekly-digest) scans three subreddits and Brave Search, clusters the results by topic, and files a GitHub issue. Total cost per run: under a dollar. It took a weekend to build.
+
+That's worth noting because this list can read as aspirational hand-waving. Some of it is. But the items closest to our own domain are already shipping, and the pattern that made them buildable (fan-out gather, dedup, cluster, deliver) would work for most of the other items too.
+
+## Pick one and build it
+
+If any of these sparked something, here's a rough sense of complexity:
+
+<table>
+  <thead>
+    <tr><th>Item</th><th>Complexity</th><th>Why</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>HN / Reddit monitor</td><td>Easy</td><td>Public APIs, no auth, low volume. We built it in a weekend.</td></tr>
+    <tr><td>GitHub repo suggestions</td><td>Easy</td><td>GitHub trending + starred repos API. Straightforward diff.</td></tr>
+    <tr><td>Error monitoring → Linear</td><td>Medium</td><td>Sentry webhooks exist but need signature verification and dedup.</td></tr>
+    <tr><td>Competitor changelog watch</td><td>Medium</td><td>RSS where available, scraping where not. Change detection is the hard part.</td></tr>
+    <tr><td>Spotify new releases</td><td>Medium</td><td>Spotify API requires OAuth, rate limits are tight, catalog is large.</td></tr>
+    <tr><td>Calendar blocking</td><td>Medium</td><td>Google Calendar API is well-documented but write access is sensitive.</td></tr>
+    <tr><td>Bank anomaly detection</td><td>Hard</td><td>Plaid or open banking APIs, PII handling, false positive cost is high.</td></tr>
+    <tr><td>Cross-carrier package tracking</td><td>Hard</td><td>No unified API. Each carrier is its own integration.</td></tr>
+  </tbody>
+</table>
+
+The "easy" items share a pattern: public data, read-only access, low stakes if the agent misses something. Start there. The infrastructure you build for an easy agent (scheduling, dedup, delivery) transfers directly to the harder ones.
+
 ## The list grows; the architecture doesn't
 
-This wish list gets longer every month. New APIs ship, new use cases surface, new annoyances beg for automation. But the infrastructure underneath stays the same: a [clock, a watcher, and an inbox](/posts/three-primitives), wired together with durable state.
-
-Build those three well and every item on this list becomes a handler — a few lines of agent logic sitting on top of a runtime that handles the hard part. That's the bet. The list is the proof that the bet is worth making.
-
-None of these agents can be built with a [better system prompt](/posts/the-prompt-cant-save-you). All of them can be built with the right plumbing.
+This wish list gets longer every month. New APIs ship, new use cases surface, new annoyances beg for automation. But the infrastructure underneath stays the same: the [three primitives](/posts/three-primitives), wired together with durable state. Every one of these requires plumbing, not a better prompt.

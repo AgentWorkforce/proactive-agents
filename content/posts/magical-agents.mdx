@@ -14,7 +14,7 @@ Most teams try to create that feeling with a better system prompt.
 
 ## The intern analogy, made concrete
 
-The magical intern isn't magical because they're smarter. They're magical because they're watching. They notice when something changes and they act before you have to ask. Here's what that looks like across three domains most teams already work in.
+The magical intern isn't smarter than you. They're just watching when you're not. They notice when something changes and they act before you have to ask. Here's what that looks like across three domains most teams already work in.
 
 **Communication.** A Gmail agent that drafts replies to messages that have gone unanswered for 48 hours. A Slack agent that watches channels you own and surfaces questions needing your response in a daily DM digest. A Calendar agent that spots a conflict between two meetings and proposes which one to move — before either organizer has to ping you.
 
@@ -49,9 +49,9 @@ Here's the exercise that made the pattern obvious for us. Take each example from
   </tbody>
 </table>
 
-The table is monotonous on purpose. Every row needs the same three things: a [clock, a watcher, and an inbox](/posts/three-primitives). The handler code for each of these agents is 20–40 lines of actual logic. The hundreds of hours go into building the infrastructure underneath — the watcher that pushes change events from each provider, the clock that fires reliably, the inbox that delivers results to the right place.
+The table is monotonous on purpose. Every row needs the same [three primitives](/posts/three-primitives). The agent-specific logic for each of these is small — a handler that makes a judgment call. The engineering investment goes into the infrastructure underneath: the change-event pipeline from each provider, the scheduling that fires reliably, the delivery channel that puts results where people actually look.
 
-That's the gap. The model can reason about a stale PR. The model can draft a check-in email. What the model cannot do is wake itself up when a PR goes stale, or notice that a deal went quiet, or deliver an action item to a task board. Those are infrastructure problems, and they're the same infrastructure problems every time.
+The model can reason about a stale PR. The model can draft a check-in email. What the model cannot do is wake itself up when a PR goes stale, or notice that a deal went quiet, or deliver an action item to a task board. Those are infrastructure problems, and they're the same infrastructure problems every time.
 
 <Callout tone="cool" label="The infrastructure test">
 If your agent can't answer these three questions, it can't be magical: (1) How does it know when to wake up? (2) Where does it keep what it learned last time? (3) Where does it deliver the result?
@@ -63,6 +63,4 @@ If your agent can't answer these three questions, it can't be magical: (1) How d
 
 The word "magical" does too much work in the AI discourse. It usually means "I was surprised it worked." For proactive agents, the better word is *reliable*. A reliable intern is magical because they show up consistently, remember context, and deliver results to the right place at the right time.
 
-The agent version of that is a clock, a watcher, and an inbox — wired together with durable state. Build those well and the agent logic becomes the easy part.
-
-If you want to see why building the watcher alone [costs eight weeks per provider](/posts/the-webhook-tax), or how the [reactive and proactive architectures](/posts/reactive-vs-proactive) diverge in practice, those essays go deeper on the infrastructure. This one is about the destination: agents that feel like magic because the plumbing never drops a beat.
+The agent version of that is the runtime's core: scheduling, change detection, and delivery, wired together with durable state. Build those well and the agent logic shrinks to a handler.

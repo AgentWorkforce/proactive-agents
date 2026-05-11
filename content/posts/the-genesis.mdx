@@ -75,10 +75,23 @@ The code didn't change at all — just the names and the story we told about it.
 
 </Scene>
 
+## Signs you're building this by accident
+
+If any of the following sound familiar, you're assembling a proactive runtime from spare parts:
+
+- You have a cron job that polls an API and diffs against the last result
+- You have a JSON column or markdown file that stores "what the agent knew last time"
+- You have a webhook receiver with its own signature verification, retry handling, and dedup logic
+- You have a queue between "receive event" and "process event" because the LLM call is too slow for inline handling
+- You have a lock or lease to prevent two instances of the same agent from acting on the same event
+- You have a Slack bot or GitHub Action that posts results somewhere a human will see them
+
+Each of those is one piece of the clock, the watcher, or the inbox. If you've built more than one agent, you've probably noticed the same plumbing showing up every time: scheduling, change detection, dedup, delivery, state. The agent-specific logic is small. The infrastructure underneath is where the engineering hours go.
+
 ## The bet
 
 We're betting that *proactive* becomes a category the way *frontend cloud* became a category — by being the obvious word for a thing developers are already trying to do, and by being unowned at the moment we plant the flag.
 
 There's a [2024 paper from Tsinghua and Huawei](https://arxiv.org/abs/2410.12361) that uses the word *proactive* in exactly the sense we mean it. There's an empty slot in dev tooling for someone to be the proactive runtime.
 
-The flag goes here. It started with three terminal windows and too much copy-pasting, and the triple — clock, watcher, inbox — hasn't budged since.
+We're early, but the triple hasn't budged since those three terminal windows.

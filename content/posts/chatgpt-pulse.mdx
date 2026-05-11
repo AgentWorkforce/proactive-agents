@@ -1,14 +1,14 @@
 ---
 title: "ChatGPT Pulse and the missing primitives"
-summary: "I've been using ChatGPT Pulse since launch. The morning briefing is useful and the personalization is impressive, but it doesn't feel like the future yet. The three-primitives framework explains exactly why."
+summary: "ChatGPT Pulse is an impressive morning briefing with one of the three primitives a proactive agent needs. The three-primitives framework explains exactly what's missing and what 'indispensable' would look like."
 date: "2026-05-11"
 accent: "sky"
 dropcap: true
 ---
 
-I've been a ChatGPT Pro subscriber since Pulse launched in September 2025. Every morning I open the app, scan the cards, and occasionally tap into one that surfaces something I wouldn't have found on my own. It's good. It's useful. I'd notice if it disappeared.
+When OpenAI launched ChatGPT Pulse in September 2025, Fidji Simo framed it as taking "the level of support that only the wealthiest have been able to afford" and making it available to everyone. That's a real ambition. What shipped is a morning news digest that knows you pretty well.
 
-But it doesn't feel like the proactive assistant OpenAI described when they announced it. Fidji Simo, OpenAI's CEO of Applications, framed Pulse as taking "the level of support that only the wealthiest have been able to afford" and making it available to everyone. That's a real ambition. What shipped is a morning news digest that knows you pretty well.
+Pro subscribers open the app each morning, scan 5–10 personalized cards, and occasionally find something they wouldn't have discovered on their own. The early reviews are consistent: it's good, it's useful, people would notice if it disappeared. But it doesn't feel like the proactive assistant OpenAI described.
 
 The gap between those two things is not a prompt problem or a model problem. It's an infrastructure problem, and the [three-primitives framework](/posts/three-primitives) explains exactly where the gaps are.
 
@@ -18,7 +18,7 @@ The gap between those two things is not a prompt problem or a model problem. It'
 
 Credit where it's due: the clock works.
 
-Every night, Pulse processes your chat history, connected apps (Gmail, Google Calendar), and explicit feedback to generate 5–10 personalized morning cards. The personalization is genuinely impressive. It remembers offhand mentions from weeks ago and connects dots you didn't draw yourself. One morning I had a card about a topic I'd only mentioned once, in passing, in a conversation about something else entirely. That felt like the future.
+Every night, Pulse processes your chat history, connected apps (Gmail, Google Calendar), and explicit feedback to generate personalized morning cards. The personalization is genuinely impressive. Users report cards referencing offhand mentions from weeks-old conversations, connecting dots they didn't draw themselves. One Reddit user described a card about a birthday they'd never explicitly mentioned — Pulse inferred it from calendar access.
 
 The format is smart too. Cards are visual, scannable, and intentionally capped. "That's it for today" is a design choice that respects attention rather than trying to maximize engagement time. That restraint separates Pulse from a social media feed, at least in intent.
 
@@ -27,7 +27,7 @@ And the connected-app integration adds real context. When Pulse can see your cal
 All of this works because the *clock* primitive is well-built. The overnight schedule runs reliably, the personalization engine has enough signal to work with, and the delivery format is thoughtful.
 
 <Callout tone="warm" label="The honest review">
-Would I recommend Pulse to a friend on the Pro plan? Yes, it's worth checking every morning. Would I tell someone to upgrade to Pro specifically for Pulse? Probably not. That gap tells you something.
+Is Pulse worth checking for someone already on the Pro plan? Yes. Would you upgrade to Pro specifically for Pulse? Probably not. The gap between those two answers tells you where the product sits.
 </Callout>
 
 </Scene>
@@ -62,9 +62,11 @@ The [Hacker News discussion](https://news.ycombinator.com/item?id=45375477) was 
 
 [Matthew Becher's Substack review](https://matthewbecher.substack.com/p/mini-review-chatgpt-pulse) was more positive. He credited Pulse with genuinely nudging him forward on side projects. But he asked the right question: "Will proactive AI feeds make people smarter, more curious, and more productive, or will passivity make it just another feed to mindlessly scroll through?" After a few weeks, he found the suggestions becoming repetitive and requiring active redirection to stay useful.
 
-The Reddit reactions were impressed by the personalization but unsettled by the privacy implications. One user described gift-idea suggestions for a birthday they'd never explicitly mentioned — the system inferred it from calendar access. Helpful and creepy in equal measure.
+The Reddit reactions were impressed by the personalization but unsettled by the privacy implications. The birthday-inference example mentioned above was described as "helpful and creepy in equal measure," a phrase that captures the general mood.
 
 What nobody said was "this changed how I work." The responses landed somewhere between "interesting" and "a little unsettling." Nobody called it indispensable.
+
+That said, this is a curated sample. The replies under Sam Altman's announcement post on X were overwhelmingly positive. Many Pro users report Pulse as the feature that justifies the subscription. For a consumer product, "useful morning briefing that people open every day" may be exactly the right scope. The gap we're describing below is specific to people who want agents that act, not just inform.
 
 ## What would make it indispensable
 
@@ -84,4 +86,21 @@ The most interesting thing about Pulse might be the competitive landscape around
 
 That convergence validates the category. But if every implementation ships with only the clock, the whole thing will feel like a tab in an app rather than something you'd reorganize your workflow around.
 
-I keep coming back to this: I open Pulse every morning, and I like what I see. But I close the tab and move on. A proactive assistant that actually had a [watcher and an inbox](/posts/three-primitives), that could push me a Slack message when my deploy breaks or file a ticket when Sentry catches a new error class, would be the kind of thing I'd build my day around. Whoever gets there first will have built something people can't put down.
+The pattern in the reviews is consistent: people open Pulse, find something useful, and close the tab. A proactive assistant that could push a Slack message when a deploy breaks or file a ticket when Sentry catches a new error class would be fundamentally different — the kind of tool you'd reorganize your workflow around, not just check over coffee.
+
+## Evaluating any proactive product
+
+The Pulse analysis above follows a pattern that works for any product claiming to be proactive. Three questions, scored yes or no:
+
+<table>
+  <thead>
+    <tr><th>Primitive</th><th>Question</th><th>What "yes" looks like</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Clock</td><td>Can it wake itself up on a schedule or interval?</td><td>Cron, timer, overnight batch. Most products have this.</td></tr>
+    <tr><td>Watcher</td><td>Can it react to external changes in real time?</td><td>Webhooks, streaming APIs, change feeds. Not polling on a timer.</td></tr>
+    <tr><td>Inbox</td><td>Can it deliver results to different channels based on context?</td><td>Slack for urgent, email for digest, ticket for tracking. Not locked to one UI.</td></tr>
+  </tbody>
+</table>
+
+One "yes" gives you a notification tool. Two gives you something useful. Three gives you a proactive assistant. Most products today score one, because the clock is the easiest to build and the watcher is the hardest.

@@ -119,6 +119,16 @@ Some main text.<Sidenote>Aside that appears in the margin on desktop.</Sidenote>
 
 Place contextually near the content the embed illustrates.
 
+## Voice guardrails
+
+Before publishing, check the essay against these anti-patterns. Each one slipped past earlier drafts and became a recurring tic across the series.
+
+- **"That is/That's the [noun]."** Do not end paragraphs with short declaratives that name the thing the reader just read about. ("That's the gap." "That is the wedge.") They say nothing. Cut or integrate.
+- **Dramatic closers.** No grand closing lines that could be taglines. End with a specific observation or nothing. The reader doesn't need a drumroll.
+- **Branded phrase repetition.** "Clock, watcher, inbox" at most 2-3 times per essay (except three-primitives.mdx). Vary with "the three primitives," "the runtime's core," or just describe the concept.
+- **Tricolon overuse.** "Not X. Not Y. Not Z." at most once per essay. Multiple parallel structures with identical openings are an LLM tell.
+- **Em-dash density.** 1-2 per section. Convert excess to commas, colons, parentheses, or restructure.
+
 ## Checklist for every article
 
 Before considering an article complete:
@@ -133,3 +143,11 @@ Before considering an article complete:
 - [ ] Frontmatter summary uses plain text (no HTML entities)
 - [ ] Card illustration added in `components/card-illustrations.tsx` for the post slug
 - [ ] New figure components registered in `components/mdx/mdx-components.tsx`
+- [ ] No "That is/That's the [noun]." declarative closers
+- [ ] No dramatic mic-drop closing lines
+- [ ] "Clock, watcher, inbox" exact phrase used at most 2-3 times
+- [ ] No more than one tricolon per essay
+- [ ] Em dashes limited to 1-2 per section
+- [ ] No "This matters because" sentence openers
+- [ ] No "uncomfortable truth/math/pattern" labels
+- [ ] No fabricated incidents, outages, or operational claims the founder didn't experience

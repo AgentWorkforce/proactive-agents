@@ -41,7 +41,7 @@ None of these are exotic problems. They are the bread and butter of every cron-b
 
 </Scene>
 
-<Scene side="right" figure={<ProactiveFigure />} caption="Push beats poll. Always.">
+<Scene side="right" figure={<ProactiveFigure />} caption="The proactive version: event-driven, stateless handler.">
 
 ## The proactive version
 
@@ -101,7 +101,7 @@ What reactive is not appropriate for is *anything where the value of the agent i
 
 ## The boring conclusion
 
-Push and persistence beat pull and statelessness — in agents the same way they do in every other distributed system. The reason agents are still mostly reactive isn't that nobody figured this out. It's that the runtime to make them proactive didn't exist as a primitive you could import.
+Push and persistence beat pull and statelessness — in agents the same way they do in every other distributed system. Agents are still mostly reactive because the runtime to make them proactive didn't exist as a primitive you could import, not because nobody understood the tradeoff.
 
 We've been building that part.
 

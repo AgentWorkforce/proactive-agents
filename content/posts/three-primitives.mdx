@@ -16,11 +16,9 @@ A proactive agent is a different thing entirely. It wakes itself up.
 
 ## What "proactive" doesn't mean
 
-It doesn't mean *runs on a schedule.* That is just cron with extra steps. It doesn't mean *watches a webhook.* That is just push without persistence. It doesn't mean *can be messaged.* That is just a chatbot.
+Running on a schedule is just cron with extra steps. Watching a webhook is push without persistence. Accepting messages is a chatbot. Each of those is a useful primitive, but none of them alone makes an agent proactive.
 
-Each of those is a primitive. None of them, on its own, is a proactive agent.
-
-The most common shape we see in the wild is "agent + heartbeat" — a loop that wakes every N minutes, polls a few APIs, reasons about what it found, and acts. Some of these heartbeat agents are quite sophisticated.<Sidenote>MindStudio's heartbeat pattern is the canonical example. It works, but it papers over the missing bits with prompt engineering and ad-hoc state.</Sidenote> They are still polling. They are still acting on a snapshot that is N seconds out of date. And they still have no canonical place to keep what they learned between runs.
+The most common shape in the wild right now is "agent + heartbeat" — a loop that wakes every N minutes, polls a few APIs, reasons about what it found, and acts. Some of these heartbeat agents are quite sophisticated.<Sidenote>MindStudio's heartbeat pattern is the canonical example. It works, but it papers over the missing bits with prompt engineering and ad-hoc state.</Sidenote> They are still polling. They are still acting on a snapshot that is N seconds out of date. And they still have no canonical place to keep what they learned between runs.
 
 Polling is the *symptom*. The disease is missing primitives.
 
@@ -71,7 +69,11 @@ What that means in practice:
 - Spend observability, because an always-on agent that loops is the most expensive bug in your account.
 - Auth scoped per agent per workspace, because you do not want a runaway agent with a god token.
 
-This is the unglamorous half — and the one that decides whether a proactive agent actually makes it to production.
+That last bullet deserves more attention than it usually gets. A reactive agent runs for seconds: it wakes, tool-calls, responds, and its token expires with the session. A proactive agent holds a standing credential that can act while you sleep. If that credential has broad scope, a single bad loop can close every ticket in your Zendesk, post to every Slack channel, or burn through your OpenAI budget before anyone notices.
+
+The fix is narrow scoping at three levels. First, per-agent: the digest agent gets read access to GitHub issues, not write access to your production database. Second, per-provider: a token for Notion doesn't also unlock Slack. Third, per-workspace: an agent operating in the "support" workspace can't reach into "finance." Token rotation matters too. Short-lived tokens with refresh grants mean a compromised agent loses access on the next rotation, not indefinitely. And every action the agent takes needs to be logged and attributable, because "the agent did it" is not a sufficient incident postmortem.
+
+None of this is exotic security engineering. It's the same principle behind IAM policies and service accounts. But most agent frameworks ship with a single API key that has access to everything, because that's easier to demo. Production is not a demo.
 
 </Scene>
 
@@ -91,10 +93,10 @@ That something else is what we've been calling the **proactive runtime**. Concre
 
 The agent code that sits in the middle of that is shockingly small. A handler. A workspace name. The runtime brings the rest.
 
-That is the wedge. Not "multi-agent coordination," not "stateful agents," not "agent orchestration." Just: *give the agent a clock, an inbox, and a place to live, and let it act when something moves.*
+The wedge isn't "multi-agent coordination" or "stateful agents" or "agent orchestration." It's simpler than any of those labels: give the agent a clock, an inbox, and a place to live, and let it act when something moves.
 
 <Callout tone="cool" label="The third-party reading">
-A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalises the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd shipped most of this. Worth a read.
+A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalises the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd started building the runtime. Worth a read.
 </Callout>
 
 </Scene>
@@ -103,7 +105,7 @@ A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents
 
 Because the language we've been using — *multi-agent coordination layer*, *headless Slack for agents*, *integration filesystem* — turned out to be three different people describing the same elephant. The elephant was a runtime for proactive agents. We'd had it the whole time and kept calling it the wrong thing.
 
-If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last — you're building a proactive runtime by hand. We did it three times before we got tired of it. We figured we'd build it once, properly, and put it under whatever agent you happen to be writing.
+If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last — you're building a proactive runtime by hand. That's the pattern we kept seeing, and it's why we decided to build the runtime as a standalone layer that sits under whatever agent you happen to be writing.
 
 The next essays in this folio go deeper. *Reactive vs proactive: a tour of the difference* lays out the architectural divergence with examples. *The eight-week webhook tax* costs out the build-it-yourself path. *Why we stopped saying multi-agent coordination* is the longer version of why we relabelled the elephant.
 

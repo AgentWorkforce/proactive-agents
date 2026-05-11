@@ -6,6 +6,7 @@ import { PostHero } from "@/components/post-hero";
 import { PostParagraphReveal } from "@/components/post-paragraph-reveal";
 import { ReadingProgress } from "@/components/reading-progress";
 import { PostNav } from "@/components/post-nav";
+import { ScrollToTop } from "@/components/scroll-to-top";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { Asterism } from "@/components/decorations";
 import {
@@ -74,6 +75,7 @@ export default async function PostPage({
 
   return (
     <>
+      <ScrollToTop />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(articleSchema(post)) }}
