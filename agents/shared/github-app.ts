@@ -53,7 +53,13 @@ export async function readRepoJson<T = unknown>(
       ref: args.ref,
     });
     if (Array.isArray(res.data) || res.data.type !== "file") return null;
-    const text = atob(res.data.content.replace(/\n/g, ""));
+    // Properly decode UTF-8: atob() returns Latin-1-interpreted bytes,
+    // which mangles multi-byte chars (em-dash, smart quotes, etc.) on
+    // round-trip. TextDecoder is the correct primitive.
+    const bytes = Uint8Array.from(atob(res.data.content.replace(/\n/g, "")), (c) =>
+      c.charCodeAt(0),
+    );
+    const text = new TextDecoder("utf-8").decode(bytes);
     return { data: JSON.parse(text) as T, sha: res.data.sha };
   } catch (err) {
     const status = (err as { status?: number }).status;
@@ -84,7 +90,14 @@ export async function writeRepoJson(
     path: args.path,
     ref: args.branch,
   });
-  const content = btoa(unescape(encodeURIComponent(JSON.stringify(args.data, null, 2) + "\n")));
+  // Encode UTF-8 → bytes → base64. The classic
+  // `btoa(unescape(encodeURIComponent(s)))` trick relies on deprecated APIs;
+  // TextEncoder is the modern equivalent.
+  const json = JSON.stringify(args.data, null, 2) + "\n";
+  const bytes = new TextEncoder().encode(json);
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  const content = btoa(binary);
 
   await octokit.rest.repos.createOrUpdateFileContents({
     owner: args.owner,

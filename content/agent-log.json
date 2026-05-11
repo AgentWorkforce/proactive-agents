@@ -45,7 +45,7 @@
     "agent": "manual-chatbot",
     "trigger": "message",
     "action": "Answered a Slack DM",
-    "summary": "Question: 'what's the difference between proactive and event-driven?' â answered with a two-paragraph distinction citing the manifesto, flagged the framing of 'event-driven' as ambiguous between push-architecture and pub-sub.",
+    "summary": "Question: 'what's the difference between proactive and event-driven?' — answered with a two-paragraph distinction citing the manifesto, flagged the framing of 'event-driven' as ambiguous between push-architecture and pub-sub.",
     "outcome": "success",
     "links": [
       {
@@ -74,7 +74,7 @@
     "timestamp": "2026-05-07T11:25:00Z",
     "agent": "notion-to-blog",
     "trigger": "change",
-    "action": "Skipped â page still draft",
+    "action": "Skipped — page still draft",
     "summary": "Page 'Why context is the agent's whole job' moved into Editing in Notion, but tag is still 'draft'. Nothing published. Will re-evaluate when status flips to 'ready'.",
     "outcome": "skipped",
     "skippedReason": "tag != ready",
@@ -91,7 +91,7 @@
     "agent": "notion-to-blog",
     "trigger": "change",
     "action": "Published essay",
-    "summary": "New page in Notion 'Drafts â Ready' database tagged ready. Converted to MDX, applied the site's Scene + Sidenote conventions, opened a PR with the post.",
+    "summary": "New page in Notion 'Drafts — Ready' database tagged ready. Converted to MDX, applied the site's Scene + Sidenote conventions, opened a PR with the post.",
     "outcome": "success",
     "links": [
       {
@@ -110,7 +110,7 @@
     "agent": "weekly-digest",
     "trigger": "time",
     "action": "Filed weekly digest",
-    "summary": "Quiet week â only 4 mentions, no new clusters. Filed a short digest with a note that we may want to drop frequency to bi-weekly if signal stays low.",
+    "summary": "Quiet week — only 4 mentions, no new clusters. Filed a short digest with a note that we may want to drop frequency to bi-weekly if signal stays low.",
     "outcome": "success",
     "links": [
       {
