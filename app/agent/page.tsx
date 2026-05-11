@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { getAgentLog, AGENT_META, TRIGGER_META, type AgentEntry } from "@/lib/agent-log";
 import { Squiggle } from "@/components/decorations";
+import { jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 export const metadata = {
-  title: "The agent — Proactive Agents",
+  title: "Agent Activity Log — Proactive Agents in Action",
   description:
-    "A live feed of what the proactive agent behind this site has been doing — pulled from Notion, GitHub, Slack, Reddit. Build in public.",
+    "A live feed of what the proactive agents behind this site have done — triggered by time, data changes, and messages. See real proactive agent behavior with verifiable receipts.",
+  alternates: { canonical: `${SITE_URL}/agent/` },
+  openGraph: {
+    title: "Agent Activity Log — Proactive Agents in Action",
+    description:
+      "Watch real proactive agents work: time-triggered digests, change-triggered publishing, message-triggered responses. Build in public.",
+    url: `${SITE_URL}/agent/`,
+  },
 };
 
 const ACCENT_BG: Record<string, string> = {
@@ -74,8 +82,17 @@ export default async function AgentPage() {
     },
   ];
 
+  const agentCrumbs = breadcrumbSchema([
+    { name: "Home", url: `${SITE_URL}/` },
+    { name: "Agent Log", url: `${SITE_URL}/agent/` },
+  ]);
+
   return (
     <article className="relative mx-auto max-w-4xl px-6 py-20 sm:px-10 sm:py-28">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(agentCrumbs) }}
+      />
       {/* Header */}
       <div className="max-w-2xl">
         <p className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-ink-soft">

@@ -1,10 +1,19 @@
 import Link from "next/link";
 import { getAllPosts, formatDate } from "@/lib/posts";
 import { Asterism, Squiggle, Sparkle } from "@/components/decorations";
+import { jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 export const metadata = {
-  title: "Essays — Proactive Agents",
-  description: "Field notes on building proactive agents — push vs poll, the webhook tax, and why we relabelled the elephant.",
+  title: "Essays on Proactive Agents",
+  description:
+    "In-depth essays on building proactive AI agents — reactive vs proactive architecture, the webhook tax, event-driven triggers, agent state management, and practical patterns for developers.",
+  alternates: { canonical: `${SITE_URL}/posts/` },
+  openGraph: {
+    title: "Essays on Proactive Agents",
+    description:
+      "In-depth essays on building proactive AI agents — architecture patterns, working code, and lessons from production.",
+    url: `${SITE_URL}/posts/`,
+  },
 };
 
 const ACCENT_BG: Record<string, string> = {
@@ -21,8 +30,17 @@ const TILTS = ["-1.4deg", "0.8deg", "-0.6deg", "1.2deg", "-0.9deg", "0.4deg"];
 export default async function PostsIndex() {
   const posts = await getAllPosts();
 
+  const crumbs = breadcrumbSchema([
+    { name: "Home", url: `${SITE_URL}/` },
+    { name: "Essays", url: `${SITE_URL}/posts/` },
+  ]);
+
   return (
     <section className="relative mx-auto max-w-6xl px-6 pt-16 pb-32 sm:px-10 sm:pt-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }}
+      />
       <div className="max-w-3xl">
         <p className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-ink-soft">
           <span className="h-px w-10 bg-ink-soft/60" />

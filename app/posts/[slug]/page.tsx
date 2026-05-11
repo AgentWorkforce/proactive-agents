@@ -7,6 +7,13 @@ import { PostParagraphReveal } from "@/components/post-paragraph-reveal";
 import { ReadingProgress } from "@/components/reading-progress";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { Asterism } from "@/components/decorations";
+import {
+  jsonLd,
+  articleSchema,
+  breadcrumbSchema,
+  SITE_URL,
+  SITE_NAME,
+} from "@/lib/seo";
 
 export async function generateStaticParams() {
   const posts = await getAllPosts();
@@ -17,7 +24,25 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return {};
-  return { title: `${post.title} — Proactive Agents`, description: post.summary };
+  return {
+    title: post.title,
+    description: post.summary,
+    authors: [{ name: "Khaliq Gant", url: "https://github.com/khaliqgant" }],
+    alternates: { canonical: `${SITE_URL}/posts/${slug}/` },
+    openGraph: {
+      title: `${post.title} — ${SITE_NAME}`,
+      description: post.summary,
+      url: `${SITE_URL}/posts/${slug}/`,
+      type: "article",
+      publishedTime: post.date,
+      authors: ["Khaliq Gant"],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${post.title} — ${SITE_NAME}`,
+      description: post.summary,
+    },
+  };
 }
 
 export default async function PostPage({
@@ -40,8 +65,22 @@ export default async function PostPage({
   const next = all[idx + 1];
   const prev = all[idx - 1];
 
+  const postBreadcrumbs = breadcrumbSchema([
+    { name: "Home", url: `${SITE_URL}/` },
+    { name: "Essays", url: `${SITE_URL}/posts/` },
+    { name: post.title, url: `${SITE_URL}/posts/${slug}/` },
+  ]);
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(articleSchema(post)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(postBreadcrumbs) }}
+      />
       <ReadingProgress target="article" />
       <PostHero
         title={post.title}
@@ -50,6 +89,23 @@ export default async function PostPage({
         readingTime={post.readingTime}
         accent={post.accent}
       />
+
+      <nav
+        aria-label="Breadcrumb"
+        className="mx-auto max-w-5xl px-6 pt-8 sm:px-8"
+      >
+        <ol className="flex items-center gap-1.5 text-xs text-ink-faint">
+          <li>
+            <Link href="/" className="hover:text-terracotta transition-colors">Home</Link>
+          </li>
+          <li aria-hidden>/</li>
+          <li>
+            <Link href="/posts" className="hover:text-terracotta transition-colors">Essays</Link>
+          </li>
+          <li aria-hidden>/</li>
+          <li className="text-ink-soft truncate max-w-[200px]" aria-current="page">{post.title}</li>
+        </ol>
+      </nav>
 
       <article className="relative mx-auto max-w-5xl px-6 py-20 sm:px-8 sm:py-28">
         <PostParagraphReveal />

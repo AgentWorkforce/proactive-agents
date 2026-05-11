@@ -3,6 +3,13 @@ import { getAllPosts, formatDate } from "@/lib/posts";
 import { BackgroundOrbs } from "@/components/background-orbs";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { Sparkle } from "@/components/decorations";
+import {
+  jsonLd,
+  websiteSchema,
+  SITE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+} from "@/lib/seo";
 
 const ACCENT_BG: Record<string, string> = {
   peach: "bg-peach/60",
@@ -54,12 +61,28 @@ const HARD_PARTS = [
   },
 ];
 
+export const metadata = {
+  title: `${SITE_NAME} — What They Are and How to Build Them`,
+  description: SITE_DESCRIPTION,
+  alternates: { canonical: `${SITE_URL}/` },
+  openGraph: {
+    title: `${SITE_NAME} — What They Are and How to Build Them`,
+    description: SITE_DESCRIPTION,
+    url: `${SITE_URL}/`,
+    type: "website",
+  },
+};
+
 export default async function Home() {
   const posts = await getAllPosts();
   const recent = posts.slice(0, 3);
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema()) }}
+      />
       <ScrollReveal />
 
       {/* HERO */}

@@ -1,0 +1,149 @@
+# Proactive Agents — Full Content
+
+> The definitive guide to proactive AI agents — what they are, how they differ from reactive agents, and how to build them.
+
+Site: https://proactiveagents.ai
+Author: Khaliq Gant, co-founder of AgentWorkforce
+Last updated: 2026-05-11
+
+---
+
+## What Is a Proactive Agent?
+
+A proactive agent is an AI agent that acts without being prompted. Instead of waiting for a human to type a message or click a button, it wakes itself up when something in its environment changes — time passes, data mutates, or a message arrives — and decides whether and how to act.
+
+This is the architectural opposite of a reactive agent, which sits idle until explicitly invoked. Most AI agents today are reactive: they receive a prompt, execute tool calls, return a response, and go back to sleep. A proactive agent is always running in the background, watching the world, and acting when the moment is right.
+
+### The Three Triggers
+
+A proactive agent is defined by how it wakes up. There are exactly three triggers:
+
+1. **Time**: The agent runs on a schedule or interval. Every 15 minutes, every Monday at 9am, every quiet hour past midnight. This is the simplest trigger but the least differentiated — a schedule alone is just a cron job.
+
+2. **Change**: The agent watches for data mutations. A ticket moves in Linear, a record updates in Salesforce, a file appears in a shared drive. The agent receives a push event (via webhook) the moment the change happens, rather than polling for it.
+
+3. **Message**: Someone addresses the agent directly — a human, another agent, or a system. The agent responds in its own time, not on a polling cycle.
+
+A truly proactive agent listens for all three. Pick one and you've built a smarter cron job. Pick two and you've built a chatbot that polls. The composition of all three is what makes an agent proactive.
+
+### Proactive vs Reactive: The Core Difference
+
+| Dimension | Reactive Agent | Proactive Agent |
+|-----------|---------------|-----------------|
+| Activation | Waits to be called | Wakes itself up |
+| Data freshness | Polls on interval (N seconds stale) | Push events (real-time) |
+| State | Stateless between runs | Persistent memory |
+| Failure mode | Forgets what it did | Checkpoints and resumes |
+| Architecture | Function called by a user | Participant in a system |
+
+The reactive agent asks: "What changed in the last five minutes?" The proactive agent asks: "What just changed?" The first is a query you have to invent. The second is a fact the world hands you.
+
+### Why Most Agents Are Still Reactive
+
+Three engineering problems keep agents reactive:
+
+1. **Wake-ups are infrastructure.** Polling is easy; push is hard. Stable URLs, signature schemes, normalized events, durable triggers — none of it ships in a model SDK. Someone has to build it.
+
+2. **State is harder than it looks.** Between wake-ups the agent has to remember what it saw, what it acted on, what it's still in the middle of. Most agents wake up amnesiac and re-read the world from scratch.
+
+3. **Restraint is a research problem.** An agent that fires too often loses trust faster than one that misses things. Calibrated restraint — knowing when NOT to act — is a known-hard problem even at the frontier.
+
+### The Three Primitives
+
+A proactive agent requires three primitives wired together:
+
+1. **A wake-up mechanism** — a clock (schedules), a watcher (change events from providers), and an inbox (messages from humans and systems).
+
+2. **Persistent state** — a place for the agent to remember what it saw, what it did, and what it's in the middle of. This is closer to a filesystem than a database: real-time read/write, conflict detection, change events when anything moves.
+
+3. **Durability** — checkpointing (resume after failure), idempotency (don't repeat actions), spend control (prevent runaway loops), and scoped auth (limit blast radius).
+
+Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
+
+---
+
+## Essay: Proactive agents need three primitives
+
+Published: 2026-05-04
+Author: Khaliq Gant
+
+Most agents shipped today are reactive. They sit in a loop, waiting for a prompt. When the prompt arrives, they tool-call their way to an answer and go back to sleep. The whole cycle starts when you push a button.
+
+That model is fine for a chat box. It is wrong for an agent that is supposed to do something for you while you are doing something else. And it is the model nearly every agent SDK still ships by default.
+
+A proactive agent is a different thing entirely. It wakes itself up.
+
+What "proactive" doesn't mean: It doesn't mean runs on a schedule — that is just cron with extra steps. It doesn't mean watches a webhook — that is just push without persistence. It doesn't mean can be messaged — that is just a chatbot. Each of those is a primitive. None of them, on its own, is a proactive agent.
+
+The first primitive is a way to wake up. A proactive agent needs to know when to run — not "every five minutes" but when the moment is right. That moment is one of three things: time passed, data changed, or a message arrived. Reactive agents only honor the third one, and they don't even honor it well — they wait to be invoked, not to be spoken to.
+
+The second primitive is state that survives. A reactive agent wakes up from nothing every time. A proactive agent wakes up into a world. It has to know what it saw last time, what it acted on, what it's in the middle of. Otherwise every wakeup is a cold start, and a cold-start agent does the same useless thing over and over.
+
+The third primitive is durability. A proactive agent is long-lived. It will be running while you sleep, while a deploy ships, while a provider rate-limits for three hours. The runtime has to assume failure is the steady state. This means checkpointing, idempotency on every external call, spend observability, and auth scoped per agent per workspace.
+
+Wired together — clock, watcher, inbox, shared workspace, durability ring — these form the proactive runtime. The agent code that sits in the middle is shockingly small: a handler, a workspace name. The runtime brings the rest.
+
+A 2024 paper from Tsinghua and Huawei — "Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance" (arXiv:2410.12361) — formalizes the same claims: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals.
+
+---
+
+## Essay: Reactive vs proactive, with examples
+
+Published: 2026-04-20
+Author: Khaliq Gant
+
+A reactive version of a ticket-closing agent runs every five minutes via cron, queries for open tickets updated since the last run, and closes ones where the customer approved. This works but has problems: the lastRun global resets on deploy, the five-minute interval is arbitrary, burst handling is poor, false positives close real tickets, and two instances racing cause double-closes.
+
+The proactive version is a handler that receives change events. It fires the moment Zendesk publishes an update. There is no lastRun global (no batch), no arbitrary interval, no deduplication burden — the runtime handles all of that. Each event is its own unit of work.
+
+Three things compound from this shift: (1) Latency drops to provider speed (~1 second of webhook delivery vs 5-minute polling cycles). (2) Edge cases collapse because the runtime gives you the diff instead of making you detect changes. (3) State surface shrinks because each event is self-contained.
+
+When reactive is still the right answer: batch-shaped jobs (weekly digests), long compute that doesn't care about freshness (nightly backfills), and one-shot prompts (user asks, agent answers, done).
+
+What reactive is NOT appropriate for is anything where the value of the agent is its responsiveness to the world.
+
+---
+
+## Essay: The eight-week webhook tax
+
+Published: 2026-04-06
+Author: Khaliq Gant
+
+Adding one webhook provider to a proactive agent in a production-ready way requires: a public endpoint with stable URL and TLS, signature verification (each provider does it differently), sub-2-second response times (requiring async processing), a message queue with dead-letter handling, deduplication via seen-set, event filtering, payload completion (most webhooks send partial data), agent state storage, webhook registration automation, and observability.
+
+That's one provider. For four providers (ticketing, code host, chat, CRM), multiply by four with different signature schemes, retry behaviors, payload schemas, and registration flows.
+
+The path from "we want our agent proactive against four providers" to production-ready is 6-8 weeks of one engineer's time — not building the agent, but building plumbing. Plus ongoing maintenance as providers change schemas, dev tunnels rotate, replay storms hit queues, and teammates copy-paste integration code incorrectly.
+
+---
+
+## Essay: Why we stopped saying multi-agent coordination
+
+Published: 2026-03-09
+Author: Khaliq Gant
+
+For about a year, we described what we were building as a "multi-agent coordination layer." This was technically accurate but the wrong pitch. Three problems: (1) Almost nobody is running multi-agent systems in production yet — most teams are building one agent. (2) The phrase pattern-matches to frameworks (LangGraph, CrewAI) rather than infrastructure. (3) It understates the product — making one agent proactive is the first-order story.
+
+We now say we build proactive agents. This renames the market (reactive is dominant; "proactive" picks a fight with that pattern), makes single-agent customers first-class, and makes our architecture legible: the scheduling service is the clock, the integration filesystem is the watcher, headless Slack is the inbox, the hosted control plane is the runtime, workflow reliability is the durability ring.
+
+We're betting "proactive" becomes a category the way "frontend cloud" became a category — by being the obvious word for something developers were already trying to do.
+
+---
+
+## Agent Activity Log
+
+This site is operated by proactive agents that demonstrate the concepts it teaches:
+
+- **Notion → blog** (change-triggered): Watches a Notion Drafts database and publishes finished pages as MDX.
+- **Weekly digest** (time-triggered): Searches the web and Reddit for proactive-agent mentions weekly.
+- **Sunday ping** (time-triggered): Reads the week's digest, drafts a post outline, and pings the author on Slack.
+- **PR reviewer** (change-triggered): Comments on PRs with deploy preview, dead-link check, and copy-edit notes.
+- **@manual** (message-triggered): Answers questions in Slack/email grounded in the published essays.
+
+---
+
+## About
+
+Written by Khaliq Gant, co-founder of AgentWorkforce. Before this, three years as the first hire at Nango — the market leader in third-party integrations — where most of the work was getting the right context to AI: webhooks, normalized payloads, the long tail of provider quirks. The hard parts of proactive agents are, mostly, the same hard parts dressed up in a different jacket.
+
+Publishing approach: educational over promotional, specific over abstract, honest about what's hard.

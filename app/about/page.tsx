@@ -1,12 +1,49 @@
 import { Squiggle, Asterism } from "@/components/decorations";
+import {
+  jsonLd,
+  personSchema,
+  organizationSchema,
+  breadcrumbSchema,
+  SITE_URL,
+} from "@/lib/seo";
 
 export const metadata = {
-  title: "About — Proactive Agents",
+  title: "About",
+  description:
+    "Proactive Agents is a working manual on AI agents that act without being prompted — written by Khaliq Gant, co-founder of AgentWorkforce and former first hire at Nango.",
+  alternates: { canonical: `${SITE_URL}/about/` },
+  openGraph: {
+    title: "About — Proactive Agents",
+    description:
+      "Written by Khaliq Gant, co-founder of AgentWorkforce. A working manual on proactive AI agents.",
+    url: `${SITE_URL}/about/`,
+  },
 };
 
 export default function AboutPage() {
+  const aboutCrumbs = breadcrumbSchema([
+    { name: "Home", url: `${SITE_URL}/` },
+    { name: "About", url: `${SITE_URL}/about/` },
+  ]);
+
+  const aboutSchema = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: "About — Proactive Agents",
+    url: `${SITE_URL}/about/`,
+    mainEntity: personSchema(),
+  };
+
   return (
     <article className="relative mx-auto max-w-2xl px-6 py-24 sm:px-8 sm:py-32">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(aboutSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(aboutCrumbs) }}
+      />
       <p className="text-xs uppercase tracking-[0.3em] text-ink-soft">About</p>
       <h1 className="mt-4 font-display text-5xl leading-[1.05] tracking-tight text-ink sm:text-6xl">
         A working manual on <span className="italic text-terracotta">proactive agents.</span>

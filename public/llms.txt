@@ -1,0 +1,31 @@
+# Proactive Agents
+
+> The definitive guide to proactive AI agents — what they are, how they differ from reactive agents, and how to build them.
+
+This site is a working manual on proactive agents: AI agents that act without being prompted. A proactive agent wakes itself up when time passes, data changes, or a message arrives — rather than waiting for a human to invoke it. The site covers architecture, implementation patterns, and lessons from production.
+
+## Key Concepts
+
+- A proactive agent is defined by how it wakes up, not what model it runs or what framework it uses.
+- There are exactly three triggers: time (schedules/intervals), change (data mutations via webhooks), and message (human or system communication).
+- Proactive agents require three primitives: a wake-up mechanism, persistent state, and durability (checkpointing, idempotency, spend control).
+- Reactive agents poll on intervals and forget between runs. Proactive agents receive push events and maintain state.
+- The shift from reactive to proactive is the most important architectural decision when shipping an AI agent.
+
+## Content
+
+- [Guide: What Are Proactive Agents](/guide/): Comprehensive definition, architecture, comparison with reactive agents, and how to build them.
+- [Essay: Proactive agents need three primitives](/posts/three-primitives/): Why agents need a clock, a watcher, and an inbox wired together with durable state.
+- [Essay: Reactive vs proactive, with examples](/posts/reactive-vs-proactive/): Side-by-side code comparison of the same agent built both ways.
+- [Essay: The eight-week webhook tax](/posts/the-webhook-tax/): The real engineering cost of making an agent proactive against multiple providers.
+- [Essay: Why we stopped saying multi-agent coordination](/posts/why-we-stopped-saying-multi-agent/): How renaming from "multi-agent coordination" to "proactive agents" clarified the product and the market.
+- [Agent Activity Log](/agent/): Live feed of what the proactive agents running this site have done.
+- [About](/about/): Background on the author and the project.
+
+## Author
+
+Written by Khaliq Gant, co-founder of AgentWorkforce. Former first hire at Nango (market leader in third-party integrations). Background in webhooks, normalized payloads, and provider integration infrastructure.
+
+## Full Content
+
+For the complete text of all pages: /llms-full.txt

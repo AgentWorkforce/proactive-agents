@@ -1,56 +1,76 @@
 # /agents
 
-The proactive agents that run this site. Each subdirectory is one agent. Each
-agent has a single entry point — `handler.ts` — that takes a typed event and
-returns nothing (side effects only).
+The proactive agents that run this site. Each agent is a single
+`agent({ ... })` call against the proactive-runtime SDK contract.
 
-## Why these live in this repo
+## The contract
 
-This site argues that a proactive agent is small code wrapped around the right
-runtime. Co-locating the agents with the site they operate keeps the demo
-honest and the deploy simple.
+Source: [`AgentWorkforce/cloud · spec/proactive-runtime · docs/proactive-runtime/spec.md`](https://github.com/AgentWorkforce/cloud/blob/spec/proactive-runtime/docs/proactive-runtime/spec.md).
+
+The shape is:
+
+```ts
+import { agent } from "@agent-relay/agent";
+
+agent({
+  workspace: "support",
+  schedule: "*/5 * * * *",
+  watch: ["/zendesk/tickets/**"],
+  inbox: ["@self"],
+  onEvent: async (ctx, event) => {
+    // event.type is "cron.tick" | "relayfile.changed" | "relaycast.message"
+  },
+});
+```
+
+One handler. Three triggers. One workspace. The whole API for the 90% case.
+
+## Status: spec-ahead
+
+`@agent-relay/agent` is not yet published. Until it is, the agents import
+from `agents/shared/sdk.ts` — a local mirror of the spec types plus a no-op
+`agent()` shim. When the package ships, the shim file gets one diff:
+
+```diff
+- export { agent, type AgentDefinition } from "./local-shim";
++ export { agent, type AgentDefinition } from "@agent-relay/agent";
+```
+
+Every agent file then runs unchanged.
 
 ## The roster
 
-| Directory          | Trigger | What it does                                                                 |
-|--------------------|---------|------------------------------------------------------------------------------|
-| `notion-to-blog`   | change  | Watches a Notion database. When a page flips to `ready`, converts to MDX and opens a PR. |
-| `weekly-digest`    | time    | Weekly. Searches the web + Reddit for "proactive agents" mentions. Files one rolling GitHub issue, deduped, grouped by topic. |
-| `sunday-ping`      | time    | Sundays at 09:00 local. Reads the latest weekly digest and pings me on Slack with a draft outline for the next post. |
-| `pr-reviewer`      | change  | Comments on PRs to this repo with deploy preview, dead-link check, copy-edit notes. |
-| `manual-chatbot`   | message | Answers Slack DMs / emails grounded in the published essays.                  |
+| File                              | Trigger | What it does                                                  |
+|-----------------------------------|---------|---------------------------------------------------------------|
+| `notion-to-blog/agent.ts`         | change  | Watch Notion drafts DB; on `status=ready`, MDX → PR.          |
+| `weekly-digest/agent.ts`          | time    | Saturday 09:00 UTC. Web + Reddit → one rolling GitHub issue. |
+| `sunday-ping/agent.ts`            | time    | Sunday 09:00 ET. Reads digest, drafts outline, Slack DM.      |
+| `pr-reviewer/agent.ts`            | change  | Watch repo PRs; deploy preview, dead-link, copy-edit notes.   |
+| `manual-chatbot/agent.ts`         | message | DMs + `#manual`. RAG over published essays. Refuses by default. |
 
-## Shape
+## Side effects
 
-```
-agents/
-  shared/
-    log.ts          # writeLogEntry({ agent, action, summary, ... }) → appends to content/agent-log.json
-    types.ts        # AgentEntry, Trigger, Outcome (re-exports from lib/agent-log.ts)
-  notion-to-blog/
-    handler.ts      # export async function handler(event: NotionPageEvent)
-  weekly-digest/
-    handler.ts      # export async function handler() — invoked by relaycron
-  sunday-ping/
-    handler.ts      # export async function handler()
-  pr-reviewer/
-    handler.ts      # export async function handler(event: PullRequestEvent)
-  manual-chatbot/
-    handler.ts      # export async function handler(event: InboxMessage)
+Every agent calls `writeLogEntry(...)` from `shared/log.ts` so the public
+[/agent page](../app/agent/page.tsx) stays current. That page is the receipts.
+
+## Local dev
+
+```bash
+# Type-check the agents alongside the rest of the site
+npx tsc --noEmit
 ```
 
-## Wiring
+To exercise an agent's behaviour without the runtime, call its `onEvent`
+directly from a test with a mock `Context` and `AgentEvent`. The shim's
+`agent()` registers the definition and returns; it does not dispatch events.
 
-Each handler is invoked by the proactive runtime (`relaycron` for time,
-`relayfile` for change, `relaycast` for message). The wiring lives in the
-runtime config, not in the handler — so you can read each handler in isolation
-and see the full behaviour.
+## Wiring (when the runtime ships)
 
-Every handler ends by calling `writeLogEntry(...)` so the public `/agent` page
-on the site stays current. That page is the receipts.
+1. `relay login`
+2. `relay workspaces create proactive-agents`
+3. `relay providers connect github notion slack reddit tavily`
+4. `relay deploy agents/weekly-digest/agent.ts` (and similar for the others)
 
-## Status
-
-Skeletons. Each handler currently logs to the activity feed and returns;
-external integrations (Notion, GitHub, Slack, Reddit, web search) are stubbed.
-Wire them in PRs &mdash; the PR reviewer agent will check your work.
+The runtime reads the `agent({...})` definition, registers schedules with
+relaycron, watch globs with relayfile, channel subscriptions with relaycast,
+and starts dispatching events to `onEvent`.
