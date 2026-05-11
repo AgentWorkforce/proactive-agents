@@ -1,8 +1,6 @@
 /**
  * Local mirror of the proactive-runtime SDK contract.
  *
- * Source of truth: https://github.com/AgentWorkforce/cloud/blob/spec/proactive-runtime/docs/proactive-runtime/spec.md
- *
  * Once `@agent-relay/agent` is published, replace this whole file with:
  *   export { agent, type AgentDefinition, type AgentEvent, type Context } from "@agent-relay/agent";
  *

@@ -12,8 +12,7 @@ opinions.
   site (Next.js + MDX + Tailwind). Essays live in
   `content/posts/*.mdx`.
 - **[`/agents`](./agents)** — the proactive agents that operate the site
-  itself. Each is a single `agent({ ... })` call against the
-  [proactive-runtime spec][spec]. Live activity at
+  itself. Each is a single `agent({ ... })` definition. Live activity at
   [proactiveagents.dev/agent](https://proactiveagents.dev/agent).
 - **[`/functions`](./functions)** — Cloudflare Pages Functions that act as
   the runtime entry points for each agent (until the umbrella SDK ships).
@@ -59,5 +58,3 @@ MIT. Take what's useful.
 —
 
 Made by [AgentWorkforce](https://github.com/AgentWorkforce).
-
-[spec]: https://github.com/AgentWorkforce/cloud/blob/spec/proactive-runtime/docs/proactive-runtime/spec.md

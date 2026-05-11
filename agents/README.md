@@ -5,9 +5,7 @@ The proactive agents that run this site. Each agent is a single
 
 ## The contract
 
-Source: [`AgentWorkforce/cloud · spec/proactive-runtime · docs/proactive-runtime/spec.md`](https://github.com/AgentWorkforce/cloud/blob/spec/proactive-runtime/docs/proactive-runtime/spec.md).
-
-The shape is:
+The shape we target (private spec, will be published as `@agent-relay/agent`):
 
 ```ts
 import { agent } from "@agent-relay/agent";
