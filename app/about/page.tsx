@@ -43,7 +43,7 @@ export default function AboutPage() {
         <p>
           Educational over promotional. Specific over abstract. Honest about
           what&rsquo;s hard. New essays appear when they&rsquo;re ready,
-          usually monthly.
+          usually weekly.
         </p>
       </div>
 
