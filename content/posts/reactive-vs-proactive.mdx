@@ -1,12 +1,14 @@
 ---
 title: "Reactive vs proactive, with examples"
 summary: "A short tour of how the same agent looks under both architectures. Same goal, same provider, different posture toward the world. The difference is mostly about who waits for whom."
-date: "2026-04-20"
+date: "2026-05-10"
 accent: "sage"
 dropcap: false
 ---
 
-Let&rsquo;s pick a small, familiar agent &mdash; one that closes a support ticket when the customer&rsquo;s last reply contains a thumbs-up &mdash; and write it twice. Once reactive, once proactive. Same model, same provider, same goal. Different posture.
+Let's pick a small, familiar agent — one that closes a support ticket when the customer's last reply contains a thumbs-up — and write it twice. Once reactive, once proactive. Same model, same provider, same goal. Different posture.
+
+<Scene figure={<PostureFigure />} caption="Same goal, different posture toward the world.">
 
 ## The reactive version
 
@@ -27,15 +29,19 @@ async function tick() {
 }
 ```
 
-This works. It is also, charitably, *fragile*. Notice how much truth this code is asserting that nobody enforced:
+This works, but it's *fragile* in ways you won't notice until production. Notice how much truth this code is asserting that nobody enforced:
 
 - `lastRun` lives in a global. The next deploy resets it to zero and we re-process the world.
 - The five-minute interval is a number we made up. Three minutes is too chatty; ten is too slow; nobody actually measured.
 - A burst of tickets at minute four means the agent acts on thousands of records at minute five. The next minute it sleeps again.
-- If `containsApproval` ever falsely fires, it *will* close a real ticket, and we&rsquo;ll find out from a customer.
-- We aren&rsquo;t holding a lease. Two instances racing means double-closes. Two pods means split-brain.
+- If `containsApproval` ever falsely fires, it *will* close a real ticket, and we'll find out from a customer.
+- We aren't holding a lease. Two instances racing means double-closes. Two pods means split-brain.
 
-None of these are exotic problems. They are the bread and butter of every cron-based agent in production. They get patched as they show up &mdash; locks added, intervals tuned, idempotency keys retrofitted &mdash; until the loop has more scaffolding than logic.
+None of these are exotic problems. They are the bread and butter of every cron-based agent in production. They get patched as they show up — locks added, intervals tuned, idempotency keys retrofitted — until the loop has more scaffolding than logic.
+
+</Scene>
+
+<Scene side="right" figure={<ProactiveFigure />} caption="Push beats poll. Always.">
 
 ## The proactive version
 
@@ -59,43 +65,45 @@ agent({
 });
 ```
 
-A few things changed. The agent isn&rsquo;t a `tick()` function any more. It&rsquo;s a *handler.* It receives a *change*, not a snapshot. The change has both `previous` and `current`, so the agent can see the *transition* &mdash; not just the state right now, but what it just stopped being.
+A few things changed. The agent isn't a `tick()` function any more. It's a *handler.* It receives a *change*, not a snapshot. The change has both `previous` and `current`, so the agent can see the *transition* — not just the state right now, but what it just stopped being.
 
-The five-minute interval is gone. The agent runs the moment Zendesk publishes the update. There is no `lastRun` global, because there is no batch &mdash; each event is its own unit of work. Idempotency is the runtime&rsquo;s problem; the same change won&rsquo;t be delivered twice. Locks are the runtime&rsquo;s problem; one event, one handler, one lease.
+The five-minute interval is gone. The agent runs the moment Zendesk publishes the update. There is no `lastRun` global, because there is no batch — each event is its own unit of work. Idempotency is the runtime's problem; the same change won't be delivered twice. Locks are the runtime's problem; one event, one handler, one lease.
 
-The honest engineering work moved from *plumbing* to *behaviour.* The behaviour is now the entire program.
+The honest engineering work moved from *plumbing* to *behaviour* — which is now basically the entire program.
 
 <Callout tone="warm" label="The most important line">
 The reactive version asks: *what changed in the last five minutes?* The proactive version asks: *what just changed?* The first is a query you have to invent. The second is a fact the world hands you.
 </Callout>
 
+</Scene>
+
 ## What the difference actually buys
 
 Three things that compound:
 
-1. **Latency drops to provider speed.** The agent acts the moment the world changes, not the next time the cron fires. For most providers that&rsquo;s ~1 second of webhook delivery. Reactive systems trade latency for cost; proactive systems don&rsquo;t pay the trade.
+1. **Latency drops to provider speed.** The agent acts the moment the world changes, not the next time the cron fires. For most providers that's ~1 second of webhook delivery. Reactive systems trade latency for cost; proactive systems don't pay the trade.
 
 2. **Edge cases collapse.** A huge amount of cron-loop code exists to detect *what changed.* When the runtime gives you the diff, that code disappears.
 
 3. **State surface shrinks.** The agent stops needing to remember what it did. Each event is self-contained. The runtime keeps the state; the agent uses it.
 
-These are small individually. They compound because the things they remove are the things that make agents flake out at 3am.
+Each one is small on its own, but they compound — because the things they remove are exactly the things that make agents flake out at 3am.
 
 ## When reactive is still the right answer
 
 To be clear: reactive agents are not bad. They are *appropriate* for some shapes of work.
 
-- **Batch-shaped jobs** &mdash; "every Monday morning, generate a digest" &mdash; are reactive by design. Don&rsquo;t fight it.
-- **Long compute** that doesn&rsquo;t care about freshness &mdash; nightly backfills, weekly retraining &mdash; reactive is fine.
-- **One-shot prompts** &mdash; the user asked, the agent answers, done &mdash; reactive is the *only* answer.
+- **Batch-shaped jobs** — "every Monday morning, generate a digest" — are reactive by design. Don't fight it.
+- **Long compute** that doesn't care about freshness — nightly backfills, weekly retraining — reactive is fine.
+- **One-shot prompts** — the user asked, the agent answers, done — reactive is the *only* answer.
 
-What reactive is not appropriate for is *anything where the value of the agent is its responsiveness to the world.* If the agent&rsquo;s job is to notice things and act on them, polling will lose to push every time, on every metric you care about.
+What reactive is not appropriate for is *anything where the value of the agent is its responsiveness to the world.* If the agent's job is to notice things and act on them, polling will lose to push every time, on every metric you care about.
 
 ## The boring conclusion
 
-There is no clever trick here. Push and persistence beat pull and statelessness, in agents the same way they beat them in every other distributed system. The reason agents are still mostly reactive is not that we forgot &mdash; it&rsquo;s that the runtime to make them proactive didn&rsquo;t exist as a primitive you could import.
+Push and persistence beat pull and statelessness — in agents the same way they do in every other distributed system. The reason agents are still mostly reactive isn't that nobody figured this out. It's that the runtime to make them proactive didn't exist as a primitive you could import.
 
-That&rsquo;s the part we&rsquo;ve been working on.
+We've been building that part.
 
 <Callout tone="cool" label="See it for yourself">
 This site runs a proactive agent of its own. The source lives in [`agents/`](https://github.com/AgentWorkforce/proactive-agents/tree/main/agents) on GitHub; what it has actually done shows up live at [/agent](/agent), every entry committed by the agent itself.

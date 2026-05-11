@@ -8,6 +8,16 @@ import {
   TripleFigure,
   WebhookTaxFigure,
   RuntimeFigure,
+  PromptLayerFigure,
+  GapMapFigure,
+  TerminalsFigure,
+  NamingFigure,
+  SyncFallbackFigure,
+  PostureFigure,
+  MagicalInternFigure,
+  InfraMapFigure,
+  WishlistCategoriesFigure,
+  PatternConvergeFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -21,6 +31,30 @@ export const mdxComponents = {
   TripleFigure,
   WebhookTaxFigure,
   RuntimeFigure,
+  PromptLayerFigure,
+  GapMapFigure,
+  TerminalsFigure,
+  NamingFigure,
+  SyncFallbackFigure,
+  PostureFigure,
+  MagicalInternFigure,
+  InfraMapFigure,
+  WishlistCategoriesFigure,
+  PatternConvergeFigure,
+  LinkedInEmbed: () => (
+    <iframe
+      src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"
+      height="264"
+      width="504"
+      frameBorder="0"
+      allowFullScreen
+      title="Embedded post"
+      className="mx-auto max-w-full rounded-xl"
+    />
+  ),
+  iframe: (props: React.IframeHTMLAttributes<HTMLIFrameElement>) => (
+    <iframe className="mx-auto my-8 max-w-full rounded-xl" {...props} />
+  ),
   // Wobbly highlight on inline strong
   mark: (props: React.HTMLAttributes<HTMLElement>) => (
     <mark className="scribble-highlight bg-transparent text-ink" {...props} />

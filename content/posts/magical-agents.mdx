@@ -1,0 +1,68 @@
+---
+title: "What would a magical agent actually do?"
+summary: "The best agents feel like an amazing intern who showed up early and already handled the thing you were about to ask about. That has nothing to do with prompts and everything to do with plumbing."
+date: "2026-05-11"
+accent: "sky"
+dropcap: true
+---
+
+Everyone says they want a magical agent. When you press on what that means, the answer is usually some version of the same thing: an amazing intern. Someone who shows up, remembers what you mentioned at lunch yesterday, checks your calendar before asking when you're free, and drafts the follow-up email before you think to ask. The feeling — someone proactively handling the things that drain your day — is what people are reaching for when they describe the agent they wish they had.
+
+Most teams try to create that feeling with a better system prompt.
+
+<Scene figure={<MagicalInternFigure />} caption="The magical intern sees the world before you describe it.">
+
+## The intern analogy, made concrete
+
+The magical intern isn't magical because they're smarter. They're magical because they're watching. They notice when something changes and they act before you have to ask. Here's what that looks like across three domains most teams already work in.
+
+**Communication.** A Gmail agent that drafts replies to messages that have gone unanswered for 48 hours. A Slack agent that watches channels you own and surfaces questions needing your response in a daily DM digest. A Calendar agent that spots a conflict between two meetings and proposes which one to move — before either organizer has to ping you.
+
+**Development.** A GitHub agent that detects when a PR has been sitting in review for three days and nudges the reviewer with context about what changed. A Linear agent that sees a ticket marked "blocked" and checks whether the blocking ticket was resolved yesterday.
+
+**Business.** A CRM agent that notices a deal has gone quiet for a week and drafts a check-in email with the relevant context from the last call. A Notion agent that watches your meeting notes database and extracts action items into your task board the same afternoon.
+
+Each of these is technically possible with today's APIs and today's models. GPT-4-class reasoning can handle every judgment call on this list. The reason most of them don't exist is not capability.
+
+<Callout tone="thought" label="The common thread">
+Every example above requires the agent to notice something changed in an external system, remember what it knew before, and deliver the result somewhere the human will see it. The model handles the reasoning. The infrastructure handles the noticing.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure={<InfraMapFigure />} caption="Every magical example maps to the same three primitives.">
+
+## The infrastructure under the magic
+
+Here's the exercise that made the pattern obvious for us. Take each example from above and ask three questions: how does the agent know when to wake up? Where does it keep what it learned last time? Where does it deliver the result?
+
+<table>
+  <thead>
+    <tr><th>Agent</th><th>Clock</th><th>Watcher</th><th>Inbox</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Gmail reply drafter</td><td>48h timer</td><td>New reply events</td><td>Draft in Gmail</td></tr>
+    <tr><td>Slack question surfacer</td><td>Daily digest</td><td>Channel messages</td><td>DM to owner</td></tr>
+    <tr><td>PR review nudger</td><td>3-day threshold</td><td>PR status changes</td><td>Comment on PR</td></tr>
+    <tr><td>CRM deal checker</td><td>Weekly scan</td><td>Deal stage changes</td><td>Draft email</td></tr>
+    <tr><td>Meeting notes extractor</td><td>Post-meeting</td><td>New page in DB</td><td>Task board items</td></tr>
+  </tbody>
+</table>
+
+The table is monotonous on purpose. Every row needs the same three things: a [clock, a watcher, and an inbox](/posts/three-primitives). The handler code for each of these agents is 20–40 lines of actual logic. The hundreds of hours go into building the infrastructure underneath — the watcher that pushes change events from each provider, the clock that fires reliably, the inbox that delivers results to the right place.
+
+That's the gap. The model can reason about a stale PR. The model can draft a check-in email. What the model cannot do is wake itself up when a PR goes stale, or notice that a deal went quiet, or deliver an action item to a task board. Those are infrastructure problems, and they're the same infrastructure problems every time.
+
+<Callout tone="cool" label="The infrastructure test">
+If your agent can't answer these three questions, it can't be magical: (1) How does it know when to wake up? (2) Where does it keep what it learned last time? (3) Where does it deliver the result?
+</Callout>
+
+</Scene>
+
+## Magic is just reliability at speed
+
+The word "magical" does too much work in the AI discourse. It usually means "I was surprised it worked." For proactive agents, the better word is *reliable*. A reliable intern is magical because they show up consistently, remember context, and deliver results to the right place at the right time.
+
+The agent version of that is a clock, a watcher, and an inbox — wired together with durable state. Build those well and the agent logic becomes the easy part.
+
+If you want to see why building the watcher alone [costs eight weeks per provider](/posts/the-webhook-tax), or how the [reactive and proactive architectures](/posts/reactive-vs-proactive) diverge in practice, those essays go deeper on the infrastructure. This one is about the destination: agents that feel like magic because the plumbing never drops a beat.

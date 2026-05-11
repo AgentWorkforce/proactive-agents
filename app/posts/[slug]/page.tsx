@@ -5,6 +5,7 @@ import { getAllPosts, getPost, formatDate } from "@/lib/posts";
 import { PostHero } from "@/components/post-hero";
 import { PostParagraphReveal } from "@/components/post-paragraph-reveal";
 import { ReadingProgress } from "@/components/reading-progress";
+import { PostNav } from "@/components/post-nav";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { Asterism } from "@/components/decorations";
 import {
@@ -124,7 +125,7 @@ export default async function PostPage({
           <p className="mt-4 font-serif text-[1.05rem] leading-relaxed text-ink-soft">
             Issues, PRs, and arguments welcome on{" "}
             <a
-              href="https://github.com/AgentWorkforce"
+              href="https://github.com/AgentWorkforce/proactive-agents"
               className="text-terracotta underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta"
             >
               GitHub
@@ -134,28 +135,7 @@ export default async function PostPage({
         </div>
       </article>
 
-      <nav className="mx-auto max-w-4xl px-6 pb-24 sm:px-10">
-        <div className="grid gap-6 sm:grid-cols-2">
-          {prev ? (
-            <Link
-              href={`/posts/${prev.slug}`}
-              className="group block rounded-2xl border border-rule bg-paper-deep/40 p-6 transition-transform hover:-translate-y-1"
-            >
-              <p className="text-xs uppercase tracking-[0.22em] text-ink-faint">← The next one</p>
-              <p className="mt-2 font-display text-xl text-ink group-hover:text-terracotta">{prev.title}</p>
-            </Link>
-          ) : <span />}
-          {next ? (
-            <Link
-              href={`/posts/${next.slug}`}
-              className="group block rounded-2xl border border-rule bg-paper-deep/40 p-6 text-right transition-transform hover:-translate-y-1"
-            >
-              <p className="text-xs uppercase tracking-[0.22em] text-ink-faint">An earlier one →</p>
-              <p className="mt-2 font-display text-xl text-ink group-hover:text-terracotta">{next.title}</p>
-            </Link>
-          ) : <span />}
-        </div>
-      </nav>
+      <PostNav prev={prev} next={next} />
     </>
   );
 }

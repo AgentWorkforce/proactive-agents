@@ -14,7 +14,10 @@ const SLUGS: Record<string, React.ComponentType> = {
   "three-primitives": PrimitivesArt,
   "reactive-vs-proactive": ReactivePushArt,
   "the-webhook-tax": WebhookKnotArt,
-  "why-we-stopped-saying-multi-agent": ElephantArt,
+  "the-genesis": ElephantArt,
+  "the-prompt-cant-save-you": PromptCrackArt,
+  "magical-agents": MagicalWandArt,
+  "the-wish-list": WishListArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -188,6 +191,121 @@ function ElephantArt() {
           <path d="M-38 -18 Q-52 -8 -48 5" strokeWidth="1.3" />
           <circle cx="-35" cy="-15" r="2" fill={C.ink} stroke="none" />
           <path d="M50 0 Q60 -10 58 -20" strokeWidth="1.2" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function PromptCrackArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* Document / scroll */}
+        <g transform="translate(250, 112)">
+          <rect
+            x="-42"
+            y="-50"
+            width="84"
+            height="100"
+            rx="4"
+            strokeWidth="1.6"
+          />
+          {/* Text lines */}
+          <line x1="-28" y1="-34" x2="28" y2="-34" strokeWidth="1" />
+          <line x1="-28" y1="-22" x2="22" y2="-22" strokeWidth="1" />
+          <line x1="-28" y1="-10" x2="26" y2="-10" strokeWidth="1" />
+          <line x1="-28" y1="14" x2="24" y2="14" strokeWidth="1" />
+          <line x1="-28" y1="26" x2="28" y2="26" strokeWidth="1" />
+          <line x1="-28" y1="38" x2="18" y2="38" strokeWidth="1" />
+          {/* Crack / fracture through the middle */}
+          <path
+            d="M-42 0 L-18 -4 L-8 6 L4 -3 L16 5 L28 -2 L42 2"
+            strokeWidth="2.2"
+            stroke={C.ink}
+          />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function MagicalWandArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Wand */}
+          <line x1="-35" y1="35" x2="25" y2="-25" strokeWidth="2" />
+          <rect x="22" y="-30" width="10" height="10" rx="1" strokeWidth="1.5" transform="rotate(45, 27, -25)" />
+          {/* Sparkles */}
+          <g strokeWidth="1.2">
+            <line x1="-10" y1="-30" x2="-10" y2="-45" />
+            <line x1="-17" y1="-37" x2="-3" y2="-37" />
+            <line x1="40" y1="-10" x2="40" y2="-22" />
+            <line x1="34" y1="-16" x2="46" y2="-16" />
+            <line x1="15" y1="-45" x2="15" y2="-53" />
+            <line x1="11" y1="-49" x2="19" y2="-49" />
+          </g>
+          {/* Stars */}
+          <circle cx="-25" cy="-20" r="2.5" fill={C.ink} stroke="none" />
+          <circle cx="35" cy="-35" r="1.8" fill={C.ink} stroke="none" />
+          <circle cx="50" cy="5" r="2" fill={C.ink} stroke="none" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function WishListArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Clipboard body */}
+          <rect x="-38" y="-50" width="76" height="100" rx="4" strokeWidth="1.6" />
+          {/* Clipboard clip */}
+          <rect x="-12" y="-56" width="24" height="12" rx="3" strokeWidth="1.4" />
+          {/* Checklist items */}
+          {[-28, -8, 12, 32].map((y, i) => (
+            <g key={i}>
+              <rect x="-26" y={y - 5} width="10" height="10" rx="1.5" strokeWidth="1.2" />
+              {i < 2 && (
+                <path d={`M${-24} ${y} L${-22} ${y + 3} L${-18} ${y - 3}`} strokeWidth="1.5" />
+              )}
+              <line x1="-10" y1={y} x2={20 + (i % 2 === 0 ? 6 : 0)} y2={y} strokeWidth="1" />
+            </g>
+          ))}
         </g>
       </g>
     </svg>

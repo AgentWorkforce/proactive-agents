@@ -1,0 +1,86 @@
+---
+title: "The proactive agent wish list"
+summary: "A personal list of agents I want but don't have yet — across music, news, money, and work. Every entry needs the same three things. That's the tell."
+date: "2026-05-11"
+accent: "butter"
+dropcap: true
+---
+
+I keep a running list of agents I wish existed. Not the kind that writes my emails or generates a marketing plan from a bullet list — the kind that watches for things I care about and tells me when something moves. This is that list.
+
+Every entry is specific. Every entry is technically possible with today's APIs and models. And every entry, as it turns out, needs the same three pieces of infrastructure.
+
+<Scene figure={<WishlistCategoriesFigure />} caption="Five domains, one pattern.">
+
+## Media and entertainment
+
+**Music discovery.** I want an agent that watches my Spotify listening history, cross-references it with artists I've saved, and sends a Friday digest of new releases from artists I actually listen to. Not Discover Weekly — which is good but generic — something that knows I played the same album eight times this month and checks if that artist dropped anything new.
+
+**Books.** An agent that monitors Goodreads for new releases from authors in my "read" shelf. Not a newsletter signup. An actual watcher on the catalog that notices a publication date and tells me about it.
+
+**Podcasts.** An agent that monitors three or four feeds I follow and tells me when an episode features a guest from a list I maintain. I don't need to know about every episode — just the ones where someone I track shows up.
+
+## Information and discovery
+
+**Hacker News.** An agent that watches the front page for posts matching keywords I care about — "proactive agents," "webhook infrastructure," "AI reliability" — and sends a batch at end of day. Not real-time. Real-time would be noisy and distracting. A daily digest with the top three or four threads and a one-line summary of each.
+
+**Reddit.** Same pattern, different source. Watch two or three subreddits for discussion threads above a certain engagement threshold and surface the good ones.
+
+**Twitter/X.** An agent that watches a curated list of people I follow for threads over a certain reply count on topics I've flagged. Useful for catching discussions I'd otherwise miss because I wasn't scrolling at the right hour.
+
+**GitHub repos.** Suggest repositories I should know about — competitive, helpful, or just interesting. Watch trending repos filtered by language and topic, cross-referenced against my starred repos. Weekly digest.
+
+</Scene>
+
+<Scene side="right" figure={<PatternConvergeFigure />} caption="Every item converges on the same triple.">
+
+## Financial and logistics
+
+**Bank alerts.** An agent that watches transaction categories and flags anomalies — not "you spent $4.50 at Starbucks" but "your utility bill was 40% higher than last month" or "there's a subscription charge from a service you cancelled." Pattern detection, not line-item reporting.
+
+**Flight prices.** A watcher on specific routes I'm planning trips for, alerting me when the price drops below a threshold I set. The airline apps do a version of this, but they only watch their own inventory. I want a watcher that spans carriers.
+
+**Package tracking.** An agent that consolidates all active shipments — Amazon, UPS, FedEx, whatever — into a single daily "here's where everything is" summary instead of five separate carrier emails. Better yet, one that knows I have a flight Thursday and flags a delivery that'll arrive while I'm away. Some of these exist as standalone apps, but the point is having agents that share context — my package tracker knows about my calendar.
+
+## Professional
+
+**Competitor intelligence.** An agent that watches what my competitors are doing — new product launches, changelog updates, documentation changes, pricing shifts. Not a quarterly report someone assembles manually, but a watcher on their public footprint that notices when something moved and tells me what changed. A weekly digest of "here's what shipped in your space" would save hours of manual scanning.
+
+**Vendor monitoring.** A watcher on the APIs and services I depend on — Stripe, OpenAI, Cloudflare, Vercel. Alert me on breaking changes, deprecation timelines, new features I should know about. Most of these publish changelogs, but nobody reads changelogs proactively. An agent that diffs the docs and tells me "Stripe deprecated this endpoint you're using" or "OpenAI shipped a new model that's cheaper for your use case" would catch things I'd otherwise discover after they break.
+
+**Error monitoring.** An agent that watches Sentry for *new error classes* (not individual errors) and files a ticket in Linear when a new one appears, with context about what changed in the most recent deploy.
+
+**Calendar blocking.** An agent that reviews my calendar Sunday night, blocks focus time in open slots on Monday and Tuesday mornings, and removes the blocks if meetings fill in later. Defensive scheduling without me having to think about it.
+
+## The pattern
+
+<table>
+  <thead>
+    <tr><th>Wish list item</th><th>Watcher</th><th>Clock</th><th>Inbox</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Spotify digest</td><td>New releases API</td><td>Weekly</td><td>Push notification</td></tr>
+    <tr><td>HN monitor</td><td>Front page scrape</td><td>Daily batch</td><td>Email digest</td></tr>
+    <tr><td>Bank anomalies</td><td>Transaction feed</td><td>Real-time</td><td>SMS alert</td></tr>
+    <tr><td>Competitor watch</td><td>Public changelogs, docs</td><td>Weekly</td><td>Digest</td></tr>
+    <tr><td>Vendor monitoring</td><td>API docs, changelogs</td><td>On change</td><td>Slack DM</td></tr>
+    <tr><td>Error monitoring</td><td>Sentry events</td><td>Real-time</td><td>Linear ticket</td></tr>
+    <tr><td>Calendar blocking</td><td>Calendar events</td><td>Sunday night</td><td>Calendar itself</td></tr>
+  </tbody>
+</table>
+
+Every single entry requires a **watcher** (something observing changes in an external system), a **clock** (when to batch, summarize, or digest), and an **inbox** (where to deliver the result). The mix differs — Spotify leans clock-heavy with its weekly digest, error monitoring leans watcher-heavy with real-time alerts — but all three primitives are present in every case.
+
+<Callout tone="warm" label="The honest gap">
+Most of these don't exist yet. Not because the AI isn't good enough — GPT-4 class models can handle every reasoning step on this list. They don't exist because nobody has built the watcher for Spotify's catalog API, or the normalized change events for Sentry, or the inbox that lets an agent deliver a digest to my phone at a time I chose. The missing piece is always infrastructure.
+</Callout>
+
+</Scene>
+
+## The list grows; the architecture doesn't
+
+This wish list gets longer every month. New APIs ship, new use cases surface, new annoyances beg for automation. But the infrastructure underneath stays the same: a [clock, a watcher, and an inbox](/posts/three-primitives), wired together with durable state.
+
+Build those three well and every item on this list becomes a handler — a few lines of agent logic sitting on top of a runtime that handles the hard part. That's the bet. The list is the proof that the bet is worth making.
+
+None of these agents can be built with a [better system prompt](/posts/the-prompt-cant-save-you). All of them can be built with the right plumbing.

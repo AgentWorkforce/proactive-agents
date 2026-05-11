@@ -1,26 +1,26 @@
 ---
 title: "Proactive agents need three primitives"
 summary: "An agent isn't proactive because it has a heartbeat. It's proactive because it has a clock, a watcher, and an inbox — wired together with durable state. Here's why the triple is the unit, and what we built around it."
-date: "2026-05-04"
+date: "2026-05-10"
 accent: "peach"
 dropcap: true
 ---
 
 Most agents shipped today are reactive. They sit in a loop, waiting for a prompt. When the prompt arrives, they tool-call their way to an answer and go back to sleep. The whole cycle starts when *you* push a button.
 
-That model is fine for a chat box. It is wrong for an agent that is supposed to *do something for you while you are doing something else.* And it is the model nearly every agent SDK still ships by default.
+That model works for a chat box, but it breaks down for an agent that's supposed to *do something for you while you are doing something else.* And it is the model nearly every agent SDK still ships by default.
 
 A proactive agent is a different thing entirely. It wakes itself up.
 
 <Scene figure={<PollingFigure />} caption="The reactive loop most teams ship.">
 
-## What "proactive" doesn&rsquo;t mean
+## What "proactive" doesn't mean
 
-It doesn&rsquo;t mean *runs on a schedule.* That is just cron with extra steps. It doesn&rsquo;t mean *watches a webhook.* That is just push without persistence. It doesn&rsquo;t mean *can be messaged.* That is just a chatbot.
+It doesn't mean *runs on a schedule.* That is just cron with extra steps. It doesn't mean *watches a webhook.* That is just push without persistence. It doesn't mean *can be messaged.* That is just a chatbot.
 
 Each of those is a primitive. None of them, on its own, is a proactive agent.
 
-The most common shape we see in the wild is "agent + heartbeat" &mdash; a loop that wakes every N minutes, polls a few APIs, reasons about what it found, and acts. Some of these heartbeat agents are quite sophisticated.<Sidenote>MindStudio&rsquo;s heartbeat pattern is the canonical example. It works, but it papers over the missing bits with prompt engineering and ad-hoc state.</Sidenote> They are still polling. They are still acting on a snapshot that is N seconds out of date. And they still have no canonical place to keep what they learned between runs.
+The most common shape we see in the wild is "agent + heartbeat" — a loop that wakes every N minutes, polls a few APIs, reasons about what it found, and acts. Some of these heartbeat agents are quite sophisticated.<Sidenote>MindStudio's heartbeat pattern is the canonical example. It works, but it papers over the missing bits with prompt engineering and ad-hoc state.</Sidenote> They are still polling. They are still acting on a snapshot that is N seconds out of date. And they still have no canonical place to keep what they learned between runs.
 
 Polling is the *symptom*. The disease is missing primitives.
 
@@ -30,13 +30,13 @@ Polling is the *symptom*. The disease is missing primitives.
 
 ## The first primitive: a way to wake up
 
-A proactive agent needs to know when to run. Not "every five minutes" &mdash; *when the moment is right.* That moment is one of three things:
+A proactive agent needs to know when to run. Not "every five minutes" — *when the moment is right.* That moment is one of three things:
 
 1. **Time passed.** A schedule, an interval, a quiet stretch that lasted long enough to mean something.
 2. **Data changed.** A record moved, a file appeared, a status flipped from `in_review` to `blocked`.
 3. **A message arrived.** A human, another agent, or a system said something it expects to be heard.
 
-Reactive agents only honour the third one, and they don&rsquo;t even honour it well &mdash; they wait to be *invoked,* not to be *spoken to.*
+Reactive agents only honour the third one, and they don't even honour it well — they wait to be *invoked,* not to be *spoken to.*
 
 The shift is small in description and large in consequence. The agent stops being a function someone calls. It starts being a participant in a system.
 
@@ -44,14 +44,14 @@ The shift is small in description and large in consequence. The agent stops bein
 
 ## The second primitive: state that survives
 
-The hardest thing about going from reactive to proactive isn&rsquo;t the wakeup. It&rsquo;s the *memory.*
+The hardest thing about going from reactive to proactive isn't the wakeup. It's the *memory.*
 
-A reactive agent wakes up from nothing every time. The prompt is the world. When the prompt finishes, the world ends. Nothing has to be remembered &mdash; whatever the agent knew is in the conversation it just had.
+A reactive agent wakes up from nothing every time. The prompt is the world. When the prompt finishes, the world ends. Nothing has to be remembered — whatever the agent knew is in the conversation it just had.
 
-A proactive agent wakes up *into* a world. It has to know what it saw last time, what it acted on last time, what it&rsquo;s currently in the middle of. Otherwise every wakeup is a cold start, and a cold-start agent does the same useless thing over and over: it processes whatever is in front of it without context.
+A proactive agent wakes up *into* a world. It has to know what it saw last time, what it acted on last time, what it's currently in the middle of. Otherwise every wakeup is a cold start, and a cold-start agent does the same useless thing over and over: it processes whatever is in front of it without context.
 
 <Callout tone="thought" label="Why this is the hard one">
-Push is an engineering problem. Persistence is an architectural one. Most teams underestimate how much code they will write to fake state &mdash; tickets used as memory, prompts that string-concatenate the last run&rsquo;s output, JSON columns that drift out of sync with the model that reads them.
+Push is an engineering problem. Persistence is an architectural one. Most teams underestimate how much code they will write to fake state — tickets used as memory, prompts that string-concatenate the last run's output, JSON columns that drift out of sync with the model that reads them.
 </Callout>
 
 The shape of state that actually works is closer to a *filesystem* than a database. Real-time read, real-time write, conflict detection on concurrent writes, change events when anything moves. Treat it as a place agents *live in*, not a thing they query.
@@ -66,12 +66,12 @@ A proactive agent is, almost by definition, long-lived. It will be running while
 
 What that means in practice:
 
-- Wake, work, sleep cycles need to be checkpointed &mdash; if the worker dies mid-task, the next worker resumes where it stopped, not where it started.
+- Wake, work, sleep cycles need to be checkpointed — if the worker dies mid-task, the next worker resumes where it stopped, not where it started.
 - Idempotency on every external call, because the next worker will replay them.
 - Spend observability, because an always-on agent that loops is the most expensive bug in your account.
 - Auth scoped per agent per workspace, because you do not want a runaway agent with a god token.
 
-This is the unglamorous half. It is also the half that decides whether a proactive agent makes it to production.
+This is the unglamorous half — and the one that decides whether a proactive agent actually makes it to production.
 
 </Scene>
 
@@ -79,32 +79,32 @@ This is the unglamorous half. It is also the half that decides whether a proacti
 
 ## Wired together: the runtime
 
-What you actually want, as a developer building one of these things, is to write the agent &mdash; the part that&rsquo;s yours &mdash; and have everything around it be solved by something else.
+What you actually want, as a developer building one of these things, is to write the agent — the part that's yours — and have everything around it be solved by something else.
 
-That something else is what we&rsquo;ve been calling the **proactive runtime**. Concretely:
+That something else is what we've been calling the **proactive runtime**. Concretely:
 
 - a **clock** that fires on schedules and intervals
-- a **watcher** that surfaces normalised change events from every provider you care about
+- a **watcher** that surfaces normalized change events from every provider you care about
 - an **inbox** that delivers messages between agents, humans, and systems
 - a **shared workspace** the agent reads from and writes to
-- a **durability ring** &mdash; checkpointing, repair, spend guardrails, scoped auth
+- a **durability ring** — checkpointing, repair, spend guardrails, scoped auth
 
 The agent code that sits in the middle of that is shockingly small. A handler. A workspace name. The runtime brings the rest.
 
 That is the wedge. Not "multi-agent coordination," not "stateful agents," not "agent orchestration." Just: *give the agent a clock, an inbox, and a place to live, and let it act when something moves.*
 
 <Callout tone="cool" label="The third-party reading">
-A 2024 paper from Tsinghua and Huawei &mdash; [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) &mdash; formalises the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn&rsquo;t find it until after we&rsquo;d shipped most of this. Worth a read.
+A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalises the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd shipped most of this. Worth a read.
 </Callout>
 
 </Scene>
 
-## Why we&rsquo;re writing this down
+## Why we're writing this down
 
-Because the language we&rsquo;ve been using &mdash; *multi-agent coordination layer*, *headless Slack for agents*, *integration filesystem* &mdash; turned out to be three different people describing the same elephant. The elephant is the runtime. The runtime is for proactive agents. We had it the whole time and were calling it the wrong thing.
+Because the language we've been using — *multi-agent coordination layer*, *headless Slack for agents*, *integration filesystem* — turned out to be three different people describing the same elephant. The elephant was a runtime for proactive agents. We'd had it the whole time and kept calling it the wrong thing.
 
-If you&rsquo;re building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last &mdash; you&rsquo;re building a proactive runtime by hand. We did it three times before we got tired of it. We figured we&rsquo;d build it once, properly, and put it under whatever agent you happen to be writing.
+If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last — you're building a proactive runtime by hand. We did it three times before we got tired of it. We figured we'd build it once, properly, and put it under whatever agent you happen to be writing.
 
 The next essays in this folio go deeper. *Reactive vs proactive: a tour of the difference* lays out the architectural divergence with examples. *The eight-week webhook tax* costs out the build-it-yourself path. *Why we stopped saying multi-agent coordination* is the longer version of why we relabelled the elephant.
 
-Read in any order. The triple stays the same.
+Read them in any order — the clock, the watcher, and the inbox show up in all of them.

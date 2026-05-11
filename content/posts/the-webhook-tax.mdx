@@ -1,97 +1,136 @@
 ---
 title: "The eight-week webhook tax"
-summary: "Adding one provider to a proactive agent &mdash; the honest, production-ready, post-incident-review way &mdash; is at minimum a sprint. Doing it for four providers is most of a quarter. We mapped the cost so you don't have to discover it."
-date: "2026-04-06"
+summary: "Adding one provider to a proactive agent — the honest, production-ready, post-incident-review way — is at minimum a sprint. Doing it for four providers is most of a quarter. We mapped the cost so you don't have to discover it."
+date: "2026-05-10"
 accent: "lavender"
 dropcap: false
 ---
 
 The first time you add a webhook to an agent, it takes an afternoon. You wire up an Express route, log the body, and watch payloads arrive. It feels easy.
 
-The second time you do it &mdash; for production, with the same provider, after the first one quietly dropped events for two weeks &mdash; it takes a sprint. The third time, when you&rsquo;ve been burned enough that you&rsquo;re actually doing it correctly, it takes longer than that.
+The second time you do it — for production, with the same provider, after the first one quietly dropped events for two weeks — it takes a sprint. The third time, when you've been burned enough that you're actually doing it correctly, it takes longer than that.
 
 Here is what *correctly* looks like.
 
-## What &ldquo;production-ready&rdquo; actually means
+<Scene figure={<WebhookTaxFigure />} caption="The plumbing per provider — × every integration.">
+
+## What "production-ready" actually means
 
 For one provider:
 
-1. **A public endpoint.** Hosted somewhere, with a stable URL, behind your own TLS cert. Already non-trivial if your agent runs on a serverless runtime that doesn&rsquo;t expose long-lived URLs.
+1. **A public endpoint.** Hosted somewhere, with a stable URL, behind your own TLS cert. Already non-trivial if your agent runs on a serverless runtime that doesn't expose long-lived URLs.
 
-2. **Signature verification.** Each provider does this differently. Linear is HMAC-SHA256 with a header named `X-Linear-Signature`. GitHub is HMAC-SHA256 with `X-Hub-Signature-256`. Slack is HMAC-SHA256 *plus a timestamp* to prevent replay. Notion has no signing &mdash; you&rsquo;re supposed to allow-list IPs. Each one has its own quirks (Linear sends the timestamp in a separate header that you also have to include in the signed payload; GitHub gives you `sha1` and `sha256` and the older one is still default in some webhooks).
+2. **Signature verification.** Each provider does this differently. Linear is HMAC-SHA256 with a header named `X-Linear-Signature`. GitHub is HMAC-SHA256 with `X-Hub-Signature-256`. Slack is HMAC-SHA256 *plus a timestamp* to prevent replay. Notion has no signing — you're supposed to allow-list IPs. Each one has its own quirks (Linear sends the timestamp in a separate header that you also have to include in the signed payload; GitHub gives you `sha1` and `sha256` and the older one is still default in some webhooks).
 
-3. **Sub-2-second response.** Most providers retry aggressively if you don&rsquo;t respond in time. Linear retries for two hours. Stripe retries with exponential backoff for three days. If your endpoint blocks on anything &mdash; including the LLM call &mdash; you will get duplicate deliveries, and lots of them.
+3. **Sub-2-second response.** Most providers retry aggressively if you don't respond in time. Linear retries for two hours. Stripe retries with exponential backoff for three days. If your endpoint blocks on anything — including the LLM call — you will get duplicate deliveries, and lots of them.
 
 4. **A queue.** Because of #3, you cannot process the webhook inline. You have to ack-and-enqueue. That means Redis, SQS, or equivalent. Plus a worker. Plus dead-letter handling.
 
-5. **Deduplication.** Providers send duplicates under load. You must store a seen-set keyed by their event ID. Without this, agents will act on the same event repeatedly. Twenty-four hours of dedupe is usually enough; less and you&rsquo;ll see duplicates from retried deliveries; more and you&rsquo;ll see your Redis bill go up.
+5. **Deduplication.** Providers send duplicates under load. You must store a seen-set keyed by their event ID. Without this, agents will act on the same event repeatedly. Twenty-four hours of dedupe is usually enough; less and you'll see duplicates from retried deliveries; more and you'll see your Redis bill go up.
 
 6. **Filtering.** The webhook fires for many event types. You probably care about three. The rest you have to either filter out at the registration step (each provider exposes this differently) or at the worker (which means paying to receive and parse them).
 
-7. **Payload completion.** Most webhook payloads are *partial.* Linear&rsquo;s issue webhook gives you the changed fields, not the full issue. You will need to call the API to get the complete object &mdash; and you will need to handle the fact that by the time your call lands, the issue may have changed again.
+7. **Payload completion.** Most webhook payloads are *partial.* Linear's issue webhook gives you the changed fields, not the full issue. You will need to call the API to get the complete object — and you will need to handle the fact that by the time your call lands, the issue may have changed again.
 
-8. **State for the agent.** The webhook tells you *what changed.* Your agent needs to know *where it left off* the last time it touched this entity. That&rsquo;s a database. With migrations. And concurrent-write handling. And a backup strategy.
+8. **State for the agent.** The webhook tells you *what changed.* Your agent needs to know *where it left off* the last time it touched this entity. That's a database. With migrations. And concurrent-write handling. And a backup strategy.
 
-9. **Webhook registration.** You can&rsquo;t do this through the dashboard if you have multiple environments. So now you have a registration script. It needs to run on deploy. It needs to be idempotent. It needs to handle URL changes (your dev tunnel changed; your prod load balancer moved).
+9. **Webhook registration.** You can't do this through the dashboard if you have multiple environments. So now you have a registration script. It needs to run on deploy. It needs to be idempotent. It needs to handle URL changes (your dev tunnel changed; your prod load balancer moved).
 
-10. **Observability.** Webhook failures fail silently from the user&rsquo;s perspective. You need dashboards. You need alerts on dead-letter queue depth. You need to be able to *replay* a specific webhook delivery for debugging, which means storing raw payloads with sufficient retention.
+10. **Observability.** Webhook failures fail silently from the user's perspective. You need dashboards. You need alerts on dead-letter queue depth. You need to be able to *replay* a specific webhook delivery for debugging, which means storing raw payloads with sufficient retention.
 
 That is one provider.
 
+</Scene>
+
 <PullQuote>
-The first time you add a webhook, it takes an afternoon. The third time &mdash; correctly &mdash; it takes longer than a sprint.
+The first time you add a webhook, it takes an afternoon. The third time — correctly — it takes longer than a sprint.
 </PullQuote>
 
 ## Now do it four times
 
-Most agent products need at minimum: a ticketing system (Linear or Jira), a code host (GitHub), a chat tool (Slack), and a CRM or doc store (Notion, Salesforce, Hubspot).
+Most proactive agents need to watch at minimum: a ticketing system (Linear or Jira), a code host (GitHub), a chat tool (Slack), and a CRM or doc store (Notion, Salesforce, HubSpot).
 
-Each of those has its own version of all ten items above. The signature scheme is different. The retry behaviour is different. The payload schema is different. The registration flow is different. The "is this payload partial?" answer is different.
+Each of those has its own version of all ten items above. Different signature scheme, different retry behavior, different payload schema, different registration flow, different answer to "is this payload partial?"
 
-We have a table from the last time we measured it. The shape of it matters more than the specific cells.
-
-| Provider | Signature header | Algorithm | Retry window | Partial? |
-|---|---|---|---|---|
-| Linear | `X-Linear-Signature` | HMAC-SHA256 | 2 hours | Yes |
-| GitHub | `X-Hub-Signature-256` | HMAC-SHA256 | 3 attempts | No |
-| Jira | `X-Hub-Signature` | HMAC-SHA256 (admin) or none | No retry | Yes |
-| Slack | `X-Slack-Signature` | HMAC-SHA256 + timestamp | 3 retries | No |
-| Notion | None (IP allowlist) | &mdash; | No retry | Yes |
+<table>
+  <thead>
+    <tr><th>Provider</th><th>Signature header</th><th>Algorithm</th><th>Retry window</th><th>Partial?</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Linear</td><td><code>X-Linear-Signature</code></td><td>HMAC-SHA256</td><td>2 hours</td><td>Yes</td></tr>
+    <tr><td>GitHub</td><td><code>X-Hub-Signature-256</code></td><td>HMAC-SHA256</td><td>3 attempts</td><td>No</td></tr>
+    <tr><td>Jira</td><td><code>X-Hub-Signature</code></td><td>HMAC-SHA256 (admin) or none</td><td>No retry</td><td>Yes</td></tr>
+    <tr><td>Slack</td><td><code>X-Slack-Signature</code></td><td>HMAC-SHA256 + timestamp</td><td>3 retries</td><td>No</td></tr>
+    <tr><td>Notion</td><td>None (IP allowlist)</td><td>—</td><td>No retry</td><td>Yes</td></tr>
+  </tbody>
+</table>
 
 Four endpoints. Four verification implementations. Four parsers. Four registration flows. Four deploy scripts. Four ways for things to silently break.
 
-In our experience, **the path from "we want our agent to be proactive against four providers" to "we have a production-ready proactive agent against four providers" is six to eight weeks of one engineer&rsquo;s time.** The engineer is not building the agent during that time. They are building plumbing.
+In practice, **the path from "we want our agent to react to changes across four providers" to "we have production-ready change detection against four providers" is six to eight weeks of one engineer's time.** The engineer is not building the agent during those weeks. They are building plumbing.
+
+## The providers that don't even give you a webhook
+
+That's the cost when a provider *does* offer webhooks. Many don't — or their webhooks are so limited they might as well not exist.
+
+Google Workspace has push notifications for some resources through the Google Cloud Pub/Sub system, but you need a GCP project, a subscription, and a service account just to receive them. Calendar changes are supported. Google Docs changes are not. If you want to know when a doc was edited, you poll the Drive Activity API.
+
+Salesforce has Streaming API and Change Data Capture, but both require persistent connections (CometD or gRPC) rather than simple HTTP callbacks. You're not wiring up an endpoint — you're maintaining a long-lived subscriber process that reconnects on failure and manages its own replay cursor.
+
+HubSpot has webhooks, but only for CRM objects and only if you're building a public app registered through their developer portal. Private integrations — the kind most agent builders start with — don't get webhooks at all. You poll.
+
+For these providers, the fallback is always the same: **scheduled syncs.**
+
+<Scene side="right" figure={<SyncFallbackFigure />} caption="When there's no webhook — the sync fallback.">
+
+## The scheduled sync tax
+
+A scheduled sync means running a job on a cron — every minute, every five minutes, every hour — that calls the provider's API, compares the current state to the last known state, and surfaces what changed. It sounds simpler than webhooks. In some ways it's harder.
+
+**Cursor management.** Every sync needs a checkpoint: a timestamp, a page token, a cursor ID. You fetch records newer than your checkpoint, process them, then advance the checkpoint. If the process crashes between processing and advancing, you'll re-process records on the next run. If it advances before processing completes, you'll miss records. This is the same exactly-once delivery problem that webhooks have, except now you're the one implementing it from scratch.
+
+**Rate limits.** Polling APIs hit rate limits fast. The Notion API allows three requests per second. The HubSpot search API has a 4-per-second-per-app limit. If your sync touches multiple object types or multiple workspaces, you need a rate limiter with per-provider, per-account bucketing. Miss this and your agent goes blind for minutes or hours while the rate limit window resets.
+
+**Change detection.** Not every API gives you a clean "modified since" filter. Some return a `lastModifiedDate` you can filter on. Some return results sorted by creation date only, so you have to fetch everything and diff locally. Google Drive gives you a `changes` endpoint with a `startPageToken`, which is a proper changelog — but most providers don't have this concept at all.
+
+**Latency tradeoff.** The faster you poll, the closer you get to real-time — and the faster you burn through rate limits. Most teams settle on five-minute intervals as a compromise. That means your proactive agent can be up to five minutes late on every reaction. For a deploy notification, five minutes is fine. For a security alert, five minutes is a long time.
+
+**Infrastructure.** A scheduled sync needs: a cron runner (or a serverless timer), the sync logic per provider, a database for checkpoints and last-known state, a diffing layer to detect changes, and the same queue-and-worker setup you'd need for webhooks — because you still can't process synchronously if the LLM call takes ten seconds.
+
+<Callout tone="thought" label="The uncomfortable math">
+If a provider offers webhooks, you need eight to ten pieces of infrastructure per provider. If it doesn't, you need roughly the same amount of infrastructure — just different infrastructure. Either way, the cost is measured in weeks per provider, and the ongoing maintenance never stops.
+</Callout>
+
+</Scene>
+
+## Why this matters for proactive agents specifically
+
+A reactive agent — one that waits for a user to ask it something — doesn't need any of this. It has a simple lifecycle: receive prompt, think, respond. The user is the trigger. The user provides the context.
+
+A proactive agent has a fundamentally different requirement: it needs to *notice things on its own.* A ticket was moved. A deploy failed. A document was updated. A customer churned. The agent needs to observe these changes, decide they matter, and act — without anyone prompting it.
+
+That means a proactive agent's first dependency is a reliable stream of change events from the external systems it cares about. Not a one-time API call. Not a manual trigger. A continuous, durable, normalized stream of "this thing changed, here's what it was before, here's what it is now."
+
+Building that stream is the webhook tax. And because every provider implements change notification differently — or doesn't implement it at all — the tax scales linearly with every system your agent needs to watch.
 
 ## The hidden ongoing cost
 
-The eight weeks is not the end of it. The plumbing has a maintenance burden.
+The initial build is just where the maintenance starts.
 
-- Providers change their schemas. They give you ninety days notice if you&rsquo;re lucky. You will, at some point, ship a quiet break.
+- Providers change their schemas. They give you ninety days notice if you're lucky. You will, at some point, ship a quiet break.
 - Your dev tunnel URL changes. You re-register. You forget to re-register one of the four. You discover it three days later.
-- A provider has an incident and replays twelve hours of webhooks at once. Your queue depth alarm fires. You learn, at 2am, that your worker doesn&rsquo;t scale horizontally because of a Redis lock you forgot.
-- Your model picks up a new schema. Old serialised payloads in the dead-letter queue are now unparseable.
+- A provider has an incident and replays twelve hours of webhooks at once. Your queue depth alarm fires. You learn, at 2 AM, that your worker doesn't scale horizontally because of a Redis lock you forgot.
 - A teammate adds a fifth provider. Two of the ten items are subtly wrong because they were copy-pasted.
+- Your model picks up a new schema. Old serialized payloads in the dead-letter queue are now unparseable.
 
-This is not bad engineering. It is *normal* engineering for a class of work that is genuinely hard. The cost is real and it is recurring.
+None of this is bad engineering — it's just what the work actually looks like when you do it honestly. And it keeps going.
 
-## Where this stops
+## The watcher as a primitive
 
-The reason we built relayfile and put it in front of every webhook we touch is that we got tired of being on the wrong side of this curve. Once it&rsquo;s solved properly, in one place, it is solved for every agent you ever write afterwards.
+This is why we think of change detection as a primitive — something that belongs underneath the agent, not inside it. The same way you wouldn't ask every agent builder to implement their own TCP stack, you shouldn't ask them to implement their own webhook verification, payload normalization, cursor management, and deduplication per provider.
 
-```typescript
-import { workspace } from "@proactive/runtime";
+A proactive agent needs a *watcher:* a single interface that says "something changed in a system you care about" with enough context for the agent to act on it. Whether that change came from a webhook, a streaming API, a polling sync, or a Pub/Sub subscription is an implementation detail the agent shouldn't have to know.
 
-workspace("acme/ops").on("change", async (file) => {
-  await agent.handle(file);
-});
-```
+The [three primitives](/posts/three-primitives) we keep coming back to — a clock, a watcher, an inbox — exist because each one represents a class of infrastructure that's genuinely hard to build, genuinely undifferentiated, and genuinely required for an agent to be proactive.
 
-The signature verification is gone. The dedupe is gone. The queue is gone. The registration script is gone. The partial-payload chase is gone. The dead-letter monitoring is still there &mdash; but it&rsquo;s the runtime&rsquo;s, not yours.
-
-Adding a fifth provider is a config line. Adding a sixth is a config line. The eight weeks compresses to an afternoon, and stays there.
-
-## The honest pitch
-
-We are not the only people who have noticed that webhook plumbing is undifferentiated work. We are, as far as we can tell, the only people building it as *infrastructure for the agent layer specifically* &mdash; with the change-event semantics, normalised state, and per-workspace persistence that agents actually need.
-
-You can build it yourself. We did, three times, before we decided not to do it again.
+The webhook tax is what happens when you build the watcher from scratch, one provider at a time.
