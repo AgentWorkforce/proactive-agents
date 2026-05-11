@@ -9,7 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@cloudflare/workers-types": "^4.20260511.1",
     "@gsap/react": "^2.1.2",
+    "@octokit/app": "^16.1.2",
+    "@relaycron/sdk": "^0.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
@@ -17,6 +20,7 @@
     "lucide-react": "^1.14.0",
     "next": "16.2.6",
     "next-mdx-remote": "^6.0.0",
+    "octokit": "^5.0.5",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "rehype-pretty-code": "^0.14.3",

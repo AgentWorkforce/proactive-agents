@@ -63,7 +63,14 @@ const HARD_PARTS = [
   },
 ];
 
-const FAQ_ITEMS = [
+type FaqItem = {
+  question: string;
+  answer: string;
+  points?: { label: string; text: string }[];
+  coda?: string;
+};
+
+const FAQ_ITEMS: FaqItem[] = [
   {
     question: "What is a proactive agent?",
     answer:
@@ -76,18 +83,32 @@ const FAQ_ITEMS = [
   },
   {
     question: "What are the three triggers that make an agent proactive?",
-    answer:
-      "The three triggers are: (1) Time — the agent runs on a schedule or interval it keeps for itself. (2) Change — the agent watches for data mutations via webhooks and acts the moment something moves. (3) Message — someone (a human, another agent, or a system) addresses the agent directly. A truly proactive agent listens for all three; using only one or two yields a smarter cron job or a chatbot that polls.",
+    answer: "The three triggers are:",
+    points: [
+      { label: "Time", text: "The agent runs on a schedule or interval it keeps for itself." },
+      { label: "Change", text: "The agent watches for data mutations via webhooks and acts the moment something moves." },
+      { label: "Message", text: "Someone — a human, another agent, or a system — addresses the agent directly." },
+    ],
+    coda: "A truly proactive agent listens for all three. Using only one or two yields a smarter cron job or a chatbot that polls.",
   },
   {
     question: "How do you build a proactive agent?",
-    answer:
-      "Building a proactive agent requires three primitives: (1) A wake-up mechanism combining a clock, a watcher for change events, and an inbox for messages. (2) Persistent state so the agent remembers what it saw and did between runs. (3) Durability — checkpointing to resume after failure, idempotency to prevent repeated actions, spend control, and scoped authentication. Together these form the proactive runtime that sits underneath the agent's logic.",
+    answer: "Building a proactive agent requires three primitives:",
+    points: [
+      { label: "Wake-up mechanism", text: "A clock, a watcher for change events, and an inbox for messages." },
+      { label: "Persistent state", text: "So the agent remembers what it saw and did between runs." },
+      { label: "Durability", text: "Checkpointing to resume after failure, idempotency to prevent repeated actions, spend control, and scoped authentication." },
+    ],
+    coda: "Together these form the infrastructure layer that sits underneath the agent's logic.",
   },
   {
     question: "Why are most AI agents still reactive?",
-    answer:
-      "Three engineering problems keep agents reactive: (1) Wake-ups are infrastructure — push-based triggers require stable URLs, signature verification, and normalized events that don't ship in model SDKs. (2) State is harder than it looks — agents need persistent memory across runs, not just conversation context. (3) Restraint is a research problem — knowing when NOT to act is as important as knowing when to act, and calibrated restraint remains difficult even for frontier models.",
+    answer: "Three engineering problems keep agents reactive:",
+    points: [
+      { label: "Wake-ups are infrastructure", text: "Push-based triggers require stable URLs, signature verification, and normalized events that don't ship in model SDKs." },
+      { label: "State is harder than it looks", text: "Agents need persistent memory across runs, not just conversation context." },
+      { label: "Restraint is a research problem", text: "Knowing when NOT to act is as important as knowing when to act, and calibrated restraint remains difficult even for frontier models." },
+    ],
   },
 ];
 
@@ -115,7 +136,18 @@ export default async function Home() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(FAQ_ITEMS)) }}
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            faqSchema(
+              FAQ_ITEMS.map((f) => ({
+                question: f.question,
+                answer: f.points
+                  ? `${f.answer} ${f.points.map((p, i) => `(${i + 1}) ${p.label} — ${p.text}`).join(" ")}${f.coda ? ` ${f.coda}` : ""}`
+                  : f.answer,
+              }))
+            )
+          ),
+        }}
       />
       <script
         type="application/ld+json"
@@ -360,14 +392,38 @@ export default async function Home() {
             </h2>
           </div>
 
-          <dl className="mt-14 space-y-10">
-            {FAQ_ITEMS.map((faq) => (
-              <div key={faq.question} className="reveal">
-                <dt className="font-display text-xl leading-tight text-ink">
-                  {faq.question}
+          <dl className="mt-14 space-y-6">
+            {FAQ_ITEMS.map((faq, i) => (
+              <div
+                key={faq.question}
+                className="reveal rounded-2xl border border-rule bg-paper-deep/40 p-6 sm:p-7"
+              >
+                <dt className="flex items-baseline gap-3">
+                  <span className="font-display text-2xl italic text-terracotta">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="font-display text-lg leading-snug text-ink sm:text-xl">
+                    {faq.question}
+                  </span>
                 </dt>
-                <dd className="mt-3 font-serif text-[1rem] leading-relaxed text-ink-soft">
-                  {faq.answer}
+                <dd className="mt-4 ml-10 font-serif text-[1rem] leading-relaxed text-ink-soft">
+                  <p>{faq.answer}</p>
+                  {faq.points && (
+                    <ol className="mt-3 space-y-2">
+                      {faq.points.map((p, j) => (
+                        <li key={j} className="flex gap-2">
+                          <span className="font-display text-sm text-terracotta mt-0.5">
+                            {j + 1}.
+                          </span>
+                          <span>
+                            <strong className="text-ink">{p.label}.</strong>{" "}
+                            {p.text}
+                          </span>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                  {faq.coda && <p className="mt-3">{faq.coda}</p>}
                 </dd>
               </div>
             ))}

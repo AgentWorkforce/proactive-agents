@@ -41,7 +41,7 @@ export default agent({
 
     if (!onTopic) {
       await polite("Sorry — I only answer questions about proactive agents. Try reframing?");
-      await writeLogEntry({
+      await writeLogEntry(ctx, {
         agent: "manual-chatbot",
         trigger: "message",
         action: "Refused — off topic",
@@ -62,7 +62,7 @@ export default agent({
       await polite(
         `I couldn't find a confident answer in the published essays. Either the topic isn't covered yet, or the question phrasing doesn't match what's there. Try the [essays index](https://proactiveagents.dev/posts) directly?`,
       );
-      await writeLogEntry({
+      await writeLogEntry(ctx, {
         agent: "manual-chatbot",
         trigger: "message",
         action: "Refused — low confidence",
@@ -80,7 +80,7 @@ export default agent({
 
     await ctx.messages.reply(msg.data.threadId ?? msg.data.channel, answer);
 
-    await writeLogEntry({
+    await writeLogEntry(ctx, {
       agent: "manual-chatbot",
       trigger: "message",
       action: `Answered ${msg.data.channel}`,

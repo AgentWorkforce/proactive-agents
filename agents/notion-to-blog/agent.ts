@@ -42,7 +42,7 @@ export default agent({
     const title = event.summary.title ?? "(untitled)";
 
     if (status !== "ready") {
-      await writeLogEntry({
+      await writeLogEntry(ctx, {
         agent: "notion-to-blog",
         trigger: "change",
         action: `Skipped — page still ${status ?? "unset"}`,
@@ -69,7 +69,7 @@ export default agent({
     //     () => openPr({ path: `content/posts/${slug}.mdx`, body: mdx, title: `Publish: ${title}` }),
     //   );
 
-    await writeLogEntry({
+    await writeLogEntry(ctx, {
       agent: "notion-to-blog",
       trigger: "change",
       action: "Published essay",

@@ -23,7 +23,7 @@ export default agent({
     const digest = { url: "", body: "" };
 
     if (!digest.body) {
-      await writeLogEntry({
+      await writeLogEntry(ctx, {
         agent: "sunday-ping",
         trigger: "time",
         action: "Skipped — no digest",
@@ -43,7 +43,7 @@ export default agent({
     const text = renderSlackPing(draft, digest.url);
     const sent = await ctx.messages.dm("khaliq", text);
 
-    await writeLogEntry({
+    await writeLogEntry(ctx, {
       agent: "sunday-ping",
       trigger: "time",
       action: "Sent Sunday ping",

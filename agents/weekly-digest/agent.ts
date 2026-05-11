@@ -11,10 +11,26 @@
  */
 import { agent, type Context } from "../shared/sdk";
 import { writeLogEntry } from "../shared/log";
+import { completeJson } from "../shared/openrouter";
+import { octokitFor, REPO, type CfEnv } from "../shared/runtime/cloudflare-context";
 
-const REPO = "AgentWorkforce/proactive-agents";
 const ISSUE_LABEL = "weekly-digest";
 const SOURCES = ["web", "reddit:LocalLLaMA", "reddit:AI_Agents", "reddit:MachineLearning"] as const;
+
+// Env injected at the function entrypoint and referenced from helpers.
+// We use a module-level holder rather than threading env through every call
+// because the agent code is meant to mirror the spec's `agent({...})` shape,
+// which doesn't expose env. When the runtime ships this becomes a Context
+// extension; for now it's set in functions/api/cron/[agent].ts before
+// the handler runs.
+let runtimeEnv: CfEnv | null = null;
+export function setEnv(env: CfEnv) {
+  runtimeEnv = env;
+}
+function env(): CfEnv {
+  if (!runtimeEnv) throw new Error("weekly-digest: env not set; call setEnv() before invoking onEvent");
+  return runtimeEnv;
+}
 
 type Mention = {
   source: (typeof SOURCES)[number];
@@ -47,7 +63,7 @@ export default agent({
     const fresh = raw.filter((m) => !seen.has(m.url));
 
     if (fresh.length === 0) {
-      await writeLogEntry({
+      await writeLogEntry(ctx, {
         agent: "weekly-digest",
         trigger: "time",
         action: "Skipped — quiet week",
@@ -73,7 +89,7 @@ export default agent({
       Array.from(new Set([...seen, ...fresh.map((m) => m.url)])),
     );
 
-    await writeLogEntry({
+    await writeLogEntry(ctx, {
       agent: "weekly-digest",
       trigger: "time",
       action: "Filed weekly digest",
@@ -85,7 +101,7 @@ export default agent({
 
   async onError(ctx, error, event) {
     ctx.logger.error("digest failed", { error: error.message, eventId: event.id });
-    await writeLogEntry({
+    await writeLogEntry(ctx, {
       agent: "weekly-digest",
       trigger: "time",
       action: "Failed to file digest",
@@ -221,15 +237,51 @@ async function braveSearch(
 // ─────────────────────────────────────────────────────────────────────────────
 // Clustering
 
-async function clusterByTopic(_ctx: Context, mentions: Mention[]): Promise<Cluster[]> {
-  // TODO: single Anthropic call. Prompt: "Cluster these N mentions into 1–4
-  // topic groups. Each group needs a 4–8 word topic. Drop anything off-topic
-  // for proactive agents (i.e. agentic AI tooling) — false positives are
-  // worse than missed mentions in a digest."
-  //
-  // Uses Claude Haiku (cheap, fast) by default. Swap to Sonnet if quality
-  // suffers on weeks with >30 mentions.
-  return [{ topic: "uncategorised", mentions }];
+async function clusterByTopic(ctx: Context, mentions: Mention[]): Promise<Cluster[]> {
+  if (mentions.length === 0) return [];
+
+  // Pass only the routing-decision fields. URL kept as the join key.
+  const compact = mentions.map((m: Mention, i: number) => ({
+    i,
+    title: m.title,
+    excerpt: m.excerpt.slice(0, 200),
+    source: m.source,
+  }));
+
+  const prompt = `You are clustering web mentions for a weekly digest about *proactive agents* — software systems where an LLM agent acts on its own (schedules, triggers, watchers, durable wake/sleep), not generic AI/LLM news.
+
+Drop anything off-topic. False positives are worse than misses in a digest.
+
+Return JSON in this exact shape:
+{
+  "clusters": [
+    { "topic": "<4-8 word topic name>", "indices": [<numeric indices from input>] }
+  ]
+}
+
+Rules:
+- 1 to 4 clusters total. Combine small clusters into "miscellaneous" if needed.
+- Every kept index appears in exactly one cluster.
+- Drop indices that aren't about proactive agents (don't include them anywhere).
+
+Mentions:
+${JSON.stringify(compact)}`;
+
+  type LlmResp = { clusters: { topic: string; indices: number[] }[] };
+  const out = await completeJson<LlmResp>({
+    apiKey: env().OPENROUTER_API_KEY!,
+    messages: [{ role: "user", content: prompt }],
+    signal: ctx.signal,
+  });
+
+  return out.clusters
+    .map((c) => ({
+      topic: c.topic,
+      mentions: c.indices
+        .map((i) => mentions[i])
+        .filter((m): m is Mention => Boolean(m)),
+    }))
+    .filter((c) => c.mentions.length > 0);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -248,21 +300,36 @@ async function upsertDigestIssue(
 ): Promise<{ issueUrl: string; issueNumber: number }> {
   const body = renderDigestBody(clusters, occurredAt);
   const title = `Weekly digest — week of ${occurredAt.slice(0, 10)}`;
+  const octokit = await octokitFor(env());
 
-  // TODO: wire to GitHub via Octokit OR the relay-github primitive when it ships.
-  //
-  //   const existing = await octokit.rest.issues.listForRepo({
-  //     owner: "AgentWorkforce", repo: "proactive-agents",
-  //     labels: ISSUE_LABEL, state: "open", per_page: 1,
-  //   });
-  //   if (existing.data[0]) {
-  //     await octokit.rest.issues.update({ owner, repo, issue_number: existing.data[0].number, body });
-  //     return { issueUrl: existing.data[0].html_url, issueNumber: existing.data[0].number };
-  //   }
-  //   const created = await octokit.rest.issues.create({ owner, repo, title, body, labels: [ISSUE_LABEL] });
-  //   return { issueUrl: created.data.html_url, issueNumber: created.data.number };
+  // One issue per ISO week. We look for an open issue already filed for this
+  // week (matched by title); if found, edit it; otherwise create.
+  const existing = await octokit.rest.issues.listForRepo({
+    owner: REPO.owner,
+    repo: REPO.name,
+    labels: ISSUE_LABEL,
+    state: "open",
+    per_page: 30,
+  });
+  const sameWeek = existing.data.find((i) => i.title === title);
+  if (sameWeek) {
+    await octokit.rest.issues.update({
+      owner: REPO.owner,
+      repo: REPO.name,
+      issue_number: sameWeek.number,
+      body,
+    });
+    return { issueUrl: sameWeek.html_url, issueNumber: sameWeek.number };
+  }
 
-  return { issueUrl: `https://github.com/${REPO}/issues/0`, issueNumber: 0 };
+  const created = await octokit.rest.issues.create({
+    owner: REPO.owner,
+    repo: REPO.name,
+    title,
+    body,
+    labels: [ISSUE_LABEL],
+  });
+  return { issueUrl: created.data.html_url, issueNumber: created.data.number };
 }
 
 function renderDigestBody(clusters: Cluster[], occurredAt: string): string {

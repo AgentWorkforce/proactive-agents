@@ -103,26 +103,34 @@ export type AgentHandle = {
 };
 
 /**
- * Local shim. When @agent-relay/agent ships, this whole function gets
- * replaced by the real SDK import. Right now it just logs that the agent
- * was registered and returns a Promise that never resolves (so importing
- * a handler module from a script would block the process — mirroring the
- * real "long-lived agent" semantics without doing any real work).
+ * Local shim. When @agent-relay/agent ships, replace this whole module with:
+ *   export { agent, type AgentDefinition, ... } from "@agent-relay/agent";
  *
- * To actually exercise a handler locally before the runtime ships, call
- * `definition.onEvent(mockCtx, mockEvent)` directly from a test.
+ * Until then `agent()` returns a handle whose `trigger()` invokes the
+ * registered `onEvent` synchronously with whatever event you pass it. This
+ * is exactly the spec's "imperative trigger — useful in tests" semantic, and
+ * it's how the Pages Function (functions/api/cron/[agent].ts) dispatches
+ * cron.tick events until the real runtime takes over.
  */
-export function agent(definition: AgentDefinition): AgentHandle {
-  const id = `${definition.workspace}/${definition.name ?? "default"}`;
-  // eslint-disable-next-line no-console
-  console.log(
-    `[agent shim] registered ${id} — schedule=${JSON.stringify(definition.schedule)}, watch=${JSON.stringify(definition.watch)}, inbox=${JSON.stringify(definition.inbox)}`
-  );
-  const ctx = {} as Context;
+export type AgentHandleWithDef = AgentHandle & {
+  /** The original definition. Lets the Pages Function reach `onEvent`. */
+  definition: AgentDefinition;
+};
+
+export function agent(definition: AgentDefinition): AgentHandleWithDef {
+  // No real-time dispatch in the shim — schedules / watches / inbox are not
+  // wired to anything. The runtime takes that over. Until then, callers
+  // (e.g. functions/api/cron/[agent].ts) reach into `handle.definition` and
+  // invoke `onEvent(realCtx, event)` directly.
   return {
-    ready: new Promise(() => {}),
+    definition,
+    ready: Promise.resolve(),
     stop: async () => {},
-    trigger: async () => {},
-    ctx,
+    ctx: {} as Context,
+    trigger: async () => {
+      throw new Error(
+        "shim: handle.trigger() not implemented — invoke handle.definition.onEvent(ctx, event) directly",
+      );
+    },
   };
 }

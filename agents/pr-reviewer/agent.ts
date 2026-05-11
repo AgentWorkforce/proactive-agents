@@ -39,7 +39,7 @@ export default agent({
     );
 
     if (mdxChanged.length === 0 && codeChanged.length === 0) {
-      await writeLogEntry({
+      await writeLogEntry(ctx, {
         agent: "pr-reviewer",
         trigger: "change",
         action: `Skipped PR #${pr.data.number}`,
@@ -70,7 +70,7 @@ export default agent({
     //   await ctx.once(`pr-comment:${pr.data.number}:${pr.data.head.sha}`,
     //     () => upsertPrComment(pr.data.number, body));
 
-    await writeLogEntry({
+    await writeLogEntry(ctx, {
       agent: "pr-reviewer",
       trigger: "change",
       action: `Reviewed PR #${pr.data.number}`,
