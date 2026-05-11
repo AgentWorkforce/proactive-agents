@@ -2,7 +2,7 @@ import Link from "next/link";
 import { getAllPosts, formatDate } from "@/lib/posts";
 import { BackgroundOrbs } from "@/components/background-orbs";
 import { ScrollReveal } from "@/components/scroll-reveal";
-import { Squiggle, Sparkle } from "@/components/decorations";
+import { Sparkle } from "@/components/decorations";
 
 const ACCENT_BG: Record<string, string> = {
   peach: "bg-peach/60",
@@ -277,11 +277,6 @@ export default async function Home() {
             ))}
           </ul>
 
-          <div className="reveal mt-16 flex items-center justify-center gap-3 text-ink-faint">
-            <Squiggle className="h-3 w-24 opacity-60" />
-            <span className="font-display italic text-sm">that&rsquo;s the site</span>
-            <Squiggle className="h-3 w-24 opacity-60" />
-          </div>
         </div>
       </section>
     </>
