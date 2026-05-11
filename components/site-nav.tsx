@@ -21,12 +21,6 @@ export function SiteNav() {
           <Link href="/about" className="hover:text-terracotta transition-colors">
             About
           </Link>
-          <a
-            href="https://github.com/AgentWorkforce"
-            className="hover:text-terracotta transition-colors"
-          >
-            GitHub
-          </a>
         </nav>
       </div>
     </header>
