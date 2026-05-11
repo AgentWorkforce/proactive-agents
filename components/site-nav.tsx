@@ -12,11 +12,11 @@ export function SiteNav() {
           </span>
         </Link>
         <nav className="flex items-center gap-6 text-[13px] uppercase tracking-[0.18em] text-ink-soft sm:gap-7">
+          <Link href="/guide" className="hover:text-terracotta transition-colors">
+            Guide
+          </Link>
           <Link href="/posts" className="hover:text-terracotta transition-colors">
             Essays
-          </Link>
-          <Link href="/#triggers" className="hover:text-terracotta transition-colors hidden sm:inline">
-            Triggers
           </Link>
           <Link href="/agent" className="hover:text-terracotta transition-colors">
             Agent

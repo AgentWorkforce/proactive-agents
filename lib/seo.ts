@@ -1,6 +1,6 @@
 import type { PostMeta } from "./posts";
 
-export const SITE_URL = "https://proactiveagents.ai";
+export const SITE_URL = "https://proactiveagents.dev";
 export const SITE_NAME = "Proactive Agents";
 export const SITE_DESCRIPTION =
   "The definitive guide to proactive AI agents — what they are, how they differ from reactive agents, and how to build them. Educational essays, architecture patterns, and working code.";

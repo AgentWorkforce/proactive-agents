@@ -19,11 +19,14 @@ export function SiteFooter() {
 
           {/* Links */}
           <nav className="sm:col-span-5 flex flex-col items-start gap-2 text-sm text-ink-soft sm:items-end">
+            <Link href="/guide" className="hover:text-terracotta transition-colors">
+              Guide
+            </Link>
             <Link href="/posts" className="hover:text-terracotta transition-colors">
               Essays
             </Link>
-            <Link href="/#triggers" className="hover:text-terracotta transition-colors">
-              Triggers
+            <Link href="/agent" className="hover:text-terracotta transition-colors">
+              Agent log
             </Link>
             <Link href="/about" className="hover:text-terracotta transition-colors">
               About

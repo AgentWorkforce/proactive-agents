@@ -2,7 +2,7 @@
 
 > The definitive guide to proactive AI agents — what they are, how they differ from reactive agents, and how to build them.
 
-Site: https://proactiveagents.ai
+Site: https://proactiveagents.dev
 Author: Khaliq Gant, co-founder of AgentWorkforce
 Last updated: 2026-05-11
 

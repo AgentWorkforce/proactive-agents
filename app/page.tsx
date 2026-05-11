@@ -6,6 +6,8 @@ import { Sparkle } from "@/components/decorations";
 import {
   jsonLd,
   websiteSchema,
+  faqSchema,
+  definedTermSchema,
   SITE_URL,
   SITE_NAME,
   SITE_DESCRIPTION,
@@ -61,6 +63,34 @@ const HARD_PARTS = [
   },
 ];
 
+const FAQ_ITEMS = [
+  {
+    question: "What is a proactive agent?",
+    answer:
+      "A proactive agent is an AI agent that acts without being prompted. Instead of waiting for a human to type a command, it wakes itself up when time passes, data changes, or a message arrives — and decides whether and how to act. The defining characteristic is how it wakes up, not what model or framework it uses.",
+  },
+  {
+    question: "What is the difference between a reactive and proactive agent?",
+    answer:
+      "A reactive agent waits to be invoked — it receives a prompt, executes, and goes back to sleep. A proactive agent wakes itself up based on triggers: schedules (time), data mutations (change), or incoming messages. Reactive agents poll on intervals and forget between runs. Proactive agents receive push events and maintain persistent state across wake-ups.",
+  },
+  {
+    question: "What are the three triggers that make an agent proactive?",
+    answer:
+      "The three triggers are: (1) Time — the agent runs on a schedule or interval it keeps for itself. (2) Change — the agent watches for data mutations via webhooks and acts the moment something moves. (3) Message — someone (a human, another agent, or a system) addresses the agent directly. A truly proactive agent listens for all three; using only one or two yields a smarter cron job or a chatbot that polls.",
+  },
+  {
+    question: "How do you build a proactive agent?",
+    answer:
+      "Building a proactive agent requires three primitives: (1) A wake-up mechanism combining a clock, a watcher for change events, and an inbox for messages. (2) Persistent state so the agent remembers what it saw and did between runs. (3) Durability — checkpointing to resume after failure, idempotency to prevent repeated actions, spend control, and scoped authentication. Together these form the proactive runtime that sits underneath the agent's logic.",
+  },
+  {
+    question: "Why are most AI agents still reactive?",
+    answer:
+      "Three engineering problems keep agents reactive: (1) Wake-ups are infrastructure — push-based triggers require stable URLs, signature verification, and normalized events that don't ship in model SDKs. (2) State is harder than it looks — agents need persistent memory across runs, not just conversation context. (3) Restraint is a research problem — knowing when NOT to act is as important as knowing when to act, and calibrated restraint remains difficult even for frontier models.",
+  },
+];
+
 export const metadata = {
   title: `${SITE_NAME} — What They Are and How to Build Them`,
   description: SITE_DESCRIPTION,
@@ -82,6 +112,21 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(websiteSchema()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(faqSchema(FAQ_ITEMS)) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLd(
+            definedTermSchema(
+              "Proactive Agent",
+              "An AI agent that acts without being prompted — it wakes itself up when time passes, data changes, or a message arrives, rather than waiting for a human to invoke it."
+            )
+          ),
+        }}
       />
       <ScrollReveal />
 
@@ -113,10 +158,10 @@ export default async function Home() {
 
           <div className="mt-12 flex flex-wrap items-center gap-6">
             <Link
-              href="#triggers"
+              href="/guide"
               className="group inline-flex items-center gap-3 rounded-full bg-ink px-6 py-3 text-sm font-medium tracking-wide text-paper transition-transform hover:-translate-y-0.5"
             >
-              What makes them proactive
+              Read the guide
               <span aria-hidden className="transition-transform group-hover:translate-x-1">
                 →
               </span>
@@ -300,6 +345,45 @@ export default async function Home() {
             ))}
           </ul>
 
+        </div>
+      </section>
+
+      {/* FAQ — GEO-optimized answer-first section */}
+      <section id="faq" className="relative mt-32 sm:mt-40">
+        <div className="mx-auto max-w-3xl px-6 sm:px-10">
+          <div className="reveal mx-auto max-w-2xl text-center">
+            <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
+              ✦ Frequently asked
+            </p>
+            <h2 className="mt-3 font-display text-[clamp(2rem,4.6vw,3rem)] leading-[1.06] tracking-tight text-ink">
+              Common questions about proactive agents.
+            </h2>
+          </div>
+
+          <dl className="mt-14 space-y-10">
+            {FAQ_ITEMS.map((faq) => (
+              <div key={faq.question} className="reveal">
+                <dt className="font-display text-xl leading-tight text-ink">
+                  {faq.question}
+                </dt>
+                <dd className="mt-3 font-serif text-[1rem] leading-relaxed text-ink-soft">
+                  {faq.answer}
+                </dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="reveal mt-16 text-center">
+            <Link
+              href="/guide"
+              className="group inline-flex items-center gap-3 rounded-full bg-ink px-6 py-3 text-sm font-medium tracking-wide text-paper transition-transform hover:-translate-y-0.5"
+            >
+              Read the full guide
+              <span aria-hidden className="transition-transform group-hover:translate-x-1">
+                →
+              </span>
+            </Link>
+          </div>
         </div>
       </section>
     </>

@@ -108,43 +108,114 @@ async function fetchAllSources(ctx: Context): Promise<Mention[]> {
   );
 }
 
-async function searchWeb(_ctx: Context): Promise<Mention[]> {
-  // TODO: wire to Tavily — https://tavily.com (good free tier, returns clean
-  // JSON tuned for LLM consumption). Set `TAVILY_API_KEY` via `relay providers
-  // connect tavily` once the runtime supports custom providers; for now the
-  // env var is read at agent boot.
-  //
-  // const res = await fetch("https://api.tavily.com/search", {
-  //   method: "POST",
-  //   headers: { "content-type": "application/json" },
-  //   body: JSON.stringify({
-  //     api_key: process.env.TAVILY_API_KEY,
-  //     query: "proactive agents",
-  //     time_range: "week",
-  //     max_results: 20,
-  //   }),
-  //   signal: _ctx.signal,
-  // });
-  // const data = (await res.json()) as { results: { url: string; title: string; content: string; published_date: string }[] };
-  // return data.results.map((r) => ({ source: "web", url: r.url, title: r.title, excerpt: r.content.slice(0, 280), publishedAt: r.published_date }));
-  return [];
+async function searchWeb(ctx: Context): Promise<Mention[]> {
+  const results = await braveSearch(ctx, '"proactive agents"', { freshness: "pw", count: 20 });
+  return results.map((r) => ({
+    source: "web",
+    url: r.url,
+    title: r.title,
+    excerpt: r.description.slice(0, 280),
+    publishedAt: r.age ?? new Date().toISOString(),
+  }));
 }
 
-async function searchReddit(_ctx: Context, subreddit: string): Promise<Mention[]> {
-  // Reddit's JSON endpoint requires no auth for read; UA must be set.
-  // const res = await fetch(
-  //   `https://www.reddit.com/r/${subreddit}/search.json?q=${encodeURIComponent('"proactive agents"')}&sort=new&t=week&restrict_sr=1`,
-  //   { headers: { "user-agent": "proactive-agents-digest/0.1 (by /u/khaliqgant)" }, signal: _ctx.signal },
-  // );
-  // const data = (await res.json()) as { data: { children: { data: { url: string; title: string; selftext: string; created_utc: number } }[] } };
-  // return data.data.children.map((c) => ({
-  //   source: `reddit:${subreddit}` as Mention["source"],
-  //   url: c.data.url,
-  //   title: c.data.title,
-  //   excerpt: c.data.selftext.slice(0, 280),
-  //   publishedAt: new Date(c.data.created_utc * 1000).toISOString(),
-  // }));
-  return [];
+async function searchReddit(ctx: Context, subreddit: string): Promise<Mention[]> {
+  // Try Reddit's JSON endpoint first. Distinctive UA matters more than rate
+  // here — generic UAs get blocked first; weekly cadence is well under any
+  // limit. If we get 4xx/5xx or empty, fall back to Brave site:reddit.com.
+  try {
+    const res = await fetch(
+      `https://www.reddit.com/r/${subreddit}/search.json?q=${encodeURIComponent('"proactive agents"')}&sort=new&t=week&restrict_sr=1`,
+      {
+        headers: { "user-agent": "proactive-agents-digest/0.1 (by /u/khaliqgant)" },
+        signal: ctx.signal,
+      },
+    );
+    if (!res.ok) throw new Error(`reddit ${res.status}`);
+    const data = (await res.json()) as {
+      data: {
+        children: {
+          data: { url: string; title: string; selftext: string; created_utc: number };
+        }[];
+      };
+    };
+    if (data.data.children.length === 0) throw new Error("reddit empty");
+    return data.data.children.map((c) => ({
+      source: `reddit:${subreddit}` as Mention["source"],
+      url: c.data.url,
+      title: c.data.title,
+      excerpt: c.data.selftext.slice(0, 280),
+      publishedAt: new Date(c.data.created_utc * 1000).toISOString(),
+    }));
+  } catch (err) {
+    ctx.logger.warn("reddit failed, falling back to brave", {
+      subreddit,
+      reason: String(err),
+    });
+    const results = await braveSearch(
+      ctx,
+      `site:reddit.com/r/${subreddit} "proactive agents"`,
+      { freshness: "pw", count: 10 },
+    );
+    return results.map((r) => ({
+      source: `reddit:${subreddit}` as Mention["source"],
+      url: r.url,
+      title: r.title,
+      excerpt: r.description.slice(0, 280),
+      publishedAt: r.age ?? new Date().toISOString(),
+    }));
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Brave Search
+
+type BraveResult = {
+  url: string;
+  title: string;
+  description: string;
+  age?: string; // ISO 8601 when present
+};
+
+/**
+ * Brave Search Web API. Free tier: 2,000 queries/month, 1 q/sec. We use
+ * one query per source per week — well under the limit.
+ *
+ * Auth: read `BRAVE_API_KEY` from env. When the proactive runtime supports
+ * provider connections, swap to `relay providers connect brave` and the SDK
+ * will inject the key at boot.
+ */
+async function braveSearch(
+  ctx: Context,
+  query: string,
+  opts: { freshness?: "pd" | "pw" | "pm" | "py"; count?: number } = {},
+): Promise<BraveResult[]> {
+  const apiKey = process.env.BRAVE_API_KEY;
+  if (!apiKey) {
+    ctx.logger.warn("BRAVE_API_KEY missing — skipping web search");
+    return [];
+  }
+  const params = new URLSearchParams({
+    q: query,
+    count: String(opts.count ?? 20),
+    text_decorations: "false",
+  });
+  if (opts.freshness) params.set("freshness", opts.freshness);
+
+  const res = await fetch(`https://api.search.brave.com/res/v1/web/search?${params}`, {
+    headers: {
+      "X-Subscription-Token": apiKey,
+      Accept: "application/json",
+      "Accept-Encoding": "gzip",
+    },
+    signal: ctx.signal,
+  });
+  if (!res.ok) {
+    ctx.logger.error("brave search failed", { status: res.status, query });
+    return [];
+  }
+  const data = (await res.json()) as { web?: { results?: BraveResult[] } };
+  return data.web?.results ?? [];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
