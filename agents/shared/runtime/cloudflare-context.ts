@@ -13,6 +13,10 @@ export type CfEnv = GithubEnv & {
   BRAVE_API_KEY?: string;
   OPENROUTER_API_KEY?: string;
   CRON_WEBHOOK_SECRET: string;
+  NANGO_SECRET_KEY?: string;
+  NANGO_HOST?: string;
+  NANGO_NOTION_CONNECTION_ID?: string;
+  NOTION_DATABASE_ID?: string;
 };
 
 const REPO_OWNER = "AgentWorkforce";

@@ -12,6 +12,7 @@
  * without going through HTTP and this whole file disappears.
  */
 import weeklyDigest, { setEnv as setWeeklyDigestEnv } from "../../../agents/weekly-digest/agent";
+import notionToBlog, { setEnv as setNotionToBlogEnv } from "../../../agents/notion-to-blog/agent";
 import { makeCloudflareContext, type CfEnv } from "../../../agents/shared/runtime/cloudflare-context";
 import type { AgentEvent, AgentHandleWithDef } from "../../../agents/shared/sdk";
 
@@ -24,6 +25,11 @@ const REGISTRY: Record<
   "weekly-digest": {
     handle: weeklyDigest,
     setEnv: setWeeklyDigestEnv,
+    workspace: "proactive-agents",
+  },
+  "notion-to-blog": {
+    handle: notionToBlog,
+    setEnv: setNotionToBlogEnv,
     workspace: "proactive-agents",
   },
 };
