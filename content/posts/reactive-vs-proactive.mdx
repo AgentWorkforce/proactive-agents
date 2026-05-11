@@ -40,18 +40,22 @@ None of these are exotic problems. They are the bread and butter of every cron-b
 ## The proactive version
 
 ```typescript
-import { workspace } from "@proactive/runtime";
+import { agent } from "@agent-relay/agent";
 
-workspace("acme/support").on("change", async (file) => {
-  if (!file.path.startsWith("/zendesk/tickets/")) return;
-  if (file.event !== "updated") return;
+agent({
+  workspace: "support",
+  watch: ["/zendesk/tickets/**"],
+  onEvent: async (ctx, event) => {
+    if (event.type !== "relayfile.changed") return;
 
-  const reply = file.current.lastCustomerReply;
-  const wasOpen = file.previous.status === "open";
+    const full = await event.expand("full");
+    const reply = full.data.current.lastCustomerReply;
+    const wasOpen = full.data.previous.status === "open";
 
-  if (wasOpen && containsApproval(reply)) {
-    await zendesk.close(file.current.id, { reason: "customer-approved" });
-  }
+    if (wasOpen && containsApproval(reply)) {
+      await zendesk.close(full.data.current.id, { reason: "customer-approved" });
+    }
+  },
 });
 ```
 
@@ -92,3 +96,7 @@ What reactive is not appropriate for is *anything where the value of the agent i
 There is no clever trick here. Push and persistence beat pull and statelessness, in agents the same way they beat them in every other distributed system. The reason agents are still mostly reactive is not that we forgot &mdash; it&rsquo;s that the runtime to make them proactive didn&rsquo;t exist as a primitive you could import.
 
 That&rsquo;s the part we&rsquo;ve been working on.
+
+<Callout tone="cool" label="See it for yourself">
+This site runs a proactive agent of its own. The source lives in [`agents/`](https://github.com/AgentWorkforce/proactive-agents/tree/main/agents) on GitHub; what it has actually done shows up live at [/agent](/agent), every entry committed by the agent itself.
+</Callout>
