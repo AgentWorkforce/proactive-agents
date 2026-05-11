@@ -125,14 +125,32 @@ async function fetchAllSources(ctx: Context): Promise<Mention[]> {
 }
 
 async function searchWeb(ctx: Context): Promise<Mention[]> {
-  const results = await braveSearch(ctx, '"proactive agents"', { freshness: "pw", count: 20 });
-  return results.map((r) => ({
-    source: "web",
-    url: r.url,
-    title: r.title,
-    excerpt: r.description.slice(0, 280),
-    publishedAt: r.age ?? new Date().toISOString(),
-  }));
+  // Two queries, OR'd and deduped. Brave's index is narrower than Google's
+  // for emerging-topic dev content, and exact-phrase quotes drop a lot of
+  // related phrasings. We trade ~2x the API quota for meaningfully better
+  // recall — still ~24 queries/month, well under the free 2k.
+  const queries = ["proactive agents", "proactive AI agent"];
+
+  const results = await Promise.all(
+    queries.map((q) => braveSearch(ctx, q, { freshness: "pm", count: 20 })),
+  );
+
+  const seen = new Set<string>();
+  const merged: Mention[] = [];
+  for (const batch of results) {
+    for (const r of batch) {
+      if (seen.has(r.url)) continue;
+      seen.add(r.url);
+      merged.push({
+        source: "web",
+        url: r.url,
+        title: r.title,
+        excerpt: r.description.slice(0, 280),
+        publishedAt: r.age ?? new Date().toISOString(),
+      });
+    }
+  }
+  return merged;
 }
 
 async function searchReddit(ctx: Context, subreddit: string): Promise<Mention[]> {
