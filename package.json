@@ -12,7 +12,6 @@
     "@cloudflare/workers-types": "^4.20260511.1",
     "@gsap/react": "^2.1.2",
     "@octokit/app": "^16.1.2",
-    "@relaycron/sdk": "^0.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "gray-matter": "^4.0.3",
