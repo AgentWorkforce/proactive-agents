@@ -15,7 +15,7 @@
  * We use plain fetch instead of @relaycron/sdk to dodge ESM/CJS resolution
  * drama; the API surface is small enough to inline.
  */
-import weeklyDigest from "../agents/weekly-digest/agent";
+import { SCHEDULES } from "../agents/schedules";
 
 const RELAYCRON_BASE = process.env.RELAYCRON_BASE_URL ?? "https://api.relaycron.dev";
 const SITE_BASE = process.env.SITE_BASE_URL ?? "https://proactiveagents.dev";
@@ -26,31 +26,6 @@ type Schedule = {
   cron_expression?: string;
   timezone?: string;
 };
-
-type RegisterableSchedule = {
-  agentName: string;
-  cron: string;
-  tz: string;
-};
-
-const REGISTRY: RegisterableSchedule[] = [
-  {
-    agentName: "weekly-digest",
-    cron: extractCron(weeklyDigest.definition.schedule)!,
-    tz: extractTz(weeklyDigest.definition.schedule) ?? "UTC",
-  },
-];
-
-function extractCron(s: unknown): string | null {
-  if (typeof s === "string") return s;
-  if (s && typeof s === "object" && "cron" in s) return (s as { cron: string }).cron;
-  return null;
-}
-
-function extractTz(s: unknown): string | null {
-  if (s && typeof s === "object" && "tz" in s) return (s as { tz?: string }).tz ?? null;
-  return null;
-}
 
 async function api<T>(method: string, path: string, body?: unknown): Promise<T> {
   const apiKey = required("RELAYCRON_API_KEY");
@@ -92,7 +67,7 @@ async function main() {
   const existing = await listAllSchedules();
   const byName = new Map(existing.map((s) => [s.name, s]));
 
-  for (const reg of REGISTRY) {
+  for (const reg of SCHEDULES) {
     const name = `proactive-agents/${reg.agentName}`;
     const url = `${SITE_BASE}/api/cron/${reg.agentName}`;
 
