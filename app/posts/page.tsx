@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAllPosts, formatDate } from "@/lib/posts";
 import { Asterism, Squiggle, Sparkle } from "@/components/decorations";
+import { CardArt } from "@/components/card-illustrations";
 import { jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 export const metadata = {
@@ -70,6 +71,7 @@ export default async function PostsIndex() {
                   style={{ "--tilt": TILTS[i % TILTS.length] } as React.CSSProperties}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent" />
+                  <CardArt slug={p.slug} />
                   <div className="absolute inset-0 flex items-end justify-between p-5">
                     <span className="font-display text-xs uppercase tracking-[0.22em] text-ink/80">
                       N°{String(posts.length - i).padStart(2, "0")}

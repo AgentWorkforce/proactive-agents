@@ -3,6 +3,7 @@ import { getAllPosts, formatDate } from "@/lib/posts";
 import { BackgroundOrbs } from "@/components/background-orbs";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { Sparkle } from "@/components/decorations";
+import { CardArt, ClockWatcherInbox } from "@/components/card-illustrations";
 import {
   jsonLd,
   websiteSchema,
@@ -297,6 +298,13 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* THE TRIPLE — visual anchor */}
+      <section className="relative mt-24 sm:mt-32">
+        <div className="reveal mx-auto max-w-4xl px-6 sm:px-10">
+          <ClockWatcherInbox />
+        </div>
+      </section>
+
       {/* WHY MOST AGENTS ARE STILL REACTIVE */}
       <section className="relative mt-32 sm:mt-40">
         <div className="mx-auto max-w-5xl px-6 sm:px-10">
@@ -359,6 +367,7 @@ export default async function Home() {
                     style={{ "--tilt": TILTS[i % TILTS.length] } as React.CSSProperties}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-transparent" />
+                    <CardArt slug={p.slug} />
                     <div className="absolute inset-0 flex items-end justify-between p-4">
                       <span className="font-display text-xs uppercase tracking-[0.22em] text-ink/80">
                         N°{String(posts.length - i).padStart(2, "0")}

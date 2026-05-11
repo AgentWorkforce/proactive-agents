@@ -224,7 +224,9 @@ async function braveSearch(
   query: string,
   opts: { freshness?: "pd" | "pw" | "pm" | "py"; count?: number } = {},
 ): Promise<BraveResult[]> {
-  const apiKey = process.env.BRAVE_API_KEY;
+  // Workers don't expose `process.env` — env comes through the binding
+  // passed by the Pages Function and read via env() (same as OpenRouter).
+  const apiKey = env().BRAVE_API_KEY;
   if (!apiKey) {
     ctx.logger.warn("BRAVE_API_KEY missing — skipping web search");
     return [];
