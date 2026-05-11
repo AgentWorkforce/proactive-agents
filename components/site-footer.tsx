@@ -33,7 +33,16 @@ export function SiteFooter() {
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-rule/60 pt-6 text-xs text-ink-faint sm:flex-row sm:items-center">
           <p>© {new Date().getFullYear()} Proactive Agents.</p>
-          <p>Crafted by AgentWorkforce.</p>
+          <p>
+            Crafted by{" "}
+            <a
+              href="https://github.com/AgentWorkforce"
+              className="text-ink-soft hover:text-terracotta transition-colors"
+            >
+              AgentWorkforce
+            </a>
+            .
+          </p>
         </div>
       </div>
     </footer>
