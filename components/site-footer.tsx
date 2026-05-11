@@ -14,15 +14,11 @@ export function SiteFooter() {
             </div>
             <p className="mt-3 max-w-md font-serif text-[0.95rem] leading-relaxed text-ink-soft">
               A working manual on the agents that don&rsquo;t wait to be asked.
-              By <a
-                href="https://github.com/AgentWorkforce"
-                className="text-terracotta hover:underline"
-              >AgentWorkforce</a>.
             </p>
           </div>
 
           {/* Links */}
-          <nav className="sm:col-span-5 grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-ink-soft sm:justify-items-end">
+          <nav className="sm:col-span-5 flex flex-col items-start gap-2 text-sm text-ink-soft sm:items-end">
             <Link href="/posts" className="hover:text-terracotta transition-colors">
               Essays
             </Link>
@@ -32,18 +28,12 @@ export function SiteFooter() {
             <Link href="/about" className="hover:text-terracotta transition-colors">
               About
             </Link>
-            <a
-              href="https://github.com/AgentWorkforce"
-              className="hover:text-terracotta transition-colors"
-            >
-              GitHub ↗
-            </a>
           </nav>
         </div>
 
         <div className="mt-10 flex flex-col items-start justify-between gap-2 border-t border-rule/60 pt-6 text-xs text-ink-faint sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} AgentWorkforce. Made with care.</p>
-          <p>Set in Fraunces &amp; Instrument Serif.</p>
+          <p>© {new Date().getFullYear()} Proactive Agents.</p>
+          <p>Crafted by AgentWorkforce.</p>
         </div>
       </div>
     </footer>
