@@ -1,14 +1,14 @@
 ---
 title: "The prompt can't save you"
-summary: "Two pieces from the OpenClaw ecosystem show exactly why proactive agents need a runtime, not a better system prompt. The clock works. The watcher is missing. Durability is a polite suggestion."
+summary: "Two pieces from the OpenClaw ecosystem show why proactive agents need a runtime, not a better system prompt."
 date: "2026-05-11"
 accent: "rose"
 dropcap: true
 ---
 
-No amount of prompt engineering replaces the right infrastructure. That sounds obvious — until you read two recent pieces from the OpenClaw ecosystem that make the point clearly.
+Prompt engineering isn't going to save you. You need the right infrastructure underneath. That sounds obvious, but then you look at what people are actually building and it's clear the lesson hasn't landed yet.
 
-Two recent pieces from the OpenClaw ecosystem make the case better than we could. One is a tutorial from xCloud — [*7 Proactive OpenClaw Agent Workflows*](https://xcloud.host/proactive-openclaw-agent-workflows/) — mapping seven patterns for making agents do things without being asked. The other is Hal the Lobster's [*Proactive Agent Skill*](https://clawhub.ai/halthelobster/proactive-agent), a system prompt that tries to turn any OpenClaw agent into a proactive, persistent, self-improving partner. Both are worth reading. Both correctly identify the same problems we've been writing about. And both solve them at the wrong layer.
+Two recent pieces from the OpenClaw ecosystem show what I mean. One is a tutorial from xCloud — [*7 Proactive OpenClaw Agent Workflows*](https://xcloud.host/proactive-openclaw-agent-workflows/) — mapping seven patterns for making agents do things without being asked. The other is Hal the Lobster's [*Proactive Agent Skill*](https://clawhub.ai/halthelobster/proactive-agent), a system prompt that tries to turn any OpenClaw agent into a proactive, persistent, self-improving partner. Both are worth reading. Both correctly identify the same problems we've been writing about. And both solve them at the wrong layer.
 
 <Scene figure={<PromptLayerFigure />} caption="The fundamental split: what the prompt advises vs what the runtime enforces.">
 
@@ -28,7 +28,7 @@ There is no workflow in the article that responds to an external event in real t
 The article compares OpenClaw favourably to Zapier, arguing it "goes significantly deeper" than "if this, then that." But all seven workflows *are* "if time, then do task" — which is what Zapier does. The intelligence is in the task execution, not the triggering.
 </Callout>
 
-The only primitive they have is the clock.
+So really, all they have is the clock.
 
 </Scene>
 
@@ -52,7 +52,7 @@ A runtime guarantee is a property of the system. A prompt instruction is a prope
 
 ## What the prompt cannot enforce
 
-The WAL Protocol says "STOP, do not compose response. WRITE, update `SESSION-STATE.md`. THEN, respond." But the LLM is a next-token predictor. It does not have a pre-response hook that forces a file write. It will follow the instruction most of the time, in the same way a human will follow a checklist most of the time — well enough when things are calm, unreliably when things are busy, and not at all when context is crowded. The protocol has no enforcement boundary. The LLM can skip step two and the system cannot notice.
+The WAL Protocol says "STOP, do not compose response. WRITE, update `SESSION-STATE.md`. THEN, respond." But the LLM is a next-token predictor. It does not have a pre-response hook that forces a file write. It will follow the instruction most of the time, in the same way a human will follow a checklist most of the time — well enough when things are calm, unreliably when things are busy, and not at all when context is crowded. There's no enforcement boundary. The LLM can skip step two and nothing in the system would notice.
 
 The same gap shows up everywhere:
 
@@ -99,13 +99,13 @@ This goes beyond OpenClaw — the pattern shows up everywhere. Teams reach for t
 - *What the agent is allowed to touch* (scoped auth)
 - *How much the agent is allowed to spend*
 
-The model should own the first list. It should never own the second. Every time a team pushes a runtime concern into the prompt, they get a system that works in demos and fails in production at three in the morning.
+The model should own the first list. It really shouldn't own the second. I've seen a ton of teams push runtime concerns into the prompt, and it always plays out the same way: works great in demos, falls apart in production at 3am.
 
 ## The credit due
 
 We want to be direct: both pieces are genuine contributions. The xCloud article maps seven real workflow patterns that real teams use. Hal's skill is the most rigorous treatment of agent state we've seen outside of academic papers — the WAL metaphor, the danger zone protocol, the anti-drift limits, the priority ordering. Some of these ideas are better-named than our own.
 
-The thinking is solid. It's just aimed at the wrong layer. Push scheduling, change detection, delivery, state, durability into the runtime, and the prompt can finally focus on the part it's good at: deciding what to do, not remembering what happened.
+The thinking is super solid. It's just aimed at the wrong layer. Once you push scheduling, change detection, delivery, state, and durability into the runtime, the prompt can finally just focus on deciding what to do next. Which is what it's actually good at.
 
 <Callout tone="cool" label="Further reading">
 The xCloud article is at [xcloud.host/proactive-openclaw-agent-workflows](https://xcloud.host/proactive-openclaw-agent-workflows/). Hal's skill lives at [clawhub.ai/halthelobster/proactive-agent](https://clawhub.ai/halthelobster/proactive-agent). Our earlier essay, [*Proactive agents need three primitives*](/posts/three-primitives), lays out the clock/watcher/inbox framework in full.

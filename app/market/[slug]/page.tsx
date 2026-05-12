@@ -110,9 +110,9 @@ export default async function MarketPostPage({
 
       <nav
         aria-label="Breadcrumb"
-        className="mx-auto max-w-5xl px-6 pt-8 sm:px-8"
+        className="mx-auto max-w-5xl px-5 pt-6 sm:px-8 sm:pt-8"
       >
-        <ol className="flex items-center gap-1.5 text-xs text-ink-faint">
+        <ol className="flex flex-wrap items-center gap-1.5 text-xs text-ink-faint">
           <li>
             <Link
               href="/"
@@ -132,7 +132,7 @@ export default async function MarketPostPage({
           </li>
           <li aria-hidden>/</li>
           <li
-            className="text-ink-soft truncate max-w-[200px]"
+            className="text-ink-soft truncate max-w-[60vw] sm:max-w-[200px]"
             aria-current="page"
           >
             {post.title}
@@ -140,7 +140,7 @@ export default async function MarketPostPage({
         </ol>
       </nav>
 
-      <article className="relative mx-auto max-w-5xl px-6 py-20 sm:px-8 sm:py-28">
+      <article className="relative mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-28">
         <PostParagraphReveal />
         <div className={`prose-essay ${post.dropcap ? "dropcap" : ""}`}>
           {content}

@@ -1,14 +1,14 @@
 ---
 title: "Building the weekly-digest agent: a production postmortem"
-summary: "The weekly-digest agent runs every Saturday, scans four sources for mentions, clusters them by topic, and files a GitHub issue. Here's what worked, what broke, and what production actually looks like."
+summary: "Our weekly-digest agent scans four sources, clusters mentions, and files a GitHub issue. Here's what worked and what broke."
 date: "2026-05-11"
 accent: "sage"
 dropcap: true
 ---
 
-The weekly-digest agent is a Cloudflare Pages Function wired to cron (`0 9 * * 6` — Saturday mornings). It fans out across four sources looking for mentions of "proactive agents," deduplicates what it finds against previous results, clusters the survivors by topic using an LLM, and upserts a single GitHub issue labeled `weekly-digest`. A run takes about twelve seconds.
+The weekly-digest agent is a Cloudflare Pages Function wired to cron (`0 9 * * 6`, Saturday mornings). It fans out across four sources looking for mentions of "proactive agents," deduplicates what it finds against previous results, clusters the survivors by topic using an LLM, and upserts a single GitHub issue labeled `weekly-digest`. A run takes about twelve seconds.
 
-I'm writing about it because every other post on this site is theoretical. We talk about [the three primitives](/posts/three-primitives), about [the webhook tax](/posts/the-webhook-tax), about what a [magical agent would do](/posts/magical-agents) if it existed. The weekly-digest agent is the one we actually built and tested. It has a git history with embarrassing commits and a log line that reads: "Found 30 new mention(s) across 4 sources, deduped, clustered into 4 topic(s)."
+I wanted to write about it because every other post on this site is kind of theoretical. We talk about [the three primitives](/posts/three-primitives), about [the webhook tax](/posts/the-webhook-tax), about what a [magical agent would do](/posts/magical-agents) if it existed. The weekly-digest agent is the one we actually built and tested. It has a git history with embarrassing commits and a log line that reads: "Found 30 new mention(s) across 4 sources, deduped, clustered into 4 topic(s)."
 
 So here are the receipts.
 
@@ -56,7 +56,7 @@ Each cluster gets a heading with a count, each mention gets a linked title with 
 
 ## What worked immediately
 
-Some parts of this agent were surprisingly painless. Worth noting, because "everything is hard" isn't true and pretending otherwise is its own kind of dishonesty.
+Some parts of this agent were surprisingly painless. Worth calling out, because it's not all struggle.
 
 **The cron trigger just worked.** We wired it to relaycron, pointed it at the function URL, and the first test run completed without incident. Cron is solved infrastructure, and when you lean on something solved, it shows.
 
@@ -94,7 +94,7 @@ A Slack message demands attention the moment it arrives. It generates a reply th
 The delivery channel shapes behavior more than the content does. A digest in Slack becomes a conversation. A digest in a GitHub issue becomes a reference.
 </PullQuote>
 
-The restraint is deliberate. The agent files a curated summary somewhere durable and searchable, and goes quiet. Production agents should be boring. The exciting ones are the ones that break.
+The restraint is deliberate. The agent files a curated summary somewhere durable and searchable, and goes quiet. I've found that the best production agents are honestly pretty boring to watch. That's the whole point.
 
 <Callout tone="cool" label="The delivery primitive matters">
 This maps directly back to the [three primitives](/posts/three-primitives). The clock is cron. The watcher is Brave + Reddit. The inbox is GitHub Issues. Choosing GitHub over Slack changed the agent's behavior more than any prompt tuning did, because it changed how humans interacted with the output.
@@ -119,7 +119,7 @@ I want to be specific about this because "AI agents are expensive" is a common a
 
 Total monthly cost: effectively zero. The Brave free tier gives us 250x more queries than we use. The OpenRouter call costs less than a penny. The GitHub API has no meaningful rate limit at this volume. The Cloudflare function runs for under a minute per month total.
 
-At this price point, the "is this worth running?" question never comes up. The agent costs less per month than the electricity to think about whether to keep it.
+At this price point, the "is this worth running?" question never comes up. It basically costs nothing.
 
 ## What we'd change
 
@@ -135,4 +135,4 @@ Three things, in order of likelihood we'll actually do them.
 If you want to know whether your agent architecture holds up, build something that runs unattended for a month. Not a demo. Not a benchmark. Something with a cron expression and a git history. The bugs you find will be different from the ones you expected, and the design decisions that matter will surprise you.
 </Callout>
 
-The weekly-digest agent is not sophisticated. A cron job, four API calls, a dedup file, one LLM call, and a GitHub issue. When it runs, the digest is usually four clusters and a handful of links. Some runs turn up nothing. Both outcomes are fine, because the agent's job is to look so we don't have to, and to stay quiet when there's nothing worth saying.
+The weekly-digest agent is not sophisticated. A cron job, four API calls, a dedup file, one LLM call, and a GitHub issue. Some weeks it finds a ton, some weeks it finds nothing. Both are fine. It looks so we don't have to, and stays quiet when there's nothing to report.

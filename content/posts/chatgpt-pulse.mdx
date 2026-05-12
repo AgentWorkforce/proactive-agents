@@ -1,22 +1,22 @@
 ---
 title: "ChatGPT Pulse and the missing primitives"
-summary: "ChatGPT Pulse is an impressive morning briefing with one of the three primitives a proactive agent needs. The three-primitives framework explains exactly what's missing and what 'indispensable' would look like."
+summary: "ChatGPT Pulse has one of the three primitives a proactive agent needs. Here's what's missing and what indispensable would look like."
 date: "2026-05-11"
 accent: "sky"
 dropcap: true
 ---
 
-When OpenAI launched ChatGPT Pulse in September 2025, Fidji Simo framed it as taking "the level of support that only the wealthiest have been able to afford" and making it available to everyone. That's a real ambition. What shipped is a morning news digest that knows you pretty well.
+When OpenAI launched ChatGPT Pulse in September 2025, Fidji Simo framed it as taking "the level of support that only the wealthiest have been able to afford" and making it available to everyone. I was genuinely excited when I heard that. What actually shipped is a morning news digest that knows you pretty well.
 
-Pro subscribers open the app each morning, scan 5–10 personalized cards, and occasionally find something they wouldn't have discovered on their own. The early reviews are consistent: it's good, it's useful, people would notice if it disappeared. But it doesn't feel like the proactive assistant OpenAI described.
+Pro subscribers open the app each morning, scan 5–10 personalized cards, and occasionally find something they wouldn't have discovered on their own. The early reviews are consistent: it's good, it's useful, people would notice if it disappeared. But it doesn't quite feel like the proactive assistant OpenAI described.
 
-The gap between those two things is not a prompt problem or a model problem. It's an infrastructure problem, and the [three-primitives framework](/posts/three-primitives) explains exactly where the gaps are.
+I've been thinking about why, and honestly it comes down to infrastructure. The [three-primitives framework](/posts/three-primitives) makes the gaps pretty clear.
 
 <Scene figure={<PulseClockFigure />} caption="One primitive filled in, two still empty.">
 
 ## What Pulse gets right
 
-Credit where it's due: the clock works.
+Credit where it's due, the clock works.
 
 Every night, Pulse processes your chat history, connected apps (Gmail, Google Calendar), and explicit feedback to generate personalized morning cards. The personalization is genuinely impressive. Users report cards referencing offhand mentions from weeks-old conversations, connecting dots they didn't draw themselves. One Reddit user described a card about a birthday they'd never explicitly mentioned — Pulse inferred it from calendar access.
 
@@ -36,7 +36,7 @@ Is Pulse worth checking for someone already on the Pro plan? Yes. Would you upgr
 
 ## What's missing
 
-The clock runs at night. Everything else waits until morning.
+So the clock runs at night. Everything else waits until morning.
 
 If a customer replies to a critical email at 2pm, Pulse tells you about it in tomorrow's digest. If a deploy fails at 11am, you find out the next day (assuming Pulse even has access to your deploy pipeline, which it doesn't). If a competitor ships a new feature at noon, same story: tomorrow.
 
@@ -64,7 +64,7 @@ The [Hacker News discussion](https://news.ycombinator.com/item?id=45375477) was 
 
 The Reddit reactions were impressed by the personalization but unsettled by the privacy implications. The birthday-inference example mentioned above was described as "helpful and creepy in equal measure," a phrase that captures the general mood.
 
-What nobody said was "this changed how I work." The responses landed somewhere between "interesting" and "a little unsettling." Nobody called it indispensable.
+What I didn't see anyone say was "this changed how I work." The responses mostly landed somewhere between "interesting" and "a little unsettling."
 
 That said, this is a curated sample. The replies under Sam Altman's announcement post on X were overwhelmingly positive. Many Pro users report Pulse as the feature that justifies the subscription. For a consumer product, "useful morning briefing that people open every day" may be exactly the right scope. The gap we're describing below is specific to people who want agents that act, not just inform.
 
@@ -78,13 +78,13 @@ A watcher monitors your connected systems for meaningful changes: a customer rep
 
 An inbox delivers results wherever they're useful. A morning card when a digest is the right format. A Slack DM when something is urgent. A draft email when the right action is a reply. A filed ticket when the right action is tracking. The delivery channel matches the action, not the product's UI constraints.
 
-That version of Pulse would actually look like the proactive assistant OpenAI described in the announcement. The models are good enough to handle every judgment call on this list. They have been for a while. What's missing is the infrastructure underneath.
+That version of Pulse would actually look like the proactive assistant OpenAI described in the announcement. The models are good enough to handle every judgment call on this list, and honestly they have been for a while. What's missing is the infrastructure underneath, and that's the harder part to build.
 
 ## The market signal
 
 The most interesting thing about Pulse might be the competitive landscape around it. Anthropic is reportedly building a proactive assistant called Orbit for Claude. Google and Perplexity are developing their own versions. Everyone is converging on the same insight: reactive AI (ask a question, get an answer) is leaving value on the table.
 
-That convergence validates the category. But if every implementation ships with only the clock, the whole thing will feel like a tab in an app rather than something you'd reorganize your workflow around.
+That's exciting and it validates what we've been building. But if everyone just ships the clock and calls it done, I'm not sure any of these will feel like more than a tab in an app.
 
 The pattern in the reviews is consistent: people open Pulse, find something useful, and close the tab. A proactive assistant that could push a Slack message when a deploy breaks or file a ticket when Sentry catches a new error class would be fundamentally different — the kind of tool you'd reorganize your workflow around, not just check over coffee.
 
@@ -103,4 +103,4 @@ The Pulse analysis above follows a pattern that works for any product claiming t
   </tbody>
 </table>
 
-One "yes" gives you a notification tool. Two gives you something useful. Three gives you a proactive assistant. Most products today score one, because the clock is the easiest to build and the watcher is the hardest.
+Most products today score one out of three because the clock is the easiest to build. Getting all three working is where it starts to actually feel like the proactive assistant everyone keeps promising.

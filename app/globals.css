@@ -90,10 +90,16 @@ body {
   font-family: var(--font-display);
   font-weight: 400;
   float: left;
-  font-size: 4.5rem;
+  font-size: 3.4rem;
   line-height: 0.85;
-  padding: 0.35rem 0.6rem 0 0;
+  padding: 0.35rem 0.5rem 0 0;
   color: var(--color-terracotta);
+}
+@media (min-width: 640px) {
+  .dropcap::first-letter {
+    font-size: 4.5rem;
+    padding: 0.35rem 0.6rem 0 0;
+  }
 }
 
 /* Reveal-on-scroll base state — GSAP toggles `is-in` */
@@ -136,10 +142,26 @@ html { scroll-behavior: smooth; }
      <Scene> blocks (.scene-block) span `full` for the sticky figure layout. */
   display: grid;
   grid-template-columns:
-    [full-start] minmax(1rem, 1fr)
+    [full-start] minmax(0, 1fr)
     [main-start] minmax(0, 640px)
-    [main-end] minmax(1rem, 1fr)
+    [main-end] minmax(0, 1fr)
     [full-end];
+}
+@media (min-width: 640px) {
+  .prose-essay {
+    grid-template-columns:
+      [full-start] minmax(1rem, 1fr)
+      [main-start] minmax(0, 640px)
+      [main-end] minmax(1rem, 1fr)
+      [full-end];
+  }
+}
+@media (max-width: 639px) {
+  .prose-essay { font-size: 1.06rem; line-height: 1.7; }
+  .prose-essay h2 { font-size: 1.65rem; margin: 2em 0 0.6em; }
+  .prose-essay h3 { font-size: 1.2rem; margin: 1.7em 0 0.4em; }
+  .prose-essay pre { padding: 0.9rem 1rem; font-size: 0.82rem; border-radius: 10px; }
+  .prose-essay ul, .prose-essay ol { padding-left: 1.1em; }
 }
 .prose-essay > * { grid-column: main; min-width: 0; }
 .prose-essay > .scene-block { grid-column: full; }
@@ -170,23 +192,35 @@ html { scroll-behavior: smooth; }
 .prose-essay blockquote {
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 1.6rem;
+  font-size: 1.35rem;
   line-height: 1.35;
   border: none;
-  margin: 2.4em -2rem;
-  padding: 0 2rem;
+  margin: 2.4em 0;
+  padding: 0 0 0 1.25rem;
   color: var(--color-ink-soft);
   position: relative;
+}
+@media (min-width: 640px) {
+  .prose-essay blockquote {
+    font-size: 1.6rem;
+    margin: 2.4em -2rem;
+    padding: 0 2rem;
+  }
 }
 .prose-essay blockquote::before {
   content: "";
   position: absolute;
-  left: -0.5rem;
+  left: 0;
   top: 0.4em;
   bottom: 0.4em;
   width: 3px;
   background: var(--color-terracotta);
   border-radius: 2px;
+}
+@media (min-width: 640px) {
+  .prose-essay blockquote::before {
+    left: -0.5rem;
+  }
 }
 .prose-essay code {
   font-family: var(--font-mono);
@@ -225,6 +259,14 @@ html { scroll-behavior: smooth; }
   margin: 1.8em 0;
   border-collapse: collapse;
   font-size: 0.95rem;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (min-width: 640px) {
+  .prose-essay table {
+    display: table;
+  }
 }
 .prose-essay th {
   text-align: left;
@@ -232,6 +274,7 @@ html { scroll-behavior: smooth; }
   font-weight: 600;
   padding: 0.6em 1em;
   border-bottom: 2px solid var(--color-rule);
+  white-space: nowrap;
 }
 .prose-essay td {
   padding: 0.5em 1em;

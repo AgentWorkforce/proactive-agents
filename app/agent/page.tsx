@@ -88,7 +88,7 @@ export default async function AgentPage() {
   ]);
 
   return (
-    <article className="relative mx-auto max-w-4xl px-6 py-20 sm:px-10 sm:py-28">
+    <article className="relative mx-auto max-w-4xl px-5 py-14 sm:px-10 sm:py-28">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(agentCrumbs) }}
@@ -99,7 +99,7 @@ export default async function AgentPage() {
           <span className="h-px w-10 bg-ink-soft/60" />
           Build in public · the agent log
         </p>
-        <h1 className="mt-6 font-display text-[clamp(2.8rem,7vw,5rem)] leading-[0.96] tracking-tight text-ink">
+        <h1 className="mt-5 font-display text-[clamp(2.4rem,8vw,5rem)] leading-[0.98] tracking-tight text-ink sm:mt-6">
           What the <span className="italic text-terracotta">agent</span> did.
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />

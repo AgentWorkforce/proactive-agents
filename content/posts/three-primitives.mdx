@@ -1,16 +1,16 @@
 ---
 title: "Proactive agents need three primitives"
-summary: "An agent isn't proactive because it has a heartbeat. It's proactive because it has a clock, a watcher, and an inbox — wired together with durable state. Here's why the triple is the unit, and what we built around it."
+summary: "A proactive agent needs three things: a clock, a watcher, and an inbox, wired together with durable state. Here's why."
 date: "2026-05-10"
 accent: "peach"
 dropcap: true
 ---
 
-Most agents shipped today are reactive. They sit in a loop, waiting for a prompt. When the prompt arrives, they tool-call their way to an answer and go back to sleep. The whole cycle starts when *you* push a button.
+Most agents I see in the wild are reactive. They sit in a loop, waiting for a prompt. When the prompt arrives, they tool-call their way to an answer and go back to sleep. The whole cycle starts when *you* push a button.
 
-That model works for a chat box, but it breaks down for an agent that's supposed to *do something for you while you are doing something else.* And it is the model nearly every agent SDK still ships by default.
+That works for a chat box, but it falls apart for an agent that's supposed to *do something for you while you are doing something else.* And it's the model nearly every agent SDK still ships by default.
 
-A proactive agent is a different thing entirely. It wakes itself up.
+A proactive agent is different. It wakes itself up.
 
 <Scene figure={<PollingFigure />} caption="The reactive loop most teams ship.">
 
@@ -20,7 +20,7 @@ Running on a schedule is just cron with extra steps. Watching a webhook is push 
 
 The most common shape in the wild right now is "agent + heartbeat" — a loop that wakes every N minutes, polls a few APIs, reasons about what it found, and acts. Some of these heartbeat agents are quite sophisticated.<Sidenote>MindStudio's heartbeat pattern is the canonical example. It works, but it papers over the missing bits with prompt engineering and ad-hoc state.</Sidenote> They are still polling. They are still acting on a snapshot that is N seconds out of date. And they still have no canonical place to keep what they learned between runs.
 
-Polling is the *symptom*. The disease is missing primitives.
+Polling is really just a symptom. What's actually missing is the primitives underneath.
 
 </Scene>
 
@@ -75,7 +75,7 @@ That last bullet deserves more attention than it usually gets. A reactive agent 
 
 The fix is narrow scoping at three levels. First, per-agent: the digest agent gets read access to GitHub issues, not write access to your production database. Second, per-provider: a token for Notion doesn't also unlock Slack. Third, per-workspace: an agent operating in the "support" workspace can't reach into "finance." Token rotation matters too. Short-lived tokens with refresh grants mean a compromised agent loses access on the next rotation, not indefinitely. And every action the agent takes needs to be logged and attributable, because "the agent did it" is not a sufficient incident postmortem.
 
-None of this is exotic security engineering. It's the same principle behind IAM policies and service accounts. But most agent frameworks ship with a single API key that has access to everything, because that's easier to demo. Production is not a demo.
+None of this is exotic security engineering. It's the same principle behind IAM policies and service accounts. But most agent frameworks ship with a single API key that has access to everything, because that's easier to demo. And then you wonder why things go sideways at 3am.
 
 </Scene>
 
@@ -95,7 +95,7 @@ That something else is what we've been calling the **proactive runtime**. Concre
 
 The agent code that sits in the middle of that is shockingly small. A handler. A workspace name. The runtime brings the rest.
 
-The wedge isn't "multi-agent coordination" or "stateful agents" or "agent orchestration." It's simpler than any of those labels: give the agent a clock, an inbox, and a place to live, and let it act when something moves.
+The thing we keep coming back to is simpler than labels like "multi-agent coordination" or "agent orchestration" make it sound: give the agent a clock, an inbox, and a place to live, and let it act when something moves.
 
 <Callout tone="cool" label="The third-party reading">
 A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalises the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd started building the runtime. Worth a read.
@@ -107,7 +107,7 @@ A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents
 
 Because the language we've been using — *multi-agent coordination layer*, *headless Slack for agents*, *integration filesystem* — turned out to be three different people describing the same elephant. The elephant was a runtime for proactive agents. We'd had it the whole time and kept calling it the wrong thing.
 
-If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last — you're building a proactive runtime by hand. That's the pattern we kept seeing, and it's why we decided to build the runtime as a standalone layer that sits under whatever agent you happen to be writing.
+If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last, you're building a proactive runtime by hand. I kept seeing that pattern over and over, and it's why we decided to build the runtime as a standalone layer that sits under whatever agent you happen to be writing.
 
 The next essays in this folio go deeper. *Reactive vs proactive: a tour of the difference* lays out the architectural divergence with examples. *The eight-week webhook tax* costs out the build-it-yourself path. *Why we stopped saying multi-agent coordination* is the longer version of why we relabelled the elephant.
 

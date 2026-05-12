@@ -39,7 +39,7 @@ export default async function MarketIndex() {
   ]);
 
   return (
-    <section className="relative mx-auto max-w-6xl px-6 pt-16 pb-32 sm:px-10 sm:pt-24">
+    <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-24 sm:px-10 sm:pt-24 sm:pb-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }}
@@ -49,12 +49,12 @@ export default async function MarketIndex() {
           <span className="h-px w-10 bg-ink-soft/60" />
           Market intelligence
         </p>
-        <h1 className="mt-6 font-display text-[clamp(3rem,7vw,5.5rem)] leading-[0.96] tracking-tight text-ink">
+        <h1 className="mt-5 font-display text-[clamp(2.4rem,8vw,5.5rem)] leading-[0.98] tracking-tight text-ink sm:mt-6">
           The proactive agent{" "}
           <span className="italic text-terracotta">landscape.</span>
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />
-        <p className="mt-8 max-w-2xl font-serif text-xl leading-relaxed text-ink-soft">
+        <p className="mt-6 max-w-2xl font-serif text-lg leading-relaxed text-ink-soft sm:mt-8 sm:text-xl">
           Tracking who's building proactive agents, how their architectures
           compare, and what ships next. Analysis scored against the{" "}
           <Link
@@ -70,10 +70,10 @@ export default async function MarketIndex() {
       {/* Analysis section */}
       {posts.length > 0 && (
         <>
-          <h2 className="mt-20 font-display text-2xl tracking-tight text-ink">
+          <h2 className="mt-16 font-display text-2xl tracking-tight text-ink sm:mt-20">
             Analysis
           </h2>
-          <ul className="mt-10 grid gap-12 sm:gap-16">
+          <ul className="mt-8 grid gap-10 sm:mt-10 sm:gap-16">
             {posts.map((p, i) => (
               <li key={p.slug}>
                 <Link

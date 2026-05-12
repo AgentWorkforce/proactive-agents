@@ -1,12 +1,12 @@
 ---
 title: "What would a magical agent actually do?"
-summary: "The best agents feel like an amazing intern who showed up early and already handled the thing you were about to ask about. That has nothing to do with prompts and everything to do with plumbing."
+summary: "The best agents feel like an amazing intern who already handled the thing you were about to ask about. That's plumbing, not prompts."
 date: "2026-05-11"
 accent: "sky"
 dropcap: true
 ---
 
-Everyone says they want a magical agent. When you press on what that means, the answer is usually some version of the same thing: an amazing intern. Someone who shows up, remembers what you mentioned at lunch yesterday, checks your calendar before asking when you're free, and drafts the follow-up email before you think to ask. The feeling — someone proactively handling the things that drain your day — is what people are reaching for when they describe the agent they wish they had.
+I keep asking people what they actually want from an AI agent. When you press on it, the answer is usually some version of the same thing: an amazing intern. Someone who shows up, remembers what you mentioned at lunch yesterday, checks your calendar before asking when you're free, and drafts the follow-up email before you think to ask. The feeling — someone proactively handling the things that drain your day — is what people are reaching for when they describe the agent they wish they had.
 
 Most teams try to create that feeling with a better system prompt.
 
@@ -51,7 +51,7 @@ Here's the exercise that made the pattern obvious for us. Take each example from
 
 The table is monotonous on purpose. Every row needs the same [three primitives](/posts/three-primitives). The agent-specific logic for each of these is small — a handler that makes a judgment call. The engineering investment goes into the infrastructure underneath: the change-event pipeline from each provider, the scheduling that fires reliably, the delivery channel that puts results where people actually look.
 
-The model can reason about a stale PR. The model can draft a check-in email. What the model cannot do is wake itself up when a PR goes stale, or notice that a deal went quiet, or deliver an action item to a task board. Those are infrastructure problems, and they're the same infrastructure problems every time.
+The model can absolutely reason about a stale PR or draft a check-in email. What it can't do is wake itself up when a PR goes stale, notice that a deal went quiet, or deliver an action item to a task board. Those are all infrastructure problems, and I keep running into the same ones.
 
 <Callout tone="cool" label="The infrastructure test">
 If your agent can't answer these three questions, it can't be magical: (1) How does it know when to wake up? (2) Where does it keep what it learned last time? (3) Where does it deliver the result?
@@ -59,8 +59,8 @@ If your agent can't answer these three questions, it can't be magical: (1) How d
 
 </Scene>
 
-## Magic is just reliability at speed
+## What "magical" actually means
 
-The word "magical" does too much work in the AI discourse. It usually means "I was surprised it worked." For proactive agents, the better word is *reliable*. A reliable intern is magical because they show up consistently, remember context, and deliver results to the right place at the right time.
+The word "magical" does a ton of work in the AI discourse. Usually it just means "I was surprised it worked." For proactive agents, I think the better word is *reliable*. A reliable intern feels magical because they show up consistently, remember context, and deliver results to the right place at the right time.
 
-The agent version of that is the runtime's core: scheduling, change detection, and delivery, wired together with durable state. Build those well and the agent logic shrinks to a handler.
+For agents, that means scheduling, change detection, and delivery, wired together with durable state. I've found that once you get those right, the agent logic itself is honestly pretty small.

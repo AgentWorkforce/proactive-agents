@@ -1,12 +1,12 @@
 ---
 title: "Who's building proactive agents? A May 2026 landscape"
-summary: "Every major AI lab is building proactive agents. Here's who shipped what, how they score on the three primitives, and where the gaps still are. Updated May 2026."
+summary: "Who's shipping proactive agents and how they score on the three primitives. OpenAI, Google, Anthropic, Meta, and more. May 2026."
 date: "2026-05-11"
 accent: "sage"
 dropcap: true
 ---
 
-Six months ago, proactive AI was a research concept. Today, every major AI lab either has a proactive agent product in market or has one in internal testing. The convergence is striking: OpenAI, Google, Anthropic, Meta, Perplexity, and several startups are all building agents that act without being asked.
+Six months ago, nobody was really shipping proactive agents. Now every major AI lab either has one in market or has one in internal testing. The convergence is something else: OpenAI, Google, Anthropic, Meta, Perplexity, and several startups all building agents that act without being asked.
 
 This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **watcher** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
 
@@ -79,7 +79,7 @@ We build [Agent Relay](https://agentrelay.com), a developer SDK that provides th
 
 ## What the convergence tells us
 
-Every product on this list arrived at roughly the same architecture independently. Scheduled execution, change detection, multi-channel delivery. The [three-primitives framework](/posts/three-primitives) wasn't predictive so much as descriptive: this is simply what proactive agents need to work.
+Every product on this list arrived at roughly the same architecture independently. Scheduled execution, change detection, multi-channel delivery. The [three-primitives framework](/posts/three-primitives) wasn't so much a prediction as a description of what proactive agents just need to work.
 
 The differences are in coverage and depth:
 
@@ -87,7 +87,7 @@ The differences are in coverage and depth:
 - **Depth**: Is the watcher doing real-time event streaming or periodic polling? The user experience is completely different. A four-hour-old alert is not the same as a real-time notification.
 - **Delivery**: Can results go where the action is (Slack, email, tickets), or are they trapped in the product's own UI? Most horizontal assistants are still trapped.
 
-The products that nail all three at depth will be the ones people reorganize their workflows around. The ones that ship a clock and call it proactive will end up feeling like [another tab to check](/posts/chatgpt-pulse).
+I think the products that nail all three at depth are the ones people will actually reorganize their workflows around. Everyone else just ships a clock and calls it done, and those end up feeling like [another tab to check](/posts/chatgpt-pulse).
 
 ## What to watch next
 
@@ -97,4 +97,4 @@ The products that nail all three at depth will be the ones people reorganize the
 
 **Block Managerbot GA** in June will produce the first real usage data from a vertical proactive agent at scale. If Square sellers measurably benefit, expect every vertical SaaS company to start building their own version.
 
-The landscape is moving fast. I'll keep this page updated as products ship and the primitives picture changes.
+Anyway, this is moving fast. I'll keep this page updated as products ship and things change.

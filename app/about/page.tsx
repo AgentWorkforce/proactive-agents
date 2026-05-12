@@ -35,7 +35,7 @@ export default function AboutPage() {
   };
 
   return (
-    <article className="relative mx-auto max-w-2xl px-6 py-24 sm:px-8 sm:py-32">
+    <article className="relative mx-auto max-w-2xl px-5 py-16 sm:px-8 sm:py-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(aboutSchema) }}
@@ -45,7 +45,7 @@ export default function AboutPage() {
         dangerouslySetInnerHTML={{ __html: jsonLd(aboutCrumbs) }}
       />
       <p className="text-xs uppercase tracking-[0.3em] text-ink-soft">About</p>
-      <h1 className="mt-4 font-display text-5xl leading-[1.05] tracking-tight text-ink sm:text-6xl">
+      <h1 className="mt-4 font-display text-[clamp(2.4rem,8vw,3.75rem)] leading-[1.05] tracking-tight text-ink sm:text-6xl">
         A working manual on <span className="italic text-terracotta">proactive agents.</span>
       </h1>
       <Squiggle className="mt-6 h-3 w-40 opacity-70" />
