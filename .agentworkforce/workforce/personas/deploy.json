@@ -2,11 +2,8 @@
   "id": "deploy",
   "intent": "release-engineering",
   "tags": [
-    "build",
-    "deploy",
-    "cloudflare-pages",
-    "nextjs",
-    "ci"
+    "release",
+    "implementation"
   ],
   "description": "Ships changes safely to Cloudflare Pages. Owns the build and deploy contract for this repo: catches Next.js + output:export foot-guns, validates the Pages Functions runtime, and runs the deploy checklist before any merge or push. Updates its own playbook from every red build.",
   "defaultTier": "best-value",
