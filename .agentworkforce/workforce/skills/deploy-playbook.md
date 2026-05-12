@@ -6,8 +6,8 @@ The repo deploys to **Cloudflare Pages** as a static export (`output: "export"` 
 
 ## How to use this skill
 
-1. Read every entry below before approving a PR that touches `app/`, `next.config.ts`, `wrangler.toml`, or `.github/workflows/`.
-2. Run `npx next build` locally. Do not rely on CI to find a failure that the playbook already predicts.
+1. Read every entry below before approving a PR that touches `app/`, `next.config.ts`, `wrangler.jsonc`, or `.github/workflows/`.
+2. Run `npx next build` locally. Do not rely on CI to find a failure that the playbook already predicts. Use the same Node version CI uses.
 3. If the build fails with a mode that is **not** in this playbook, fix the root cause, then append a new entry to the "Failure modes" section before closing the task. The playbook is the persona's memory; an unrecorded failure will recur.
 4. Never paper over a failure by deleting the failing route, disabling a check, or passing `--no-verify`. Fix the underlying constraint.
 
@@ -19,7 +19,7 @@ Run this on every PR that touches build/deploy surface. All items must pass befo
 - [ ] Every `opengraph-image.tsx`, `twitter-image.tsx`, `icon.tsx`, and `apple-icon.tsx` declares `export const dynamic = "force-static"` directly in the file (not via re-export).
 - [ ] Every dynamic-segment image route (under `app/**/[slug]/`) exports `generateStaticParams`.
 - [ ] `next.config.ts` still has `output: "export"`, `trailingSlash: true`, and `images.unoptimized: true`.
-- [ ] `wrangler.toml` still has `compatibility_flags = ["nodejs_compat"]`.
+- [ ] `wrangler.jsonc` still has `compatibility_flags: ["nodejs_compat"]`.
 - [ ] The Cloudflare Pages deploy GitHub Action still pins `wrangler@4`.
 - [ ] No new server actions, route handlers, middleware, ISR (`revalidate`), or `dynamic = "force-dynamic"` exports.
 - [ ] Internal `<Link>` hrefs and canonical URLs end with a trailing slash to match `trailingSlash: true`.
@@ -52,8 +52,8 @@ Each entry is structured as **Symptom / Scope / Fix / Prevention** so a future r
 ### 4. Cloudflare Pages Functions need `nodejs_compat`
 
 - **Symptom.** Pages Functions throw at runtime with errors about missing Node built-ins (e.g., `Buffer`, `stream`, `crypto`).
-- **Scope.** `wrangler.toml` and any Pages Functions used by the deploy (e.g., the Notion webhook). Pinned in commit `d38253f`.
-- **Fix.** Ensure `compatibility_flags = ["nodejs_compat"]` is present in `wrangler.toml`.
+- **Scope.** `wrangler.jsonc` and any Pages Functions used by the deploy (e.g., the Notion webhook). Pinned in commit `d38253f`.
+- **Fix.** Ensure `"compatibility_flags": ["nodejs_compat"]` is present in `wrangler.jsonc`.
 - **Prevention.** Treat any PR that removes or comments out `nodejs_compat` as a blocking change.
 
 ### 5. Wrangler v3 in the Pages deploy action breaks the build
