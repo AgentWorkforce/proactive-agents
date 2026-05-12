@@ -1,8 +1,14 @@
-import { getPost } from "@/lib/posts";
+import { getPost, getAllPosts } from "@/lib/posts";
 import { createOgImage, OG_SIZE, OG_CONTENT_TYPE } from "@/lib/og";
 
+export const dynamic = "force-static";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
+
+export async function generateStaticParams() {
+  const posts = await getAllPosts();
+  return posts.map((p) => ({ slug: p.slug }));
+}
 
 export default async function Image({
   params,
