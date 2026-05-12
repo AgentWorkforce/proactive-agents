@@ -3,8 +3,8 @@ import { SiteLogo } from "@/components/site-logo";
 
 export function SiteFooter() {
   return (
-    <footer className="relative z-20 mt-32 border-t border-rule/70">
-      <div className="mx-auto max-w-6xl px-6 py-14 sm:px-10">
+    <footer className="relative z-20 mt-24 border-t border-rule/70 sm:mt-32">
+      <div className="mx-auto max-w-6xl px-5 py-12 sm:px-10 sm:py-14">
         <div className="grid gap-10 sm:grid-cols-12 sm:gap-8">
           {/* Brand */}
           <div className="sm:col-span-7">

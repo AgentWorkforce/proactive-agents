@@ -166,30 +166,30 @@ export default async function Home() {
       {/* HERO */}
       <section className="relative overflow-hidden">
         <BackgroundOrbs />
-        <div className="relative mx-auto max-w-4xl px-6 pt-20 pb-32 sm:px-10 sm:pt-32 sm:pb-44">
-          <p className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-ink-soft">
+        <div className="relative mx-auto max-w-4xl px-5 pt-14 pb-24 sm:px-10 sm:pt-32 sm:pb-44">
+          <p className="flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-ink-soft sm:text-xs">
             <span className="h-px w-10 bg-ink-soft/60" />
             By AgentWorkforce
           </p>
-          <h1 className="mt-6 font-display text-[clamp(3.25rem,9vw,7rem)] leading-[0.94] tracking-tight text-ink">
+          <h1 className="mt-5 font-display text-[clamp(2.6rem,10vw,7rem)] leading-[0.94] tracking-tight text-ink sm:mt-6">
             Agents that
             <br />
             <span className="italic text-terracotta">don&rsquo;t wait</span>
             <br />
             to be asked.
           </h1>
-          <p className="mt-10 max-w-2xl font-serif text-xl leading-relaxed text-ink-soft">
+          <p className="mt-8 max-w-2xl font-serif text-lg leading-relaxed text-ink-soft sm:mt-10 sm:text-xl">
             A proactive agent doesn&rsquo;t wait for a prompt. It watches the
             world, notices what changed, and acts on its own &mdash; the
             shift from <span className="italic">reactive tool</span> to{" "}
             <span className="scribble-highlight">teammate that feels alive.</span>
           </p>
-          <p className="mt-5 max-w-2xl font-serif text-lg leading-relaxed text-ink-faint">
+          <p className="mt-4 max-w-2xl font-serif text-base leading-relaxed text-ink-faint sm:mt-5 sm:text-lg">
             This site is a working manual on what proactive agents are, why
             they matter, and how to think about building them.
           </p>
 
-          <div className="mt-12 flex flex-wrap items-center gap-6">
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4 sm:mt-12">
             <Link
               href="/guide"
               className="group inline-flex items-center gap-3 rounded-full bg-ink px-6 py-3 text-sm font-medium tracking-wide text-paper transition-transform hover:-translate-y-0.5"
@@ -214,7 +214,7 @@ export default async function Home() {
 
       {/* REACTIVE vs PROACTIVE */}
       <section className="relative">
-        <div className="mx-auto max-w-5xl px-6 sm:px-10">
+        <div className="mx-auto max-w-5xl px-5 sm:px-10">
           <div className="reveal mx-auto max-w-3xl text-center">
             <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
               ✦ The shift
@@ -248,8 +248,8 @@ export default async function Home() {
       </section>
 
       {/* THE THREE TRIGGERS */}
-      <section id="triggers" className="relative mt-32 sm:mt-40">
-        <div className="mx-auto max-w-5xl px-6 sm:px-10">
+      <section id="triggers" className="relative mt-24 sm:mt-40">
+        <div className="mx-auto max-w-5xl px-5 sm:px-10">
           <div className="reveal mx-auto max-w-2xl text-center">
             <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
               ✦ The three triggers
@@ -299,15 +299,15 @@ export default async function Home() {
       </section>
 
       {/* THE TRIPLE — visual anchor */}
-      <section className="relative mt-24 sm:mt-32">
-        <div className="reveal mx-auto max-w-4xl px-6 sm:px-10">
+      <section className="relative mt-20 sm:mt-32">
+        <div className="reveal mx-auto max-w-4xl px-5 sm:px-10">
           <ClockWatcherInbox />
         </div>
       </section>
 
       {/* WHY MOST AGENTS ARE STILL REACTIVE */}
-      <section className="relative mt-32 sm:mt-40">
-        <div className="mx-auto max-w-5xl px-6 sm:px-10">
+      <section className="relative mt-24 sm:mt-40">
+        <div className="mx-auto max-w-5xl px-5 sm:px-10">
           <div className="reveal mx-auto max-w-2xl text-center">
             <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
               ✦ The hard parts
@@ -344,9 +344,9 @@ export default async function Home() {
       </section>
 
       {/* BUILD IN PUBLIC */}
-      <section className="relative mt-32 sm:mt-40">
-        <div className="mx-auto max-w-4xl px-6 sm:px-10">
-          <div className="reveal relative overflow-hidden rounded-[2rem] border border-rule bg-paper-deep/50 px-8 py-12 sm:px-14 sm:py-16">
+      <section className="relative mt-24 sm:mt-40">
+        <div className="mx-auto max-w-4xl px-5 sm:px-10">
+          <div className="reveal relative overflow-hidden rounded-[1.5rem] border border-rule bg-paper-deep/50 px-6 py-10 sm:rounded-[2rem] sm:px-14 sm:py-16">
             <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-butter/60 blur-3xl" />
             <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-sage/50 blur-3xl" />
             <div className="relative grid gap-8 md:grid-cols-12 md:items-center">
@@ -383,8 +383,8 @@ export default async function Home() {
       </section>
 
       {/* ESSAYS */}
-      <section className="relative mt-32 sm:mt-40">
-        <div className="mx-auto max-w-5xl px-6 sm:px-10">
+      <section className="relative mt-24 sm:mt-40">
+        <div className="mx-auto max-w-5xl px-5 sm:px-10">
           <div className="reveal flex items-baseline justify-between border-b border-rule pb-3">
             <h2 className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
               ✦ Recent essays
@@ -429,8 +429,8 @@ export default async function Home() {
       </section>
 
       {/* FAQ — GEO-optimized answer-first section */}
-      <section id="faq" className="relative mt-32 sm:mt-40">
-        <div className="mx-auto max-w-3xl px-6 sm:px-10">
+      <section id="faq" className="relative mt-24 sm:mt-40">
+        <div className="mx-auto max-w-3xl px-5 sm:px-10">
           <div className="reveal mx-auto max-w-2xl text-center">
             <p className="font-display text-sm uppercase tracking-[0.28em] text-ink-soft">
               ✦ Frequently asked

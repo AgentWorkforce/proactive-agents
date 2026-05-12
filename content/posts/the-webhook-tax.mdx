@@ -1,6 +1,6 @@
 ---
 title: "The eight-week webhook tax"
-summary: "Adding one provider to a proactive agent — the honest, production-ready, post-incident-review way — is at minimum a sprint. Doing it for four providers is most of a quarter. We mapped the cost so you don't have to discover it."
+summary: "Adding one webhook provider to a proactive agent takes a sprint. Four providers takes most of a quarter. Here's the real cost."
 date: "2026-05-10"
 accent: "lavender"
 dropcap: false
@@ -65,7 +65,7 @@ Each of those has its own version of all ten items above. Different signature sc
   </tbody>
 </table>
 
-Four endpoints. Four verification implementations. Four parsers. Four registration flows. Four deploy scripts. Four ways for things to silently break.
+So now you're looking at four endpoints, four verification implementations, four parsers, four registration flows, and four deploy scripts. Each one a new way for things to silently break.
 
 In practice, **the path from "we want our agent to react to changes across four providers" to "we have production-ready change detection against four providers" is six to eight weeks of one engineer's time.** The engineer is not building the agent during those weeks. They are building plumbing.
 
@@ -105,7 +105,7 @@ If a provider offers webhooks, you need eight to ten pieces of infrastructure pe
 
 ## Why this matters for proactive agents specifically
 
-A reactive agent — one that waits for a user to ask it something — doesn't need any of this. It has a simple lifecycle: receive prompt, think, respond. The user is the trigger. The user provides the context.
+A reactive agent doesn't need any of this. It has a simple lifecycle: receive prompt, think, respond. The user is the trigger and the context provider.
 
 A proactive agent has a fundamentally different requirement: it needs to *notice things on its own.* A ticket was moved. A deploy failed. A document was updated. A customer churned. The agent needs to observe these changes, decide they matter, and act — without anyone prompting it.
 
@@ -123,7 +123,7 @@ The initial build is just where the maintenance starts.
 - A teammate adds a fifth provider. Two of the ten items are subtly wrong because they were copy-pasted.
 - Your model picks up a new schema. Old serialized payloads in the dead-letter queue are now unparseable.
 
-None of this is bad engineering. It's just what the work actually looks like when you do it honestly. And it keeps going.
+None of this is bad engineering. It's just what the work actually looks like, and it doesn't stop.
 
 ## What does this actually cost to run?
 
@@ -158,4 +158,4 @@ A proactive agent needs a *watcher:* a single interface that says "something cha
 
 The [three primitives](/posts/three-primitives) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
 
-The webhook tax is what happens when you build the watcher from scratch, one provider at a time.
+Anyway, that's what it looks like when you build the watcher from scratch, one provider at a time. It's a ton of work, and most of it has nothing to do with the agent itself.

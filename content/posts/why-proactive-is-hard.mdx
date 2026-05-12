@@ -1,0 +1,91 @@
+---
+title: "What makes proactive agents hard to build"
+summary: "Proactive agents look simple in demos. In production, three problems compound: knowing when to wake up, remembering across runs, and knowing when to stay quiet."
+date: "2026-05-11"
+accent: "lavender"
+dropcap: true
+---
+
+I've been building proactive agents for a while now, and I can tell you the demo is the easy part. Schedule a function, wire it to an LLM, have it post to Slack. Takes an afternoon. Looks super impressive.
+
+Then you try to make it actually reliable and, well, let's just say it gets humbling fast. The pattern I keep seeing, both in our own work and talking to other teams, is the same: the agent logic is the simple part. It's everything around it that eats your time. State management, deduplication, knowing when to stay quiet. Looking back, we were spending all our time on infrastructure that had nothing to do with the model.
+
+<Scene figure={<DemoVsProdFigure />} caption="The gap between the afternoon demo and what production actually requires.">
+
+## The afternoon demo versus production
+
+Every agent framework out there makes this look easy. And honestly, the demo IS easy. Wire a cron trigger to a function, give it API access, point the output at Slack. Three boxes on a whiteboard, done. The README will even call it a proactive agent.
+
+What the README doesn't mention is everything else. Idempotency, because your job will fire twice during a deploy. Rate-limit handling, because the API starts throttling you the moment you have real data. Deduplication, because your agent will absolutely try to post the same insight two days in a row. Then there's auth scoping, observability, spend guardrails, and some way to kill the thing without losing everything it learned.
+
+None of this is fancy. It's the same stuff any distributed system needs. Frameworks skip it because it makes the getting-started guide less fun, and I get why. But it means you end up building a custom runtime every time you ship a proactive agent, and most teams burn a ton of time on plumbing before they ever get back to the actual agent logic.
+
+</Scene>
+
+## Knowing when to wake up
+
+So here's the first real problem. An agent running on a five-minute cron isn't really proactive. It's a batch job with a language model in the middle. Proactive means running when something actually changes out in the world, and reliably detecting those changes is way harder than I expected.
+
+You've got three options and honestly none of them are great.
+
+**Polling** is the simplest. Check every few minutes, see what's new. Works everywhere, but you're burning a ton of compute and missing anything that happens between checks. We compared polling to push side by side in [Reactive vs proactive, with examples](/posts/reactive-vs-proactive) and the difference is pretty stark.
+
+**Webhooks** are faster. The provider tells you the moment something changes, so latency drops to seconds. Sounds great until you actually try to implement one. You need signature verification, you need to respond in under two seconds, you need to deduplicate payloads, and each provider's format is totally different. We spent eight weeks integrating a single provider's webhooks and wrote up the whole experience in [The eight-week webhook tax](/posts/the-webhook-tax). And even after all that work, webhooks break in their own ways. Providers silently drop events during outages, events arrive out of order, replay storms crush your queue. We catalog what goes wrong in [Where push architectures break](/posts/push-breaks-too).
+
+**A hybrid** is what most production systems actually run. Webhooks where they exist, polling where they don't, plus some reconciliation layer to catch whatever falls through the cracks. It works, but now you're maintaining three separate systems.
+
+<Callout tone="thought" label="Which changes matter">
+Something I didn't appreciate early on: the hard part isn't detecting changes. A busy Slack workspace fires hundreds of events per hour. A GitHub org sends thousands per day. The hard part is figuring out which of those actually deserve a response. If you don't filter aggressively at the detection layer, your agent drowns in noise before it reasons about anything.
+</Callout>
+
+<Scene side="right" figure={<MemoryDriftFigure />} caption="Without persistent state, every run starts from zero.">
+
+## Remembering across runs
+
+Change detection is a grind but you can engineer your way through it. The problem that really got us was simpler to explain: the agent needs to remember what it already did.
+
+With a chatbot, you don't have this issue. The conversation is the state. When the chat ends, you're done.
+
+A proactive agent runs over and over, and each run needs to know what the previous runs handled. Without that memory you get one of two bad outcomes: either the agent reprocesses everything from scratch every time (expensive, noisy) or it only looks at the newest data and misses patterns that span multiple runs.
+
+Most teams fake state with workarounds. A `lastRun` timestamp to skip old records. A JSON blob that gets stuffed into the next prompt. A Jira ticket used as a bookmark. These all feel reasonable when you set them up. But timestamps reset during deploys. JSON drifts from reality and the agent starts reasoning about stale data. And if anyone touches the bookmark without knowing the agent depends on it, things get weird fast.
+
+What we found actually works is structured persistent state with a real API for reading and writing, conflict detection on concurrent access, and change events. Something that feels more like a filesystem than a database. I go deeper on that in [Proactive agents need three primitives](/posts/three-primitives).
+
+</Scene>
+
+<Scene figure={<JudgmentGateFigure />} caption="The gate between detecting a change and acting on it.">
+
+## Knowing when not to act
+
+Wakeup and memory are engineering problems. Throw enough time at them and you'll figure them out. The third problem is different because it's a judgment call, and I'm not sure there's a clean engineering solution for it.
+
+When should the agent act on its own? When should it flag a human? When should it just be quiet?
+
+With a chatbot, the user is always right there. They ask, they get an answer, and if the answer is wrong they ignore it and move on. With a proactive agent, that safety net is gone. If it closes a ticket that should have stayed open, or pages the on-call engineer for something that wasn't actually a problem, the damage happens before anyone gets a chance to weigh in. And it doesn't take a lot of mistakes. I've heard from multiple teams that one bad action in a week of correct ones is enough for people to start talking about turning the whole thing off.
+
+For every change the agent picks up, it has to choose: act on it (confident, low risk), flag a human (not sure enough or stakes too high), or just log it quietly for future context. If it flags everything it turns into a notification firehose that everyone mutes. If it acts on everything it's eventually going to do something expensive. I've been surprised by how much product iteration it takes to find a good balance between those two.
+
+<Callout tone="warm" label="Trust builds in stages">
+Something I've learned: you really can't skip steps with trust. The pattern that works is starting by having the agent show its reasoning without actually doing anything. Then letting it act with notifications. Eventually, for routine stuff, letting it run on its own. An agent that shows up fully autonomous on day one gets shut down before it proves anything.
+</Callout>
+
+</Scene>
+
+## Every provider multiplies the problem
+
+All three of these problems get worse every time you add another integration. Webhook formats are different between Zendesk and GitHub and Linear. State schemas are different. The confidence threshold for closing a support ticket has nothing to do with the threshold for escalating a PagerDuty incident.
+
+I think this is why the most successful proactive agents out there are super narrow in scope. [ChatGPT Pulse](/posts/chatgpt-pulse) does one thing: it processes your browsing history overnight. The proactive agents coming out of Google and Anthropic tend to be similarly focused, one domain, one provider. We've been tracking who's building what in [a landscape scorecard](/market/proactive-agent-landscape), and the pattern keeps showing up. Scheduled execution ships first because it's the easiest part, then teams spend months on change detection and delivery.
+
+<Callout tone="cool" label="From our own build log">
+We built a weekly-digest agent that scans four sources for mentions of proactive agents, deduplicates, clusters them by topic, and posts a GitHub issue every Saturday morning. Took four weeks to get stable. The full postmortem is in [Building the weekly-digest agent](/posts/building-weekly-digest). Every single failure mapped back to one of the three problems I've been talking about here.
+</Callout>
+
+## So what do you actually do about it
+
+Most teams honestly just sidestep all of this by putting a reactive agent on a cron job and calling it proactive. For batch-shaped work, that's totally the right call. A Monday-morning digest doesn't need sub-second change detection.
+
+But for agents where being responsive is the whole point (monitoring, triage, customer health), you've got to actually solve these problems. You can build the infrastructure yourself, but what I keep running into is that the result works for one agent and doesn't really transfer to the next. That's actually why we started thinking about a runtime that handles wakeup, state, and delivery as shared primitives, so the agent code can just focus on behavior.
+
+Anyway, the rest of this series goes deeper on each piece: [the three primitives](/posts/three-primitives) that define the interface, [the webhook tax](/posts/the-webhook-tax) that motivated building a shared runtime, and [why the prompt layer can't do the job alone](/posts/the-prompt-cant-save-you). More soon.

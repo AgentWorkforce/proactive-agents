@@ -94,16 +94,16 @@ export function PostHero({
       <Sparkle className="hero-deco-b absolute left-[10%] bottom-[18%] h-6 w-6 opacity-80" />
       <CornerBrackets className="absolute right-[6%] bottom-[8%] h-12 w-12 opacity-50" />
 
-      <div className="relative mx-auto max-w-4xl px-6 pt-20 pb-28 text-center sm:px-10 sm:pt-32 sm:pb-40">
-        <p className="post-hero-meta flex items-center justify-center gap-3 text-xs uppercase tracking-[0.3em] text-ink-soft">
+      <div className="relative mx-auto max-w-4xl px-5 pt-16 pb-20 text-center sm:px-10 sm:pt-32 sm:pb-40">
+        <p className="post-hero-meta flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] uppercase tracking-[0.3em] text-ink-soft sm:text-xs">
           <span className="post-hero-meta-item">{date}</span>
           <span className="post-hero-meta-item h-px w-6 bg-ink-soft/60" />
           <span className="post-hero-meta-item">{readingTime}</span>
         </p>
-        <h1 className="post-hero-title mt-8 font-display text-[clamp(2.8rem,7vw,5.6rem)] leading-[0.98] tracking-tight text-ink">
+        <h1 className="post-hero-title mt-6 font-display text-[clamp(2.1rem,8vw,5.6rem)] leading-[1] tracking-tight text-ink sm:mt-8">
           {title}
         </h1>
-        <p className="mx-auto mt-8 max-w-2xl font-serif text-xl leading-relaxed text-ink-soft">
+        <p className="mx-auto mt-6 max-w-2xl font-serif text-lg leading-relaxed text-ink-soft sm:mt-8 sm:text-xl">
           {summary}
         </p>
       </div>

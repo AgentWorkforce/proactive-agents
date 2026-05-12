@@ -64,6 +64,7 @@
     }
   },
   "permissions": {
+    "mode": "bypassPermissions",
     "allow": [
       "mcp__notion"
     ]

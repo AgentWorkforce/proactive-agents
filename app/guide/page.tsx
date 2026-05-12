@@ -101,7 +101,7 @@ export default function GuidePage() {
   };
 
   return (
-    <article className="relative mx-auto max-w-3xl px-6 py-20 sm:px-8 sm:py-28">
+    <article className="relative mx-auto max-w-3xl px-5 py-14 sm:px-8 sm:py-28">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(guideArticle) }}
@@ -154,12 +154,12 @@ export default function GuidePage() {
         <p className="text-xs uppercase tracking-[0.3em] text-ink-soft">
           The definitive guide
         </p>
-        <h1 className="mt-4 font-display text-[clamp(2.6rem,6vw,4.5rem)] leading-[1.02] tracking-tight text-ink">
+        <h1 className="mt-4 font-display text-[clamp(2.2rem,7vw,4.5rem)] leading-[1.04] tracking-tight text-ink">
           What are{" "}
           <span className="italic text-terracotta">proactive agents?</span>
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />
-        <p className="mt-8 max-w-2xl font-serif text-xl leading-relaxed text-ink-soft">
+        <p className="mt-6 max-w-2xl font-serif text-lg leading-relaxed text-ink-soft sm:mt-8 sm:text-xl">
           A proactive agent is an AI agent that acts without being prompted.
           Instead of waiting for a human to type a command, it wakes itself up
           when time passes, data changes, or a message arrives &mdash; and

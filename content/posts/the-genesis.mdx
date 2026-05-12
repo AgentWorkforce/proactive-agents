@@ -1,6 +1,6 @@
 ---
 title: "The genesis"
-summary: "It started with three terminal windows and too much copy-pasting. The inbox came first, then the clock, then the watcher. Somewhere along the way we stopped calling it multi-agent coordination and started calling it what it was."
+summary: "It started with three terminal windows and too much copy-pasting. The inbox came first, then the clock, then the watcher."
 date: "2026-05-10"
 accent: "butter"
 dropcap: true
@@ -42,9 +42,9 @@ We had an inbox. What else did we need for proactivity? As evidenced by OpenClaw
 
 Having worked at [Nango](https://nango.dev) as the first engineering hire for three years, I was very familiar with webhooks. Many customers wanted real-time notifications of what was happening in external systems. With Nango's primitives you could set up a scheduled sync to run every N minutes, which uses a checkpoint to fetch new or changed records — so customers could choose between real-time updates to the second or slightly delayed updates via syncs.
 
-Our recommendation was often: just sync the data. Because honestly, webhooks are hard. Every provider has a different payload shape. Some require signature verification, some don't. Some deliver at-least-once, some at-most-once. Some systems require entirely different infrastructure — Google has Pub/Sub, Salesforce has streaming events, Slack has socket mode alongside HTTP webhooks.
+Our recommendation was often: just sync the data. Because honestly, [webhooks are hard](/posts/the-webhook-tax). Every provider has a different payload shape. Some require signature verification, some don't. Some deliver at-least-once, some at-most-once. Some systems require entirely different infrastructure — Google has Pub/Sub, Salesforce has streaming events, Slack has socket mode alongside HTTP webhooks.
 
-That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *watcher* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters.
+That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *watcher* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters. I wrote up the full framework in [Proactive agents need three primitives](/posts/three-primitives).
 
 <Scene side="right" figure={<NamingFigure />} caption="Three names, one thing.">
 
@@ -90,8 +90,8 @@ Each of those is one piece of the clock, the watcher, or the inbox. If you've bu
 
 ## The bet
 
-We're betting that *proactive* becomes a category the way *frontend cloud* became a category — by being the obvious word for a thing developers are already trying to do, and by being unowned at the moment we plant the flag.
+We're betting that *proactive* becomes a category the way *frontend cloud* became a category. Developers are already building this stuff by hand, and nobody owns the word yet.
 
 There's a [2024 paper from Tsinghua and Huawei](https://arxiv.org/abs/2410.12361) that uses the word *proactive* in exactly the sense we mean it. There's an empty slot in dev tooling for someone to be the proactive runtime.
 
-We're early, but the triple hasn't budged since those three terminal windows.
+We're super early. But the core of what we're building hasn't really changed since those three terminal windows.

@@ -1,16 +1,16 @@
 ---
 title: "Where push architectures break"
-summary: "We've spent five essays explaining why polling fails. Here's where push fails too, because a series that only criticizes one side isn't engineering, it's marketing."
+summary: "Push architectures break in specific, painful ways. Here's where webhooks fail and what production mitigation looks like."
 date: "2026-05-11"
 accent: "rose"
 dropcap: true
 ---
 
-We have spent the last several posts making a case for push-based, event-driven architectures. Polling is wasteful. Cron loops are fragile. Webhooks deliver change the moment it happens, and agents should wake on events, not timers. All of that is true, and we stand by it.
+I've spent a ton of this series talking up push-based, event-driven architectures. Polling is wasteful. Cron loops are fragile. Webhooks deliver change the moment it happens. All of that is true.
 
-But a series that only documents the failure modes of the approach you don't like, without acknowledging the failure modes of the approach you do like, is advocacy dressed up as engineering. So here is the other side.
+But I'd be lying if I said push doesn't break too. So here's the other side.
 
-Push architectures break. They break in specific, painful, sometimes spectacular ways. Some of these we've encountered firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax). Others we know from operating webhook-heavy systems at [Nango](https://nango.dev) and from studying how teams handle them in production.
+Push architectures break. Sometimes in small annoying ways, sometimes spectacularly. Some of these I've seen firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax). Others I know from my time at [Nango](https://nango.dev) and from talking to teams who run webhook-heavy systems in production.
 
 <Scene figure={<PushFailureFigure />} caption="The failure modes nobody warns you about.">
 
@@ -27,7 +27,7 @@ The first thing you learn about webhooks in production is that you are outsourci
 The counterpoint is that polling would have caught all of these. A poll runs on your schedule, against the current state, and picks up whatever is there. If the provider was down for an hour, you get the resulting state on the next sweep. You don't get the intermediate transitions, but you get the outcome.
 
 <Callout tone="thought" label="The asymmetry">
-Push gives you transitions in real time but is fragile to provider outages. Poll gives you outcomes on a delay but is resilient to them. Neither gives you both, and pretending otherwise is how you end up with missing data.
+Push is faster but it breaks when your provider has a bad day. Polling is slower but it just shrugs off outages. You can't really get the best of both, and pretending you can is how you end up with missing data.
 </Callout>
 
 </Scene>
@@ -57,7 +57,7 @@ You need backpressure. You need rate limiting on the consumer side, not just the
 </Scene>
 
 <PullQuote>
-Steady-state operation never exercises the burst path. You discover your scaling bottlenecks during replays, when a provider recovers and sends twelve hours of queued events in under a minute.
+You don't find your scaling bottlenecks during normal operation. You find them during replays, when a provider recovers and dumps twelve hours of queued events on you in under a minute.
 </PullQuote>
 
 ## Debugging the invisible
@@ -130,8 +130,8 @@ In practice, this means running both architectures. Push for speed and transitio
 
 ## The real tradeoff
 
-Push architectures are better for agents that need to act on changes as they happen and see what something changed *from*, not just what it is now. That conviction is why the [three primitives](/posts/three-primitives) center on push.
+I still think push is better for agents that need to act on changes as they happen and see what something changed *from*, not just what it is now. That's why the [three primitives](/posts/three-primitives) center on push.
 
-But push is not free. It requires infrastructure for replay, observability for debugging, reconciliation for reliability, and backpressure for resilience. Every one of those is engineering work that a pure polling architecture avoids.
+But push is not free. You need replay infrastructure, observability for debugging, reconciliation for reliability, and backpressure for when things get spiky. All of that is real engineering work that a pure polling setup just doesn't need.
 
-The teams that do well with push are the ones that budget for the failure modes from the start, not the ones who discover them in production.
+The teams I've seen do well are the ones who think about this stuff upfront, not the ones who find out about it during an incident at 2am.

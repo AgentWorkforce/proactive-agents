@@ -1,12 +1,12 @@
 ---
 title: "Reactive vs proactive, with examples"
-summary: "A short tour of how the same agent looks under both architectures. Same goal, same provider, different posture toward the world. The difference is mostly about who waits for whom."
+summary: "The same agent written twice: reactive and proactive. Same goal, same provider, different posture. The difference is who waits for whom."
 date: "2026-05-10"
 accent: "sage"
 dropcap: false
 ---
 
-Let's pick a small, familiar agent — one that closes a support ticket when the customer's last reply contains a thumbs-up — and write it twice. Once reactive, once proactive. Same model, same provider, same goal. Different posture.
+Let's pick a small, familiar agent and write it twice. One that closes a support ticket when the customer's last reply contains a thumbs-up. Once reactive, once proactive. Same model, same provider, same goal. Different posture toward the world.
 
 <Scene figure={<PostureFigure />} caption="Same goal, different posture toward the world.">
 
@@ -37,7 +37,7 @@ This works, but it's *fragile* in ways you won't notice until production. Notice
 - If `containsApproval` ever falsely fires, it *will* close a real ticket, and we'll find out from a customer.
 - We aren't holding a lease. Two instances racing means double-closes. Two pods means split-brain.
 
-None of these are exotic problems. They are the bread and butter of every cron-based agent in production. They get patched as they show up — locks added, intervals tuned, idempotency keys retrofitted — until the loop has more scaffolding than logic.
+None of these are exotic problems. They are the bread and butter of every cron-based agent in production. They get patched as they show up (locks added, intervals tuned, idempotency keys retrofitted) until the loop has more scaffolding than logic. I go deeper on [what makes proactive agents hard to build](/posts/why-proactive-is-hard).
 
 </Scene>
 
@@ -97,13 +97,13 @@ To be clear: reactive agents are not bad. They are *appropriate* for some shapes
 - **Long compute** that doesn't care about freshness — nightly backfills, weekly retraining — reactive is fine.
 - **One-shot prompts** — the user asked, the agent answers, done — reactive is the *only* answer.
 
-What reactive is not appropriate for is *anything where the value of the agent is its responsiveness to the world.* If the agent's job is to notice things and act on them, polling will lose to push every time, on every metric you care about.
+What reactive is not great for is anything where the whole value of the agent is its responsiveness. If the agent's job is to notice things and act on them quickly, polling will lose to push every time.
 
-## The boring conclusion
+## So what's the takeaway
 
-Push and persistence beat pull and statelessness — in agents the same way they do in every other distributed system. Agents are still mostly reactive because the runtime to make them proactive didn't exist as a primitive you could import, not because nobody understood the tradeoff.
+Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
 
-We've been building that part.
+We've been building that part. More on the runtime in [Proactive agents need three primitives](/posts/three-primitives).
 
 <Callout tone="cool" label="See it for yourself">
 This site runs a proactive agent of its own. The source lives in [`agents/`](https://github.com/AgentWorkforce/proactive-agents/tree/main/agents) on GitHub; what it has actually done shows up live at [/agent](/agent), every entry committed by the agent itself.

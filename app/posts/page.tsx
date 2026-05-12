@@ -37,7 +37,7 @@ export default async function PostsIndex() {
   ]);
 
   return (
-    <section className="relative mx-auto max-w-6xl px-6 pt-16 pb-32 sm:px-10 sm:pt-24">
+    <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-24 sm:px-10 sm:pt-24 sm:pb-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }}
@@ -47,18 +47,18 @@ export default async function PostsIndex() {
           <span className="h-px w-10 bg-ink-soft/60" />
           The field manual · {posts.length} essays
         </p>
-        <h1 className="mt-6 font-display text-[clamp(3rem,7vw,5.5rem)] leading-[0.96] tracking-tight text-ink">
+        <h1 className="mt-5 font-display text-[clamp(2.4rem,8vw,5.5rem)] leading-[0.98] tracking-tight text-ink sm:mt-6">
           Essays on <span className="italic text-terracotta">proactive agents.</span>
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />
-        <p className="mt-8 max-w-2xl font-serif text-xl leading-relaxed text-ink-soft">
+        <p className="mt-6 max-w-2xl font-serif text-lg leading-relaxed text-ink-soft sm:mt-8 sm:text-xl">
           Adapted from internal positioning docs, postmortems, and the kind of
           design notes that usually live and die in PR descriptions. New ones
           appear roughly monthly &mdash; weather permitting.
         </p>
       </div>
 
-      <ul className="mt-20 grid gap-12 sm:gap-16">
+      <ul className="mt-14 grid gap-10 sm:mt-20 sm:gap-16">
         {posts.map((p, i) => (
           <li key={p.slug}>
             <Link

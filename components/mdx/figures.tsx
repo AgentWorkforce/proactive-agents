@@ -1070,6 +1070,223 @@ export function DigestTimelineFigure() {
   );
 }
 
+/** Demo vs production — what an afternoon demo hides. */
+export function DemoVsProdFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="dvpgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.butter} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#dvpgrad)" />
+      {/* Demo label */}
+      <text x="160" y="56" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.faint}>demo</text>
+      {/* Demo: 3 simple boxes */}
+      {[
+        { x: 65, label: "cron" },
+        { x: 160, label: "LLM" },
+        { x: 255, label: "slack" },
+      ].map((b) => (
+        <g key={b.label}>
+          <rect x={b.x - 28} y={62} width="56" height="24" rx="6" fill={C.paper} stroke={C.faint} strokeWidth="1.2" />
+          <text x={b.x} y={78} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>{b.label}</text>
+        </g>
+      ))}
+      <g stroke={C.faint} strokeWidth="1" fill="none" strokeLinecap="round">
+        <line x1="93" y1="74" x2="132" y2="74" />
+        <path d="M127 70 L132 74 L127 78" />
+        <line x1="188" y1="74" x2="227" y2="74" />
+        <path d="M222 70 L227 74 L222 78" />
+      </g>
+      {/* Divider */}
+      <line x1="45" y1="100" x2="275" y2="100" stroke={C.faint} strokeWidth="0.6" strokeDasharray="4 3" />
+      {/* Production label */}
+      <text x="160" y="118" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.terracotta}>production</text>
+      {/* Production: same 3 core boxes */}
+      {[
+        { x: 65, label: "cron" },
+        { x: 160, label: "LLM" },
+        { x: 255, label: "slack" },
+      ].map((b) => (
+        <g key={`p-${b.label}`}>
+          <rect x={b.x - 28} y={126} width="56" height="24" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+          <text x={b.x} y={142} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{b.label}</text>
+        </g>
+      ))}
+      <g stroke={C.ink} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <line x1="93" y1="138" x2="132" y2="138" />
+        <path d="M127 134 L132 138 L127 142" />
+        <line x1="188" y1="138" x2="227" y2="138" />
+        <path d="M222 134 L227 138 L222 142" />
+      </g>
+      {/* Infrastructure ring */}
+      {[
+        { x: 55, y: 168, label: "idempotency" },
+        { x: 160, y: 168, label: "rate limits" },
+        { x: 265, y: 168, label: "dedup" },
+        { x: 55, y: 198, label: "state store" },
+        { x: 160, y: 198, label: "auth scope" },
+        { x: 265, y: 198, label: "retry" },
+        { x: 108, y: 228, label: "observability" },
+        { x: 212, y: 228, label: "spend guard" },
+      ].map((b) => (
+        <g key={b.label}>
+          <rect x={b.x - 42} y={b.y} width="84" height="20" rx="4" fill="none" stroke={C.terracotta} strokeWidth="0.9" />
+          <text x={b.x} y={b.y + 14} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>{b.label}</text>
+        </g>
+      ))}
+      <g stroke={C.faint} strokeWidth="0.6" strokeDasharray="2 2">
+        <line x1="65" y1="150" x2="55" y2="168" />
+        <line x1="160" y1="150" x2="160" y2="168" />
+        <line x1="255" y1="150" x2="265" y2="168" />
+      </g>
+      <text x="160" y="272" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>
+        same three boxes, eight more underneath
+      </text>
+    </svg>
+  );
+}
+
+/** Memory drift — agent runs with no carry-over. */
+export function MemoryDriftFigure() {
+  const runs = [
+    { x: 70, label: "run 1", items: ["A", "B", "C"], hasMem: false },
+    { x: 160, label: "run 2", items: ["B", "C", "D"], hasMem: false },
+    { x: 250, label: "run 3", items: ["C", "D", "E"], hasMem: false },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="mdgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.rose} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="145" r="105" fill="url(#mdgrad)" />
+      {runs.map((r, ri) => (
+        <g key={r.label}>
+          {/* Agent circle */}
+          <circle cx={r.x} cy={72} r="18" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+          <text x={r.x} y={76} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{r.label}</text>
+          {/* Items processed */}
+          {r.items.map((item, i) => {
+            const y = 110 + i * 28;
+            const isRepeat = ri > 0 && runs[ri - 1].items.includes(item);
+            return (
+              <g key={item}>
+                <rect
+                  x={r.x - 20}
+                  y={y}
+                  width="40"
+                  height="20"
+                  rx="4"
+                  fill={isRepeat ? C.rose : C.paper}
+                  stroke={isRepeat ? C.terracotta : C.ink}
+                  strokeWidth={isRepeat ? "1.6" : "1"}
+                />
+                <text
+                  x={r.x}
+                  y={y + 14}
+                  textAnchor="middle"
+                  fontFamily="var(--font-mono)"
+                  fontSize="10"
+                  fill={isRepeat ? C.terracotta : C.ink}
+                >{item}</text>
+              </g>
+            );
+          })}
+          {/* Broken connection to next run */}
+          {ri < runs.length - 1 && (
+            <g>
+              <line
+                x1={r.x + 22}
+                y1={72}
+                x2={runs[ri + 1].x - 22}
+                y2={72}
+                stroke={C.faint}
+                strokeWidth="1"
+                strokeDasharray="3 4"
+              />
+              <text
+                x={(r.x + runs[ri + 1].x) / 2}
+                y={62}
+                textAnchor="middle"
+                fontFamily="var(--font-display)"
+                fontSize="14"
+                fill={C.terracotta}
+              >?</text>
+            </g>
+          )}
+        </g>
+      ))}
+      <text x="160" y="210" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        reprocessed
+      </text>
+      <text x="160" y="268" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>
+        every run starts cold
+      </text>
+    </svg>
+  );
+}
+
+/** Judgment gate — act / notify / ignore decision. */
+export function JudgmentGateFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="jggrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.butter} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="150" r="105" fill="url(#jggrad)" />
+      {/* Incoming events */}
+      {[100, 130, 160, 190, 220].map((x, i) => (
+        <circle key={i} cx={x} cy={58} r="6" fill={C.peach} stroke={C.ink} strokeWidth="1" />
+      ))}
+      <text x="160" y="50" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>changes detected</text>
+      {/* Arrows into gate */}
+      <g stroke={C.faint} strokeWidth="0.8" fill="none">
+        {[100, 130, 160, 190, 220].map((x) => (
+          <line key={x} x1={x} y1={64} x2={160} y2={100} />
+        ))}
+      </g>
+      {/* Judgment gate — diamond */}
+      <g transform="translate(160, 130)">
+        <path d="M0 -30 L35 0 L0 30 L-35 0 Z" fill={C.paper} stroke={C.ink} strokeWidth="2" />
+        <text y={-4} textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>judgment</text>
+        <text y={10} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>gate</text>
+      </g>
+      {/* Three output paths */}
+      {/* Act */}
+      <g>
+        <line x1="125" y1="130" x2="60" y2="210" stroke={C.moss} strokeWidth="2" strokeLinecap="round" />
+        <path d="M56 202 L58 212 L66 206" stroke={C.moss} strokeWidth="2" fill="none" strokeLinecap="round" />
+        <rect x="28" y="215" width="64" height="26" rx="6" fill={C.sage} stroke={C.ink} strokeWidth="1.4" />
+        <text x="60" y="232" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>act now</text>
+      </g>
+      {/* Notify */}
+      <g>
+        <line x1="160" y1="160" x2="160" y2="210" stroke={C.terracotta} strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M155 204 L160 212 L165 204" stroke={C.terracotta} strokeWidth="1.6" fill="none" strokeLinecap="round" />
+        <rect x="128" y="215" width="64" height="26" rx="6" fill={C.butter} stroke={C.ink} strokeWidth="1.4" />
+        <text x="160" y="232" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>notify</text>
+      </g>
+      {/* Ignore */}
+      <g>
+        <line x1="195" y1="130" x2="260" y2="210" stroke={C.faint} strokeWidth="1.2" strokeLinecap="round" strokeDasharray="4 3" />
+        <rect x="228" y="215" width="64" height="26" rx="6" fill="none" stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 2" />
+        <text x="260" y="232" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.faint}>record</text>
+      </g>
+      <text x="160" y="275" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>
+        three paths, one decision
+      </text>
+    </svg>
+  );
+}
+
 /** Runtime — full architecture (heart in the middle). */
 export function RuntimeFigure() {
   const blocks = [

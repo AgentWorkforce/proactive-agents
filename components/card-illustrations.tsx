@@ -22,6 +22,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "proactive-agent-landscape": LandscapeCardArt,
   "building-weekly-digest": DigestCardArt,
   "push-breaks-too": PushBreaksArt,
+  "why-proactive-is-hard": WhyHardArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -459,6 +460,41 @@ function PushBreaksArt() {
             <line x1="42" y1="10" x2="50" y2="18" />
             <line x1="50" y1="10" x2="42" y2="18" />
           </g>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function WhyHardArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Three stacked blocks — progressively harder */}
+          <rect x="-20" y="15" width="40" height="22" rx="2" strokeWidth="1.6" />
+          <rect x="-30" y="-10" width="60" height="22" rx="2" strokeWidth="1.6" />
+          <rect x="-40" y="-35" width="80" height="22" rx="2" strokeWidth="1.6" />
+          {/* Top block slightly askew */}
+          <g transform="rotate(-4, -40, -35)">
+            <rect x="-42" y="-55" width="84" height="18" rx="2" strokeWidth="1.8" />
+          </g>
+          {/* Crack line through the stack */}
+          <path d="M-15 38 L-8 20 L-18 0 L-6 -12 L-14 -30 L-4 -42" strokeWidth="1.6" />
+          {/* Small stress marks */}
+          <line x1="25" y1="-28" x2="32" y2="-22" strokeWidth="1.2" />
+          <line x1="28" y1="-5" x2="35" y2="0" strokeWidth="1.2" />
+          <line x1="22" y1="20" x2="28" y2="26" strokeWidth="1.2" />
         </g>
       </g>
     </svg>

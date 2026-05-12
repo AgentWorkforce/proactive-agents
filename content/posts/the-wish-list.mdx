@@ -105,6 +105,6 @@ If any of these sparked something, here's a rough sense of complexity:
 
 The "easy" items share a pattern: public data, read-only access, low stakes if the agent misses something. Start there. The infrastructure you build for an easy agent (scheduling, dedup, delivery) transfers directly to the harder ones.
 
-## The list grows; the architecture doesn't
+## More wishes, same plumbing
 
-This wish list gets longer every month. New APIs ship, new use cases surface, new annoyances beg for automation. But the infrastructure underneath stays the same: the [three primitives](/posts/three-primitives), wired together with durable state. Every one of these requires plumbing, not a better prompt.
+This list honestly gets longer every month. New APIs ship, new use cases come up, new things annoy me enough that I think "an agent should handle this." But the infrastructure underneath is always the same: the [three primitives](/posts/three-primitives), wired together with durable state. I keep waiting for one of these to need something different, and it hasn't happened yet.

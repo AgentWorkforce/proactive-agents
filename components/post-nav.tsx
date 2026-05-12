@@ -12,39 +12,39 @@ export function PostNav({
   const scrollTop = () => window.scrollTo({ top: 0, behavior: "instant" });
 
   return (
-    <nav className="mx-auto max-w-4xl px-6 pb-24 sm:px-10">
-      <div className="grid gap-6 sm:grid-cols-2">
+    <nav className="mx-auto max-w-4xl px-5 pb-20 sm:px-10 sm:pb-24">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-6">
         {prev ? (
           <Link
             href={`/posts/${prev.slug}`}
             onClick={scrollTop}
-            className="group block rounded-2xl border border-rule bg-paper-deep/40 p-6 transition-transform hover:-translate-y-1"
+            className="group block rounded-2xl border border-rule bg-paper-deep/40 p-5 transition-transform hover:-translate-y-1 sm:p-6"
           >
             <p className="text-xs uppercase tracking-[0.22em] text-ink-faint">
               ← The next one
             </p>
-            <p className="mt-2 font-display text-xl text-ink group-hover:text-terracotta">
+            <p className="mt-2 font-display text-lg leading-snug text-ink group-hover:text-terracotta sm:text-xl">
               {prev.title}
             </p>
           </Link>
         ) : (
-          <span />
+          <span className="hidden sm:block" />
         )}
         {next ? (
           <Link
             href={`/posts/${next.slug}`}
             onClick={scrollTop}
-            className="group block rounded-2xl border border-rule bg-paper-deep/40 p-6 text-right transition-transform hover:-translate-y-1"
+            className="group block rounded-2xl border border-rule bg-paper-deep/40 p-5 transition-transform hover:-translate-y-1 sm:p-6 sm:text-right"
           >
             <p className="text-xs uppercase tracking-[0.22em] text-ink-faint">
               An earlier one →
             </p>
-            <p className="mt-2 font-display text-xl text-ink group-hover:text-terracotta">
+            <p className="mt-2 font-display text-lg leading-snug text-ink group-hover:text-terracotta sm:text-xl">
               {next.title}
             </p>
           </Link>
         ) : (
-          <span />
+          <span className="hidden sm:block" />
         )}
       </div>
     </nav>
