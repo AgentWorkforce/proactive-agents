@@ -1,0 +1,117 @@
+---
+title: "A review agent in three acts"
+summary: "My Senior Dev started as a webhook-triggered PR reviewer. Then it went multi-surface. Then it learned to watch. Each phase taught us something about what proactive agents actually need."
+date: "2026-05-12"
+accent: "peach"
+dropcap: true
+---
+
+I've been building [My Senior Dev](https://myseniordev.com) for about six months now, and it's gone through a ton of changes. It started the way most AI dev tools start: a webhook fires when a pull request opens, an LLM analyzes the diff, and comments appear on GitHub. The agent only existed during the seconds between the webhook arriving and the last comment posting. Then it vanished until the next PR.
+
+Over roughly a thousand commits, the product went through three phases, each one showing us something the previous architecture couldn't handle. By the end, we'd rebuilt it as a proactive agent running on the same [three primitives](/posts/three-primitives) we'd been writing about on this site.
+
+<Scene figure={<ReviewReactiveFigure />} caption="Act 1 — the webhook-triggered review loop.">
+
+## Act 1: The webhook reviewer
+
+The first version shipped in late 2025. A GitHub webhook fires on `pull_request.opened`, `synchronize`, or `ready_for_review`. The backend fetches the diff, splits it across three specialized LLM personas (security engineer, senior developer, synthesizer), runs them in parallel, and posts a combined review to the PR. The whole pipeline finishes in under thirty seconds.
+
+The multi-persona approach produced higher-signal reviews than a single prompt, because each persona looked at different things: the security engineer looked for vulnerabilities and injection risks, the senior developer evaluated architecture and maintainability, and the synthesizer reconciled their findings into a coherent review. Users got feedback that felt like it came from a small review committee, not a single chatbot.
+
+I've seen this pattern become the industry default. [CodeRabbit](https://coderabbit.ai), [CodeAnt](https://www.codeant.ai), [Qodo](https://www.qodo.ai), and [GitHub Copilot](https://github.com/features/copilot) all do versions of it. Some let you reply to comments and iterate. [Devin](https://devin.ai) goes further and can write code, not just comment on it. When people say "AI code review," this is what they picture. I got so used to it that it felt proactive, even though the trigger is always a human pushing code.
+
+But there was a hard boundary. The agent only woke up when GitHub sent a webhook. Between webhooks, it didn't exist. A PR could sit open for three days with failing checks. Reviewers could leave comments that went unanswered. Merge-ready PRs could wait indefinitely for someone to click the button. The agent had no memory between invocations and no sense of time.
+
+<Callout tone="thought" label="Reactive is fine until it isn't">
+A webhook-triggered agent handles the happy path well: code is pushed, review appears. The gaps show up in the spaces between events. Stale PRs, ignored comments, failing checks that nobody re-runs. Those are the moments where a reactive agent has nothing to say, because nobody asked.
+</Callout>
+
+</Scene>
+
+## The limits of request-response
+
+The web app we built around the reviewer was super fast. We designed it for power users: keyboard shortcuts for navigating between comments, inline AI chat for asking follow-up questions about any review finding, author profiles showing contribution patterns, hot-file indicators flagging the most-changed files across the team. I was really proud of the interface.
+
+But the web UI still required the developer to come to it. Open a browser, navigate to the dashboard, find the PR, read the review. Four steps before anyone sees the feedback.
+
+<Scene side="right" figure={<ReviewSurfacesFigure />} caption="Act 2 — same agent, more surfaces.">
+
+## Act 2: The surface explosion
+
+So in early 2026 we started asking a different question: what if the review agent lived where the team already works?
+
+The first expansion was Slack. We built a Slack bot that could receive PR review requests, run the same multi-persona analysis, and post results directly in a channel or thread. Engineers could ask "what's blocking PR #247?" from Slack and get an answer without opening GitHub.
+
+Then Telegram. Then WhatsApp via [Baileys](https://github.com/WhiskeySockets/Baileys). Then a macOS desktop app in SwiftUI. Then a terminal CLI. Each surface used the same review engine underneath, routed through what we called a dispatcher: a turn-based session system that tracked conversation context per thread, per channel, per user.
+
+The product vision at the time was "best review agent, everywhere." We wrote internal docs with that exact phrase. And the surfaces did matter. Getting a review summary in a Slack thread where the team was already discussing a deploy felt qualitatively different from getting it in a GitHub comment that nobody checks until the next morning.
+
+We weren't alone in expanding beyond GitHub. [Devin](https://devin.ai) has a Slack bot that can review code, write fixes, and answer questions in threads. [CodeRabbit](https://coderabbit.ai) is building a [Slack agent](https://docs.coderabbit.ai/slack-agent#automate-tasks) for automating tasks from channels. The rest of the market is heading the same direction.
+
+But adding more surfaces didn't make it proactive.
+
+We had a review agent available in Slack, Telegram, WhatsApp, desktop, and terminal. On every one of those surfaces, it still only spoke when spoken to. The engineer still had to type a command, mention the bot, or click a button. The trigger had moved from a GitHub webhook to a human message, but the agent was still just waiting.
+
+<Callout tone="warm" label="Proactive != multi-surface">
+We spent two months building surface integrations before this clicked. You can put an agent in every channel, on every device, in every chat thread. If it still only responds when invoked, the extra channels don't change what it is.
+</Callout>
+
+</Scene>
+
+## The turn
+
+The shift started with a small feature: proactive follow-ups. When the review agent posted a review to Slack, it would check back after a configurable interval. If nothing had changed, it stayed quiet. If the PR still had unresolved comments or failing checks, it nudged the thread with a status update. If the PR was merge-ready, it said so.
+
+This was a scheduled job, nothing more. A cron task that ran periodically and checked state. But the reaction from users was way bigger than I expected. Engineers liked the follow-ups more than the initial reviews. The follow-up said "this PR has been open for two days and the CI is still red," which was exactly the kind of thing a good human tech lead would notice and mention in standup. The follow-ups mattered more to users than the initial review did.
+
+We're not the only ones who noticed. [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web#auto-fix-pull-requests) ships auto-fix for PRs, monitoring CI failures and review comments. [Cursor's BugBot](https://cursor.com/blog/bugbot-autofix) spawns cloud agents on PR creation to find bugs and propose fixes (about 35% of proposed changes get merged, which is honestly impressive). [OpenAI Codex](https://developers.openai.com/cookbook/examples/codex/autofix-github-actions) offers a GitHub Action that triggers on CI failure, runs Codex to generate a minimal fix, re-runs the test suite, and opens a PR if the tests pass. Same shape every time: detect an event, analyze, push a fix.
+
+They all work well for clear-cut stuff. The edges are harder. [One review of Claude Code's auto-fix](https://paddo.dev/blog/claude-code-auto-fix-pr-lifecycle/) found that flaky tests send it into speculative fix loops, each attempt triggering another CI run. None of the three offer risk tiers to say "auto-fix test files but leave auth alone," and the governance layer between "CI failed" and "push a commit" is thin or absent. I hit the same problems when our own follow-ups started scaling. Detecting the event was the easy part.
+
+<Scene figure={<ReviewProactiveFigure />} caption="Act 3 — the agent watches, detects, and acts.">
+
+## Act 3: The proactive shift
+
+Once we committed to proactivity, the architecture needed to change. Cron follow-ups worked for a single feature, but the list of things worth watching grew fast:
+
+- PRs with failing checks that haven't been re-run
+- PRs with review comments that have gone unanswered for 24 hours
+- PRs that are approved and passing but nobody has merged
+- New PRs from external contributors that need extra scrutiny
+- Check failures that the agent could fix automatically
+
+Each of these required something slightly different. Some needed a schedule (scan all open PRs every hour). Some needed real-time event detection (a check just failed, act now). All of them needed a place to deliver their findings.
+
+The commit that made this concrete was titled "Persistent Agent Harness — 113 agent-relay workflows." It landed in April 2026 and extracted what we'd been building piecemeal: the scheduling, the change detection, and the message delivery that every proactive feature depended on. That shared runtime became [Agent Relay](https://agentrelay.com).
+
+<Callout tone="cool" label="The 113-workflow commit">
+113 workflows sounds like a lot. Most of them are small: "when a check fails on a watched repo, post to the team's Slack channel." "When a PR has been approved for 6 hours with no merge, nudge the author." The volume reflects how many distinct situations a proactive review agent needs to handle, not complexity per workflow.
+</Callout>
+
+### What changed architecturally
+
+The old flow: GitHub webhook → MSD backend → LLM analysis → GitHub comment. One trigger, one output, no persistence.
+
+The new flow uses the primitives directly. The **clock** runs periodic scans across all repositories the agent watches, checking for stale PRs, unanswered reviews, and merge-ready branches. The **listener** subscribes to real-time events from GitHub (check failures, new review comments, status changes) through normalized change events delivered via relayfile, so the agent doesn't have to manage webhooks per provider. The **inbox** routes findings to whatever surface the team uses, whether Slack, Telegram, or a desktop notification.
+
+The agent also gained durability. In Act 1, a crashed worker meant a lost review; in Act 3, the runtime checkpoints progress so a review pipeline can resume where it stopped. Reviews now flow through a durable, surface-agnostic pipeline: webhook arrives, analysis runs, results write back to GitHub via relayfile with automatic retry and dead-letter handling.
+
+</Scene>
+
+## What the product taught me
+
+Looking back, I kept running into the same missing infrastructure from a different angle each time.
+
+In Act 1, I didn't need any of the primitives. Webhooks provided the only trigger, we only cared about one event type, and GitHub comments were the only output. The reactive architecture was sufficient.
+
+Act 2 introduced message routing (deliver to Slack, Telegram, desktop) but I still didn't need the clock or listener. We solved delivery with adapters and a dispatcher.
+
+By Act 3, all three were load-bearing: periodic scanning, real-time event detection, multi-surface delivery. And underneath those, the durability layer: checkpointing, idempotency, scoped auth, retry with backoff. The stuff described in [what makes proactive agents hard to build](/posts/why-proactive-is-hard).
+
+I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. That's what convinced me the primitives were structural, not just a convenient grouping.
+
+If I'm being honest, I probably couldn't have designed the runtime without a product that kept showing me what was missing. The product and the infrastructure grew up together.
+
+<Callout tone="thought" label="Where it goes next">
+We're migrating the review specialists to an agent-to-agent architecture right now. Each specialist (security, architecture, style) runs as its own process, communicating through the inbox. Going from "three LLM calls in one function" to "three agents coordinating through messages" is the next test. I'm super curious to see if the primitives hold up.
+</Callout>

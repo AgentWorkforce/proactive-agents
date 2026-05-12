@@ -40,7 +40,7 @@ So the clock runs at night. Everything else waits until morning.
 
 If a customer replies to a critical email at 2pm, Pulse tells you about it in tomorrow's digest. If a deploy fails at 11am, you find out the next day (assuming Pulse even has access to your deploy pipeline, which it doesn't). If a competitor ships a new feature at noon, same story: tomorrow.
 
-This is the watcher gap. Pulse has no real-time change detection from external systems. It reads your email history overnight, but it doesn't *watch* your email for urgent changes. It can see your calendar, but it can't push a notification when someone reschedules a meeting five minutes from now. It processes a snapshot of the world once per day and tells you what it found.
+This is the listener gap. Pulse has no real-time change detection from external systems. It reads your email history overnight, but it doesn't *watch* your email for urgent changes. It can see your calendar, but it can't push a notification when someone reschedules a meeting five minutes from now. It processes a snapshot of the world once per day and tells you what it found.
 
 For a morning briefing, that's fine. For the proactive assistant OpenAI described in the announcement, it's not enough.
 
@@ -49,7 +49,7 @@ The inbox gap is subtler. Pulse delivers results in one direction: cards in the 
 The [SentiSight analysis](https://www.sentisight.ai/is-sam-altman-right-about-chatgpt-pulse/) called it "incremental evolution rather than revolution" and compared it to Google Now from 2012. That comparison stings, but it's not unfair. The architecture is structurally similar. A scheduled job processes your data overnight and surfaces what it thinks matters. The AI is dramatically better than 2012. The architecture isn't.
 
 <Callout tone="thought" label="The pattern">
-Clock ✓. Watcher ✗. Inbox ✗. Same gap map we drew for the [OpenClaw ecosystem](/posts/the-prompt-cant-save-you): one primitive present, two missing.
+Clock ✓. Listener ✗. Inbox ✗. Same gap map we drew for the [OpenClaw ecosystem](/posts/the-prompt-cant-save-you): one primitive present, two missing.
 </Callout>
 
 </Scene>
@@ -74,7 +74,7 @@ Imagine a version of Pulse with all three primitives.
 
 The clock still runs overnight, generating your morning briefing. But it also runs in real-time. When something changes in a system you care about, you find out immediately, not tomorrow.
 
-A watcher monitors your connected systems for meaningful changes: a customer reply that's been waiting more than four hours, a deploy that failed, a PR that's been in review for three days, a competitor's changelog that just updated. Not everything. Just the things you told it to care about, delivered as structured change events with context about what moved and what it was before.
+A listener monitors your connected systems for meaningful changes: a customer reply that's been waiting more than four hours, a deploy that failed, a PR that's been in review for three days, a competitor's changelog that just updated. Not everything. Just the things you told it to care about, delivered as structured change events with context about what moved and what it was before.
 
 An inbox delivers results wherever they're useful. A morning card when a digest is the right format. A Slack DM when something is urgent. A draft email when the right action is a reply. A filed ticket when the right action is tracking. The delivery channel matches the action, not the product's UI constraints.
 
@@ -98,7 +98,7 @@ The Pulse analysis above follows a pattern that works for any product claiming t
   </thead>
   <tbody>
     <tr><td>Clock</td><td>Can it wake itself up on a schedule or interval?</td><td>Cron, timer, overnight batch. Most products have this.</td></tr>
-    <tr><td>Watcher</td><td>Can it react to external changes in real time?</td><td>Webhooks, streaming APIs, change feeds. Not polling on a timer.</td></tr>
+    <tr><td>Listener</td><td>Can it react to external changes in real time?</td><td>Webhooks, streaming APIs, change feeds. Not polling on a timer.</td></tr>
     <tr><td>Inbox</td><td>Can it deliver results to different channels based on context?</td><td>Slack for urgent, email for digest, ticket for tracking. Not locked to one UI.</td></tr>
   </tbody>
 </table>

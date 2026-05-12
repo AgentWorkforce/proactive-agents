@@ -58,7 +58,7 @@ Every agent calls `writeLogEntry(...)` from `shared/log.ts` so the public
 npx tsc --noEmit
 ```
 
-To exercise an agent's behaviour without the runtime, call its `onEvent`
+To exercise an agent's behavior without the runtime, call its `onEvent`
 directly from a test with a mock `Context` and `AgentEvent`. The shim's
 `agent()` registers the definition and returns; it does not dispatch events.
 

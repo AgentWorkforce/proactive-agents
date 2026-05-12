@@ -23,6 +23,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "building-weekly-digest": DigestCardArt,
   "push-breaks-too": PushBreaksArt,
   "why-proactive-is-hard": WhyHardArt,
+  "review-agent-three-acts": ThreeActsArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -66,11 +67,15 @@ function PrimitivesArt() {
           <line x1="0" y1="0" x2="13" y2="-7" strokeWidth="1.4" />
         </g>
 
-        {/* Eye */}
+        {/* Radio */}
         <g transform="translate(250, 115)">
-          <path d="M-34 0 Q0 -26 34 0 Q0 26 -34 0" strokeWidth="1.5" />
-          <circle r="12" strokeWidth="1.3" />
-          <circle r="5" fill={C.ink} stroke="none" />
+          <rect x="-24" y="-15" width="48" height="32" rx="4" strokeWidth="1.5" />
+          <circle cy="-3" r="8" strokeWidth="1.3" />
+          <circle cy="-3" r="3.5" fill={C.ink} stroke="none" />
+          <circle cx="-10" cy="10" r="2" fill={C.ink} stroke="none" />
+          <circle cx="0" cy="10" r="2" fill={C.ink} stroke="none" />
+          <circle cx="10" cy="10" r="2" fill={C.ink} stroke="none" />
+          <line x1="16" y1="-15" x2="24" y2="-28" strokeWidth="1.2" />
         </g>
 
         {/* Envelope */}
@@ -501,13 +506,68 @@ function WhyHardArt() {
   );
 }
 
-export function ClockWatcherInbox() {
+function ThreeActsArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Three connected stages — webhook → surfaces → proactive */}
+          {/* Act 1: webhook arrow (left) */}
+          <g transform="translate(-60, -10)">
+            <rect x="-22" y="-16" width="44" height="32" rx="4" strokeWidth="1.4" />
+            <path d="M-14 -6 L0 4 L14 -6" strokeWidth="1" />
+            <line x1="-14" y1="10" x2="14" y2="10" strokeWidth="0.7" />
+          </g>
+          {/* Connector 1→2 */}
+          <line x1="-14" y1="-10" x2="14" y2="-10" strokeWidth="1.2" strokeDasharray="3 4" />
+          <path d="M8 -16 L16 -10 L8 -4" strokeWidth="1.4" />
+          {/* Act 2: hub with spokes (center) */}
+          <circle cx="40" cy="-10" r="14" strokeWidth="1.6" />
+          <circle cx="40" cy="-10" r="2" fill={C.ink} stroke="none" />
+          <line x1="40" y1="-26" x2="40" y2="-32" strokeWidth="1" />
+          <line x1="54" y1="-10" x2="60" y2="-10" strokeWidth="1" />
+          <line x1="40" y1="4" x2="40" y2="10" strokeWidth="1" />
+          <line x1="26" y1="-10" x2="20" y2="-10" strokeWidth="1" />
+          {/* Connector 2→3 */}
+          <line x1="58" y1="-10" x2="80" y2="-10" strokeWidth="1.2" strokeDasharray="3 4" />
+          <path d="M74 -16 L82 -10 L74 -4" strokeWidth="1.4" />
+          {/* Act 3: radio (listener) */}
+          <g transform="translate(108, -10)">
+            <rect x="-14" y="-10" width="28" height="20" rx="3" strokeWidth="1.4" />
+            <circle cy="-2" r="5" strokeWidth="1" />
+            <circle cy="-2" r="2" fill={C.ink} stroke="none" />
+            <circle cx="-6" cy="6" r="1.2" fill={C.ink} stroke="none" />
+            <circle cx="0" cy="6" r="1.2" fill={C.ink} stroke="none" />
+            <circle cx="6" cy="6" r="1.2" fill={C.ink} stroke="none" />
+            <line x1="10" y1="-10" x2="16" y2="-20" strokeWidth="1" />
+          </g>
+          {/* Act labels */}
+          <text x="-60" y="38" textAnchor="middle" fontFamily="inherit" fontSize="10" fill={C.ink} strokeWidth="0">I</text>
+          <text x="40" y="38" textAnchor="middle" fontFamily="inherit" fontSize="10" fill={C.ink} strokeWidth="0">II</text>
+          <text x="108" y="38" textAnchor="middle" fontFamily="inherit" fontSize="10" fill={C.ink} strokeWidth="0">III</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+export function ClockListenerInbox() {
   return (
     <svg
       viewBox="0 0 840 290"
       className="mx-auto w-full"
       role="img"
-      aria-label="A clock, a watcher, an inbox — the three primitives of a proactive agent"
+      aria-label="A clock, a listener, an inbox — the three primitives of a proactive agent"
     >
       {/* Connecting lines */}
       <line
@@ -584,34 +644,38 @@ export function ClockWatcherInbox() {
         clock
       </text>
 
-      {/* Watcher */}
+      {/* Listener */}
       <g transform="translate(420, 130)">
         <circle r="62" fill={C.sage} opacity="0.45" />
         <circle r="62" fill="none" stroke={C.ink} strokeWidth="0.8" />
-        <path
-          d="M-40 0 Q0 -32 40 0 Q0 32 -40 0"
+        {/* Radio body */}
+        <rect
+          x="-28"
+          y="-18"
+          width="56"
+          height="38"
+          rx="5"
           fill={C.paper}
           stroke={C.ink}
           strokeWidth="1.2"
         />
-        <circle r="16" fill="none" stroke={C.ink} strokeWidth="1.2" />
-        <circle r="7" fill={C.terracotta} />
-        <circle r="2.5" fill={C.paper} cx="-2" cy="-2" />
-        {Array.from({ length: 12 }).map((_, i) => {
-          const a = (i / 12) * Math.PI * 2;
-          return (
-            <line
-              key={i}
-              x1={Math.cos(a) * 20}
-              y1={Math.sin(a) * 20}
-              x2={Math.cos(a) * 26}
-              y2={Math.sin(a) * 26}
-              stroke={C.ink}
-              strokeWidth="0.7"
-              strokeLinecap="round"
-            />
-          );
-        })}
+        {/* Speaker grille */}
+        <circle cy="-4" r="10" fill="none" stroke={C.ink} strokeWidth="1.2" />
+        <circle cy="-4" r="4" fill={C.terracotta} />
+        {/* Dial dots */}
+        <circle cx="-12" cy="12" r="2.5" fill={C.ink} />
+        <circle cx="0" cy="12" r="2.5" fill={C.ink} />
+        <circle cx="12" cy="12" r="2.5" fill={C.ink} />
+        {/* Antenna */}
+        <line
+          x1="20"
+          y1="-18"
+          x2="30"
+          y2="-34"
+          stroke={C.ink}
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
       </g>
       <text
         x="420"
@@ -622,7 +686,7 @@ export function ClockWatcherInbox() {
         letterSpacing="0.08em"
         fill={C.ink}
       >
-        watcher
+        listener
       </text>
 
       {/* Inbox */}
@@ -688,7 +752,7 @@ export function ClockWatcherInbox() {
         fontSize="17"
         fill={C.terracotta}
       >
-        A clock, a watcher, an inbox.
+        A clock, a listener, an inbox.
       </text>
     </svg>
   );

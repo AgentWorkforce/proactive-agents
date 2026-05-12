@@ -3,7 +3,7 @@ import { getAllPosts, formatDate } from "@/lib/posts";
 import { BackgroundOrbs } from "@/components/background-orbs";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { Sparkle } from "@/components/decorations";
-import { CardArt, ClockWatcherInbox } from "@/components/card-illustrations";
+import { CardArt, ClockListenerInbox } from "@/components/card-illustrations";
 import {
   jsonLd,
   websiteSchema,
@@ -52,7 +52,7 @@ const TRIGGERS = [
 const HARD_PARTS = [
   {
     label: "Wake-ups are infrastructure",
-    body: "Polling is easy; push is hard. Stable URLs, signature schemes, normalised events, durable triggers — none of it ships in a model SDK. Someone has to build it.",
+    body: "Polling is easy; push is hard. Stable URLs, signature schemes, normalized events, durable triggers — none of it ships in a model SDK. Someone has to build it.",
   },
   {
     label: "State is harder than it looks",
@@ -96,7 +96,7 @@ const FAQ_ITEMS: FaqItem[] = [
     question: "How do you build a proactive agent?",
     answer: "Building a proactive agent requires three primitives:",
     points: [
-      { label: "Wake-up mechanism", text: "A clock, a watcher for change events, and an inbox for messages." },
+      { label: "Wake-up mechanism", text: "A clock, a listener for change events, and an inbox for messages." },
       { label: "Persistent state", text: "So the agent remembers what it saw and did between runs." },
       { label: "Durability", text: "Checkpointing to resume after failure, idempotency to prevent repeated actions, spend control, and scoped authentication." },
     ],
@@ -301,7 +301,7 @@ export default async function Home() {
       {/* THE TRIPLE — visual anchor */}
       <section className="relative mt-20 sm:mt-32">
         <div className="reveal mx-auto max-w-4xl px-5 sm:px-10">
-          <ClockWatcherInbox />
+          <ClockListenerInbox />
         </div>
       </section>
 

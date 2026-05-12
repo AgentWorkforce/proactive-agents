@@ -20,12 +20,12 @@ Every single one is time-triggered.
 
 The "server monitoring" workflow polls every thirty minutes and checks whether CPU, memory, or disk crossed a threshold. If something crossed the line at minute one, you find out at minute thirty. The competitor watch runs at 9:30 AM. The self-improvement loop runs at 9:00 AM. The morning brief runs at 8:00 AM.
 
-The article draws a distinction between cron jobs (exact timing, fresh session) and heartbeats (approximate timing, preserved conversation context). That's a real design choice worth naming. But both are clocks. The distinction is between a wall clock and an egg timer. Neither is a watcher.
+The article draws a distinction between cron jobs (exact timing, fresh session) and heartbeats (approximate timing, preserved conversation context). That's a real design choice worth naming. But both are clocks. The distinction is between a wall clock and an egg timer. Neither is a listener.
 
 There is no workflow in the article that responds to an external event in real time. No agent wakes because a ticket moved, a deploy finished, or a record changed. The word "webhook" appears zero times.
 
 <Callout tone="warm" label="The Zapier irony">
-The article compares OpenClaw favourably to Zapier, arguing it "goes significantly deeper" than "if this, then that." But all seven workflows *are* "if time, then do task" — which is what Zapier does. The intelligence is in the task execution, not the triggering.
+The article compares OpenClaw favorably to Zapier, arguing it "goes significantly deeper" than "if this, then that." But all seven workflows *are* "if time, then do task" — which is what Zapier does. The intelligence is in the task execution, not the triggering.
 </Callout>
 
 So really, all they have is the clock.
@@ -70,7 +70,7 @@ Here is where both sources land against the primitives a proactive agent actuall
 
 **Clock** — Both have it. Cron works. Heartbeats work. Scheduling is solved.
 
-**Watcher** — Neither has it. Every workflow polls on a timer. Nothing receives a normalized change event from an external provider. This is the disease our earlier essay diagnosed: polling is the symptom, missing primitives are the cause.
+**Listener** — Neither has it. Every workflow polls on a timer. Nothing receives a normalized change event from an external provider. This is the disease our earlier essay diagnosed: polling is the symptom, missing primitives are the cause.
 
 **Inbox** — Partial at best. Both can *send* to Telegram, email, Slack. Neither can *receive* structured messages from other agents or systems. Coordination is one-directional.
 
@@ -93,7 +93,7 @@ This goes beyond OpenClaw — the pattern shows up everywhere. Teams reach for t
 
 **The runtime layer** — the agent's guarantees:
 
-- *When* to wake up (clock, watcher, inbox)
+- *When* to wake up (clock, listener, inbox)
 - *Where* state lives and how it persists
 - *What happens* when the agent fails mid-task
 - *What the agent is allowed to touch* (scoped auth)
@@ -108,5 +108,5 @@ We want to be direct: both pieces are genuine contributions. The xCloud article 
 The thinking is super solid. It's just aimed at the wrong layer. Once you push scheduling, change detection, delivery, state, and durability into the runtime, the prompt can finally just focus on deciding what to do next. Which is what it's actually good at.
 
 <Callout tone="cool" label="Further reading">
-The xCloud article is at [xcloud.host/proactive-openclaw-agent-workflows](https://xcloud.host/proactive-openclaw-agent-workflows/). Hal's skill lives at [clawhub.ai/halthelobster/proactive-agent](https://clawhub.ai/halthelobster/proactive-agent). Our earlier essay, [*Proactive agents need three primitives*](/posts/three-primitives), lays out the clock/watcher/inbox framework in full.
+The xCloud article is at [xcloud.host/proactive-openclaw-agent-workflows](https://xcloud.host/proactive-openclaw-agent-workflows/). Hal's skill lives at [clawhub.ai/halthelobster/proactive-agent](https://clawhub.ai/halthelobster/proactive-agent). Our earlier essay, [*Proactive agents need three primitives*](/posts/three-primitives), lays out the clock/listener/inbox framework in full.
 </Callout>

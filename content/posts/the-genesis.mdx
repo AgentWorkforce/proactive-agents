@@ -1,6 +1,6 @@
 ---
 title: "The genesis"
-summary: "It started with three terminal windows and too much copy-pasting. The inbox came first, then the clock, then the watcher."
+summary: "It started with three terminal windows and too much copy-pasting. The inbox came first, then the clock, then the listener."
 date: "2026-05-10"
 accent: "butter"
 dropcap: true
@@ -14,7 +14,7 @@ That's where Agent Relay started. Get two terminal windows a way to talk to each
 
 ## Push, not poll
 
-When I got it working I was through the roof. My agents could talk to each other, self-organise, and form teams. Codex would receive a message from Claude and get right to work. The agents were able to push messages into each other's screens and receive acknowledgements back.
+When I got it working I was through the roof. My agents could talk to each other, self-organize, and form teams. Codex would receive a message from Claude and get right to work. The agents were able to push messages into each other's screens and receive acknowledgments back.
 
 <LinkedInEmbed />
 
@@ -44,7 +44,7 @@ Having worked at [Nango](https://nango.dev) as the first engineering hire for th
 
 Our recommendation was often: just sync the data. Because honestly, [webhooks are hard](/posts/the-webhook-tax). Every provider has a different payload shape. Some require signature verification, some don't. Some deliver at-least-once, some at-most-once. Some systems require entirely different infrastructure — Google has Pub/Sub, Salesforce has streaming events, Slack has socket mode alongside HTTP webhooks.
 
-That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *watcher* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters. I wrote up the full framework in [Proactive agents need three primitives](/posts/three-primitives).
+That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *listener* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters. I wrote up the full framework in [Proactive agents need three primitives](/posts/three-primitives).
 
 <Scene side="right" figure={<NamingFigure />} caption="Three names, one thing.">
 
@@ -52,7 +52,7 @@ That experience is what made the third primitive click. An agent doesn't just ne
 
 Once the triple was clear, we looked at what we'd been building and realized the language didn't fit anymore. We'd been calling it a *multi-agent coordination layer*, a *headless Slack for agents*, an *integration filesystem* — each name describing a different part of the same thing. The thing was a runtime. A runtime for proactive agents.
 
-The old framing wasn't wrong, exactly. But it kept pointing people in directions we didn't intend. "Multi-agent coordination" made developers reach for frameworks — LangGraph, CrewAI, AutoGen — when what we'd built was infrastructure. And it centered the least interesting part of the story: agents talking to each other. The more interesting part was making a *single* agent proactive — giving it the clock, the watcher, and the inbox so it could act on its own.
+The old framing wasn't wrong, exactly. But it kept pointing people in directions we didn't intend. "Multi-agent coordination" made developers reach for frameworks — LangGraph, CrewAI, AutoGen — when what we'd built was infrastructure. And it centered the least interesting part of the story: agents talking to each other. The more interesting part was making a *single* agent proactive — giving it the clock, the listener, and the inbox so it could act on its own.
 
 ## What changed
 
@@ -64,7 +64,7 @@ The repos finally tell the truth:
   </thead>
   <tbody>
     <tr><td>Scheduling service</td><td>The clock</td></tr>
-    <tr><td>Integration filesystem</td><td>The watcher</td></tr>
+    <tr><td>Integration filesystem</td><td>The listener</td></tr>
     <tr><td>Headless Slack</td><td>The inbox</td></tr>
     <tr><td>Hosted control plane</td><td>The runtime</td></tr>
     <tr><td>Workflow reliability</td><td>The durability ring</td></tr>
@@ -86,7 +86,7 @@ If any of the following sound familiar, you're assembling a proactive runtime fr
 - You have a lock or lease to prevent two instances of the same agent from acting on the same event
 - You have a Slack bot or GitHub Action that posts results somewhere a human will see them
 
-Each of those is one piece of the clock, the watcher, or the inbox. If you've built more than one agent, you've probably noticed the same plumbing showing up every time: scheduling, change detection, dedup, delivery, state. The agent-specific logic is small. The infrastructure underneath is where the engineering hours go.
+Each of those is one piece of the clock, the listener, or the inbox. If you've built more than one agent, you've probably noticed the same plumbing showing up every time: scheduling, change detection, dedup, delivery, state. The agent-specific logic is small. The infrastructure underneath is where the engineering hours go.
 
 ## The bet
 

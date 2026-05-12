@@ -16,7 +16,7 @@ Each entry is specific and technically possible with today's APIs and models. An
 
 **Music discovery.** I want an agent that watches my Spotify listening history, cross-references it with artists I've saved, and sends a Friday digest of new releases from artists I actually listen to. Not Discover Weekly — which is good but generic — something that knows I played the same album eight times this month and checks if that artist dropped anything new.
 
-**Books.** An agent that monitors Goodreads for new releases from authors in my "read" shelf. Not a newsletter signup. An actual watcher on the catalog that notices a publication date and tells me about it.
+**Books.** An agent that monitors Goodreads for new releases from authors in my "read" shelf. Not a newsletter signup. An actual listener on the catalog that notices a publication date and tells me about it.
 
 **Podcasts.** An agent that monitors three or four feeds I follow and tells me when an episode features a guest from a list I maintain. I don't need to know about every episode — just the ones where someone I track shows up.
 
@@ -38,15 +38,15 @@ Each entry is specific and technically possible with today's APIs and models. An
 
 **Bank alerts.** An agent that watches transaction categories and flags anomalies — not "you spent $4.50 at Starbucks" but "your utility bill was 40% higher than last month" or "there's a subscription charge from a service you cancelled." Pattern detection, not line-item reporting.
 
-**Flight prices.** A watcher on specific routes I'm planning trips for, alerting me when the price drops below a threshold I set. The airline apps do a version of this, but they only watch their own inventory. I want a watcher that spans carriers.
+**Flight prices.** A listener on specific routes I'm planning trips for, alerting me when the price drops below a threshold I set. The airline apps do a version of this, but they only watch their own inventory. I want a listener that spans carriers.
 
 **Package tracking.** An agent that consolidates all active shipments — Amazon, UPS, FedEx, whatever — into a single daily "here's where everything is" summary instead of five separate carrier emails. Better yet, one that knows I have a flight Thursday and flags a delivery that'll arrive while I'm away. Some of these exist as standalone apps, but the point is having agents that share context — my package tracker knows about my calendar.
 
 ## Professional
 
-**Competitor intelligence.** An agent that watches what my competitors are doing — new product launches, changelog updates, documentation changes, pricing shifts. Not a quarterly report someone assembles manually, but a watcher on their public footprint that notices when something moved and tells me what changed. A weekly digest of "here's what shipped in your space" would save hours of manual scanning.
+**Competitor intelligence.** An agent that watches what my competitors are doing — new product launches, changelog updates, documentation changes, pricing shifts. Not a quarterly report someone assembles manually, but a listener on their public footprint that notices when something moved and tells me what changed. A weekly digest of "here's what shipped in your space" would save hours of manual scanning.
 
-**Vendor monitoring.** A watcher on the APIs and services I depend on — Stripe, OpenAI, Cloudflare, Vercel. Alert me on breaking changes, deprecation timelines, new features I should know about. Most of these publish changelogs, but nobody reads changelogs proactively. An agent that diffs the docs and tells me "Stripe deprecated this endpoint you're using" or "OpenAI shipped a new model that's cheaper for your use case" would catch things I'd otherwise discover after they break.
+**Vendor monitoring.** A listener on the APIs and services I depend on — Stripe, OpenAI, Cloudflare, Vercel. Alert me on breaking changes, deprecation timelines, new features I should know about. Most of these publish changelogs, but nobody reads changelogs proactively. An agent that diffs the docs and tells me "Stripe deprecated this endpoint you're using" or "OpenAI shipped a new model that's cheaper for your use case" would catch things I'd otherwise discover after they break.
 
 **Error monitoring.** An agent that watches Sentry for *new error classes* (not individual errors) and files a ticket in Linear when a new one appears, with context about what changed in the most recent deploy.
 
@@ -56,7 +56,7 @@ Each entry is specific and technically possible with today's APIs and models. An
 
 <table>
   <thead>
-    <tr><th>Wish list item</th><th>Watcher</th><th>Clock</th><th>Inbox</th></tr>
+    <tr><th>Wish list item</th><th>Listener</th><th>Clock</th><th>Inbox</th></tr>
   </thead>
   <tbody>
     <tr><td>Spotify digest</td><td>New releases API</td><td>Weekly</td><td>Push notification</td></tr>
@@ -69,7 +69,7 @@ Each entry is specific and technically possible with today's APIs and models. An
   </tbody>
 </table>
 
-Every single entry requires a **watcher** (something observing changes in an external system), a **clock** (when to batch, summarize, or digest), and an **inbox** (where to deliver the result). The mix differs — Spotify leans clock-heavy with its weekly digest, error monitoring leans watcher-heavy with real-time alerts — but all three primitives are present in every case.
+Every single entry requires a **listener** (something observing changes in an external system), a **clock** (when to batch, summarize, or digest), and an **inbox** (where to deliver the result). The mix differs — Spotify leans clock-heavy with its weekly digest, error monitoring leans listener-heavy with real-time alerts — but all three primitives are present in every case.
 
 <Callout tone="warm" label="The honest gap">
 The weekly-digest agent on this site implements two items from this list (HN and Reddit monitoring). The rest are adapter problems, not capability problems. GPT-4 class models can handle every reasoning step on this list. What's missing is the per-provider plumbing: the normalized change events for Spotify's catalog, the inbox that delivers a digest to my phone at a time I chose. Each new adapter takes weeks to get right.

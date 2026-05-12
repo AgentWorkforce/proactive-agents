@@ -69,7 +69,7 @@ A few things changed. The agent isn't a `tick()` function any more. It's a *hand
 
 The five-minute interval is gone. The agent runs the moment Zendesk publishes the update. There is no `lastRun` global, because there is no batch — each event is its own unit of work. Idempotency is the runtime's problem; the same change won't be delivered twice. Locks are the runtime's problem; one event, one handler, one lease.
 
-The honest engineering work moved from *plumbing* to *behaviour* — which is now basically the entire program.
+The honest engineering work moved from *plumbing* to *behavior* — which is now basically the entire program.
 
 <Callout tone="warm" label="The most important line">
 The reactive version asks: *what changed in the last five minutes?* The proactive version asks: *what just changed?* The first is a query you have to invent. The second is a fact the world hands you.

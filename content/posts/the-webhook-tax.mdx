@@ -150,12 +150,12 @@ The cost difference widens as you add providers. Each polled provider multiplies
 
 The honest caveat: event-driven architectures trade steady-state cost for burst cost. A bulk import that fires 500 webhooks in a minute will spike your compute and LLM spend in ways that a five-minute poll never would. You need backpressure and spend guardrails for those moments. But the baseline cost of "watch four providers and act when something changes" is dramatically lower when you're not polling.
 
-## The watcher as a primitive
+## The listener as a primitive
 
 This is why we think of change detection as a primitive — something that belongs underneath the agent, not inside it. The same way you wouldn't ask every agent builder to implement their own TCP stack, you shouldn't ask them to implement their own webhook verification, payload normalization, cursor management, and deduplication per provider.
 
-A proactive agent needs a *watcher:* a single interface that says "something changed in a system you care about" with enough context for the agent to act on it. Whether that change came from a webhook, a streaming API, a polling sync, or a Pub/Sub subscription is an implementation detail the agent shouldn't have to know.
+A proactive agent needs a *listener:* a single interface that says "something changed in a system you care about" with enough context for the agent to act on it. Whether that change came from a webhook, a streaming API, a polling sync, or a Pub/Sub subscription is an implementation detail the agent shouldn't have to know.
 
 The [three primitives](/posts/three-primitives) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
 
-Anyway, that's what it looks like when you build the watcher from scratch, one provider at a time. It's a ton of work, and most of it has nothing to do with the agent itself.
+Anyway, that's what it looks like when you build the listener from scratch, one provider at a time. It's a ton of work, and most of it has nothing to do with the agent itself.

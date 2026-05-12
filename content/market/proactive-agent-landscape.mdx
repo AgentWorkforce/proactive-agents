@@ -8,7 +8,7 @@ dropcap: true
 
 Six months ago, nobody was really shipping proactive agents. Now every major AI lab either has one in market or has one in internal testing. The convergence is something else: OpenAI, Google, Anthropic, Meta, Perplexity, and several startups all building agents that act without being asked.
 
-This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **watcher** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
+This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **listener** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
 
 *Last updated: May 12, 2026.*
 
@@ -18,7 +18,7 @@ This page maps the landscape through the [three-primitives framework](/posts/thr
 
 <table>
 <thead>
-<tr><th>Product</th><th>Company</th><th>Clock</th><th>Watcher</th><th>Inbox</th><th>Stage</th></tr>
+<tr><th>Product</th><th>Company</th><th>Clock</th><th>Listener</th><th>Inbox</th><th>Stage</th></tr>
 </thead>
 <tbody>
 <tr><td>ChatGPT Pulse</td><td>OpenAI</td><td>&#10003;</td><td>&#10007;</td><td>&#10007;</td><td>Shipped (Pro)</td></tr>
@@ -35,7 +35,7 @@ This page maps the landscape through the [three-primitives framework](/posts/thr
 </tbody>
 </table>
 
-A pattern is visible: nearly everyone has the clock. The watcher and the inbox are where products diverge, and where the real difficulty lives.
+A pattern is visible: nearly everyone has the clock. The listener and the inbox are where products diverge, and where the real difficulty lives.
 
 <Callout tone="thought" label="The clock is table stakes">
 Every product on this list runs on a schedule. That's the easy primitive to build. The products that score highest are the ones that also detect changes in real time and deliver results wherever they're useful, not just inside their own app.
@@ -49,7 +49,7 @@ Every product on this list runs on a schedule. That's the easy primitive to buil
 
 **[ChatGPT Pulse](https://openai.com/index/introducing-chatgpt-pulse/) (OpenAI)** launched in September 2025 as part of ChatGPT Pro. It processes chat history, Gmail, and Google Calendar overnight, then delivers 5 to 10 personalized morning cards. The personalization is genuinely impressive. The architecture is [clock-only](/posts/chatgpt-pulse): no real-time change detection, no delivery outside the ChatGPT app.
 
-**[Orbit](https://www.testingcatalog.com/anthropic-is-working-on-orbit-its-upcoming-proactive-assistant/) (Anthropic)** was unveiled at the Code with Claude conference in May 2026. It generates proactive briefings from connected tools (Gmail, Slack, GitHub, Calendar, Drive, Figma) on a timezone-aware schedule. "Orbit apps" let users pin specific insight views. It has the watcher, which puts it ahead of Pulse architecturally, though the inbox is still limited to the Claude interface.
+**[Orbit](https://www.testingcatalog.com/anthropic-is-working-on-orbit-its-upcoming-proactive-assistant/) (Anthropic)** was unveiled at the Code with Claude conference in May 2026. It generates proactive briefings from connected tools (Gmail, Slack, GitHub, Calendar, Drive, Figma) on a timezone-aware schedule. "Orbit apps" let users pin specific insight views. It has the listener, which puts it ahead of Pulse architecturally, though the inbox is still limited to the Claude interface.
 
 **[Remy](https://www.droid-life.com/2026/05/07/google-ai-agent-remy/) (Google)** is the most ambitious on paper. A Gemini-powered "24/7 personal agent" that monitors signals across Gmail, Calendar, Docs, Drive, Keep, Tasks, GitHub, WhatsApp, Spotify, and Photos. It anticipates needs and executes multi-step workflows proactively. Currently in internal dogfood (employee-only Gemini app on phones), expected to surface publicly around Google I/O. If the integration depth is real, Remy has all three primitives working within the Google ecosystem.
 
@@ -80,7 +80,7 @@ The target audience is non-technical operators, which is a different market segm
 **[MindStudio](https://www.mindstudio.ai/)** is a no-code platform for building and deploying AI agents, with access to 200+ models and 1,000+ integrations. Agents can run on custom schedules (daily, weekly, or interval-based), trigger from webhooks and inbound emails, and deliver results via email, Slack, and SMS. The platform sits at the builder layer rather than the application layer: you construct the proactive behavior yourself rather than getting it out of the box. MindStudio also publishes [consistently good content](https://www.mindstudio.ai/blog) on agent design patterns and workflows, which makes their blog worth following for anyone building in this space.
 
 <Callout tone="cool" label="Disclosure">
-We build [Agent Relay](https://agentrelay.com), a developer SDK that provides the clock, watcher, and inbox as composable primitives. It sits at the infrastructure layer, not the application layer. This analysis applies the same framework to everyone on the list, including us.
+We build [Agent Relay](https://agentrelay.com), a developer SDK that provides the clock, listener, and inbox as composable primitives. It sits at the infrastructure layer, not the application layer. This analysis applies the same framework to everyone on the list, including us.
 </Callout>
 
 ## What the convergence tells us
@@ -90,7 +90,7 @@ Every product on this list arrived at roughly the same architecture independentl
 The differences are in coverage and depth:
 
 - **Coverage**: How many data sources can the agent watch? Google has a natural advantage with Remy because it already owns the data. Everyone else is integrating third-party APIs one at a time.
-- **Depth**: Is the watcher doing real-time event streaming or periodic polling? The user experience is completely different. A four-hour-old alert is not the same as a real-time notification.
+- **Depth**: Is the listener doing real-time event streaming or periodic polling? The user experience is completely different. A four-hour-old alert is not the same as a real-time notification.
 - **Delivery**: Can results go where the action is (Slack, email, tickets), or are they trapped in the product's own UI? Most horizontal assistants are still trapped.
 
 I think the products that nail all three at depth are the ones people will actually reorganize their workflows around. Everyone else just ships a clock and calls it done, and those end up feeling like [another tab to check](/posts/chatgpt-pulse).

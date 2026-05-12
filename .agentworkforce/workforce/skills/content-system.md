@@ -109,7 +109,7 @@ These patterns mark content as AI-generated. Run every draft against this list. 
 - "This is not X. It is Y." inversions
 - Short parallel declarations that repeat the subject: "The cost is real. It is recurring."
 - Neat rhetorical pivots that feel rehearsed
-- Branded phrase repetition: using the same branded terminology ("clock, watcher, inbox") more than 2-3 times per essay
+- Branded phrase repetition: using the same branded terminology ("clock, listener, inbox") more than 2-3 times per essay
 
 ### Tier 3: Watch for accumulation
 

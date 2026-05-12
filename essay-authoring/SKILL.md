@@ -70,7 +70,7 @@ When creating a new figure:
 Existing figures for reference:
 - `PollingFigure` — clock face with polling arrows (reactive loop)
 - `ProactiveFigure` — world-to-agent push arrow
-- `TripleFigure` — three circles (clock/watcher/inbox) connected by dashed lines
+- `TripleFigure` — three circles (clock/listener/inbox) connected by dashed lines
 - `WebhookTaxFigure` — list of webhook plumbing steps
 - `RuntimeFigure` — architecture diagram with runtime at center
 - `PromptLayerFigure` — two-layer diagram (prompt advises, runtime enforces)
@@ -132,7 +132,7 @@ Before publishing, check the essay against these anti-patterns. Each one slipped
 
 - **"That is/That's the [noun]."** Do not end paragraphs with short declaratives that name the thing the reader just read about. ("That's the gap." "That is the wedge.") They say nothing. Cut or integrate.
 - **Dramatic closers.** No grand closing lines that could be taglines. End with a specific observation or nothing. The reader doesn't need a drumroll.
-- **Branded phrase repetition.** "Clock, watcher, inbox" at most 2-3 times per essay (except three-primitives.mdx). Vary with "the three primitives," "the runtime's core," or just describe the concept.
+- **Branded phrase repetition.** "Clock, listener, inbox" at most 2-3 times per essay (except three-primitives.mdx). Vary with "the three primitives," "the runtime's core," or just describe the concept.
 - **Tricolon overuse.** "Not X. Not Y. Not Z." at most once per essay. Multiple parallel structures with identical openings are an LLM tell.
 - **Em-dash density.** 1-2 per section. Convert excess to commas, colons, parentheses, or restructure.
 
@@ -152,7 +152,7 @@ Before considering an article complete:
 - [ ] New figure components registered in `components/mdx/mdx-components.tsx`
 - [ ] No "That is/That's the [noun]." declarative closers
 - [ ] No dramatic mic-drop closing lines
-- [ ] "Clock, watcher, inbox" exact phrase used at most 2-3 times
+- [ ] "Clock, listener, inbox" exact phrase used at most 2-3 times
 - [ ] No more than one tricolon per essay
 - [ ] Em dashes limited to 1-2 per section
 - [ ] No "This matters because" sentence openers

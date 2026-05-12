@@ -18,7 +18,7 @@ export type CompletionOptions = {
   apiKey: string;
   model?: string;
   messages: ChatMessage[];
-  /** Force JSON output. Most modern models honour this. */
+  /** Force JSON output. Most modern models honor this. */
   jsonMode?: boolean;
   /** 0–2. Default 0.2 for analytical tasks. */
   temperature?: number;

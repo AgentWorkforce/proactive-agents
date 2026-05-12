@@ -75,7 +75,7 @@ export default function AboutPage() {
           Before this, three years as the first hire at{" "}
           <a href="https://nango.dev">Nango</a> &mdash; the market leader in
           third-party integrations &mdash; where most of the day-job was
-          getting the right context to AI: webhooks, normalised payloads, the
+          getting the right context to AI: webhooks, normalized payloads, the
           long tail of provider quirks. The hard parts of proactive agents
           are, mostly, the same hard parts dressed up in a different jacket.
         </p>

@@ -97,7 +97,7 @@ The delivery channel shapes behavior more than the content does. A digest in Sla
 The restraint is deliberate. The agent files a curated summary somewhere durable and searchable, and goes quiet. I've found that the best production agents are honestly pretty boring to watch. That's the whole point.
 
 <Callout tone="cool" label="The delivery primitive matters">
-This maps directly back to the [three primitives](/posts/three-primitives). The clock is cron. The watcher is Brave + Reddit. The inbox is GitHub Issues. Choosing GitHub over Slack changed the agent's behavior more than any prompt tuning did, because it changed how humans interacted with the output.
+This maps directly back to the [three primitives](/posts/three-primitives). The clock is cron. The listener is Brave + Reddit. The inbox is GitHub Issues. Choosing GitHub over Slack changed the agent's behavior more than any prompt tuning did, because it changed how humans interacted with the output.
 </Callout>
 
 ## Costs
@@ -129,7 +129,7 @@ Three things, in order of likelihood we'll actually do them.
 
 **Source expansion.** Hacker News is an obvious addition. So is Twitter/X, though the API pricing makes it impractical on a free-tier budget. We could add a Brave `site:news.ycombinator.com` query for close to zero cost. The gather step's fan-out design makes adding sources trivial to implement, which was the whole point of that architecture.
 
-**Data-triggered runs.** Right now the agent is purely cron-driven. If a mention spikes on a Wednesday, we don't know until Saturday. For some sources, a data trigger would make more sense: watch an RSS feed or a webhook and fire the pipeline when something appears, not when the clock ticks. This is the M2 roadmap for us, replacing some cron triggers with real-time [watcher](/posts/three-primitives) events. The weekly cadence would remain as the default for sources that don't support push.
+**Data-triggered runs.** Right now the agent is purely cron-driven. If a mention spikes on a Wednesday, we don't know until Saturday. For some sources, a data trigger would make more sense: watch an RSS feed or a webhook and fire the pipeline when something appears, not when the clock ticks. This is the M2 roadmap for us, replacing some cron triggers with real-time [listener](/posts/three-primitives) events. The weekly cadence would remain as the default for sources that don't support push.
 
 <Callout tone="thought" label="The production test">
 If you want to know whether your agent architecture holds up, build something that runs unattended for a month. Not a demo. Not a benchmark. Something with a cron expression and a git history. The bugs you find will be different from the ones you expected, and the design decisions that matter will surprise you.

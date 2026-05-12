@@ -234,9 +234,10 @@ export default function GuidePage() {
               2024 paper from Tsinghua and Huawei
             </a>{" "}
             (&ldquo;Proactive Agent: Shifting LLM Agents from Reactive Responses to
-            Active Assistance&rdquo;), which formalises five properties: push beats
-            poll, persistent state is non-negotiable, shared environmental state is
-            the coordination primitive, calibrated restraint is the hard problem, and
+            Active Assistance&rdquo;), which formalizes the same five claims we
+            ended up with independently: push beats poll, persistent state is
+            non-negotiable, shared environmental state is the coordination
+            primitive, calibrated restraint is the hard problem, and
             multi-candidate fan-out beats single proposals.
           </p>
         </section>
@@ -341,9 +342,9 @@ export default function GuidePage() {
           <h3>Primitive 1: A wake-up mechanism</h3>
           <p>
             The agent needs a <strong>clock</strong> (schedules and intervals), a{" "}
-            <strong>watcher</strong> (normalised change events from providers), and
+            <strong>listener</strong> (normalized change events from providers), and
             an <strong>inbox</strong> (messages from humans and systems). Reactive
-            agents only honour the third, and they don&rsquo;t even honour it well
+            agents only honor the third, and they don&rsquo;t even honor it well
             &mdash; they wait to be invoked, not to be spoken to.
           </p>
 
@@ -401,7 +402,7 @@ export default function GuidePage() {
           <p>
             The pattern that emerges: once the infrastructure handles triggers,
             state, and recovery, the agent&rsquo;s own code shrinks to a handler
-            and decision logic. The hard part shifts from plumbing to behaviour
+            and decision logic. The hard part shifts from plumbing to behavior
             &mdash; teaching the agent <em>when not to act</em> is harder than
             wiring up the events.
           </p>
@@ -521,7 +522,7 @@ async function onTicketUpdated(event) {
                 Proactive agents need three primitives
               </p>
               <p className="mt-1 font-serif text-sm text-ink-soft">
-                Deep dive into the clock, watcher, and inbox that make up the proactive runtime.
+                Deep dive into the clock, listener, and inbox that make up the proactive runtime.
               </p>
             </Link>
           </li>

@@ -92,11 +92,11 @@ export function ProactiveFigure() {
   );
 }
 
-/** The triple — clock + watcher + inbox. */
+/** The triple — clock + listener + inbox. */
 export function TripleFigure() {
   const items = [
     { x: 80, y: 70, label: "clock", sub: "relaycron", fill: C.butter },
-    { x: 240, y: 70, label: "watcher", sub: "relayfile", fill: C.sage },
+    { x: 240, y: 70, label: "listener", sub: "relayfile", fill: C.sage },
     { x: 160, y: 220, label: "inbox", sub: "relaycast", fill: C.lavender },
   ];
   return (
@@ -202,7 +202,7 @@ export function PromptLayerFigure() {
       <text x="160" y="206" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>
         enforces
       </text>
-      {["clock", "watcher", "inbox", "state", "auth"].map((t, i) => (
+      {["clock", "listener", "inbox", "state", "auth"].map((t, i) => (
         <g key={t}>
           <rect x={62 + i * 44} y={214} width={38} height={20} rx="10" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
           <text x={81 + i * 44} y={228} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{t}</text>
@@ -219,7 +219,7 @@ export function PromptLayerFigure() {
 export function GapMapFigure() {
   const rows = [
     { label: "clock", has: [true, true] },
-    { label: "watcher", has: [false, false] },
+    { label: "listener", has: [false, false] },
     { label: "inbox", has: [false, false] },
     { label: "state", has: [false, false] },
     { label: "durability", has: [false, false] },
@@ -482,7 +482,7 @@ export function InfraMapFigure() {
   ];
   const primitives = [
     { x: 80, label: "clock", fill: C.butter },
-    { x: 160, label: "watcher", fill: C.sage },
+    { x: 160, label: "listener", fill: C.sage },
     { x: 240, label: "inbox", fill: C.lavender },
   ];
   return (
@@ -574,7 +574,7 @@ export function PatternConvergeFigure() {
   ];
   const triple = [
     { x: 210, y: 100, label: "clock", fill: C.butter },
-    { x: 280, y: 150, label: "watcher", fill: C.sage },
+    { x: 280, y: 150, label: "listener", fill: C.sage },
     { x: 210, y: 200, label: "inbox", fill: C.lavender },
   ];
   return (
@@ -655,7 +655,7 @@ export function PulseClockFigure() {
       </g>
       <g transform="translate(160, 275)">
         <circle r="14" fill="none" stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 2" />
-        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>watcher</text>
+        <text y="4" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>listener</text>
       </g>
       <g transform="translate(245, 275)">
         <circle r="14" fill="none" stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 2" />
@@ -669,7 +669,7 @@ export function PulseClockFigure() {
 export function PulseCompleteFigure() {
   const items = [
     { x: 80, y: 90, label: "clock", sub: "nightly + real-time", fill: C.butter },
-    { x: 240, y: 90, label: "watcher", sub: "change events", fill: C.sage },
+    { x: 240, y: 90, label: "listener", sub: "change events", fill: C.sage },
     { x: 160, y: 220, label: "inbox", sub: "deliver anywhere", fill: C.lavender },
   ];
   return (
@@ -707,7 +707,7 @@ export function PulseCompleteFigure() {
 export function LandscapeGridFigure() {
   const cols = [
     { x: 140, label: "clock", fill: C.butter },
-    { x: 200, label: "watcher", fill: C.sage },
+    { x: 200, label: "listener", fill: C.sage },
     { x: 260, label: "inbox", fill: C.lavender },
   ];
   const rows = [
@@ -937,7 +937,7 @@ export function LandscapeLayersFigure() {
       {/* Infrastructure layer */}
       <rect x="40" y="220" width="240" height="50" rx="8" fill={C.peach} stroke={C.ink} strokeWidth="1.8" />
       <text x="160" y="242" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>infrastructure</text>
-      <text x="160" y="258" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>clock + watcher + inbox</text>
+      <text x="160" y="258" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>clock + listener + inbox</text>
       {/* Vertical agents */}
       <rect x="45" y="130" width="100" height="70" rx="8" fill={C.sage} stroke={C.ink} strokeWidth="1.4" />
       <text x="95" y="160" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>vertical</text>
@@ -1337,6 +1337,204 @@ export function RuntimeFigure() {
         <line x1="100" y1="200" x2="135" y2="178" />
         <line x1="220" y1="200" x2="185" y2="178" />
       </g>
+    </svg>
+  );
+}
+
+/** Review agent Act 1 — reactive webhook-triggered review loop. */
+export function ReviewReactiveFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="rrgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.peach} stopOpacity="0.9" />
+          <stop offset="100%" stopColor={C.butter} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="110" fill="url(#rrgrad)" />
+
+      {/* GitHub box (top-left) */}
+      <g transform="translate(68, 90)">
+        <rect x="-30" y="-22" width="60" height="44" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+        <text textAnchor="middle" y="-4" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>PR</text>
+        <text textAnchor="middle" y="10" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>opened</text>
+      </g>
+
+      {/* Webhook arrow: GitHub → Agent */}
+      <g stroke={C.inkSoft} strokeWidth="1.6" fill="none" strokeLinecap="round">
+        <path d="M100 100 Q 140 80 170 110" />
+        <path d="M164 104 L170 110 L162 114" />
+      </g>
+      <text x="148" y="82" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>webhook</text>
+
+      {/* Agent circle (center) */}
+      <g transform="translate(210, 130)">
+        <circle r="32" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+        <text textAnchor="middle" y="-6" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>MSD</text>
+        <text textAnchor="middle" y="8" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>analyze</text>
+        {/* Three small dots for the three personas */}
+        <circle cx="-8" cy="18" r="2.5" fill={C.terracotta} />
+        <circle cx="0" cy="18" r="2.5" fill={C.moss} />
+        <circle cx="8" cy="18" r="2.5" fill={C.plum} />
+      </g>
+
+      {/* Comment arrow: Agent → GitHub */}
+      <g stroke={C.inkSoft} strokeWidth="1.6" fill="none" strokeLinecap="round">
+        <path d="M190 155 Q 140 195 95 170" />
+        <path d="M102 174 L95 170 L100 162" />
+      </g>
+      <text x="148" y="200" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>comment</text>
+
+      {/* Comment box (bottom-left) */}
+      <g transform="translate(68, 195)">
+        <rect x="-30" y="-16" width="60" height="32" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+        <line x1="-18" y1="-6" x2="18" y2="-6" stroke={C.faint} strokeWidth="0.8" />
+        <line x1="-18" y1="0" x2="14" y2="0" stroke={C.faint} strokeWidth="0.8" />
+        <line x1="-18" y1="6" x2="10" y2="6" stroke={C.faint} strokeWidth="0.8" />
+      </g>
+
+      {/* Caption */}
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
+        webhook → analyze → comment → done
+      </text>
+    </svg>
+  );
+}
+
+/** Review agent Act 2 — multi-surface hub with spokes to different channels. */
+export function ReviewSurfacesFigure() {
+  const surfaces = [
+    { label: "Slack", angle: -90, color: C.lavender },
+    { label: "Telegram", angle: -30, color: C.sky },
+    { label: "Desktop", angle: 30, color: C.sage },
+    { label: "Terminal", angle: 90, color: C.butter },
+    { label: "GitHub", angle: 150, color: C.peach },
+    { label: "WhatsApp", angle: 210, color: C.rose },
+  ];
+  const cx = 160, cy = 150, hubR = 28, spokeR = 95, nodeR = 22;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="rsgrad" cx="50%" cy="42%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx={cx} cy={cy} r="120" fill="url(#rsgrad)" />
+
+      {/* Spokes and surface nodes */}
+      {surfaces.map(({ label, angle, color }) => {
+        const rad = (angle * Math.PI) / 180;
+        const nx = cx + Math.cos(rad) * spokeR;
+        const ny = cy + Math.sin(rad) * spokeR;
+        const lx = cx + Math.cos(rad) * (hubR + 6);
+        const ly = cy + Math.sin(rad) * (hubR + 6);
+        return (
+          <g key={label}>
+            <line x1={lx} y1={ly} x2={nx - Math.cos(rad) * nodeR} y2={ny - Math.sin(rad) * nodeR}
+              stroke={C.faint} strokeWidth="1.2" strokeDasharray="3 4" />
+            <circle cx={nx} cy={ny} r={nodeR} fill={color} opacity="0.5" stroke={C.ink} strokeWidth="1" />
+            <text x={nx} y={ny + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>
+              {label}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Center hub */}
+      <circle cx={cx} cy={cy} r={hubR} fill={C.paper} stroke={C.ink} strokeWidth="1.8" />
+      <text x={cx} y={cy - 4} textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>MSD</text>
+      <text x={cx} y={cy + 8} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>dispatch</text>
+
+      {/* Caption */}
+      <text x="160" y="295" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
+        same trigger, six surfaces
+      </text>
+    </svg>
+  );
+}
+
+/** Review agent Act 3 — proactive detection with the three primitives wired in. */
+export function ReviewProactiveFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <defs>
+        <radialGradient id="rpgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.8" />
+          <stop offset="100%" stopColor={C.peach} stopOpacity="0.35" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="115" fill="url(#rpgrad)" />
+
+      {/* Clock (top-left) */}
+      <g transform="translate(68, 82)">
+        <circle r="24" fill={C.butter} opacity="0.6" />
+        <circle r="24" fill="none" stroke={C.ink} strokeWidth="1.2" />
+        <circle r="16" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+        <circle r="1.5" fill={C.terracotta} />
+        <line x1="0" y1="0" x2="0" y2="-10" stroke={C.ink} strokeWidth="1.5" strokeLinecap="round" />
+        <line x1="0" y1="0" x2="7" y2="-3" stroke={C.terracotta} strokeWidth="1.2" strokeLinecap="round" />
+        <text y="38" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>clock</text>
+      </g>
+
+      {/* Listener — radio (top-right) */}
+      <g transform="translate(252, 82)">
+        <circle r="24" fill={C.sage} opacity="0.6" />
+        <circle r="24" fill="none" stroke={C.ink} strokeWidth="1.2" />
+        {/* Radio body */}
+        <rect x="-12" y="-8" width="24" height="18" rx="2.5" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+        {/* Speaker grille */}
+        <circle cy="-1" r="5" fill="none" stroke={C.ink} strokeWidth="0.6" />
+        <circle cy="-1" r="2" fill={C.terracotta} />
+        {/* Dial dots */}
+        <circle cx="-6" cy="6" r="1.2" fill={C.ink} />
+        <circle cx="0" cy="6" r="1.2" fill={C.ink} />
+        <circle cx="6" cy="6" r="1.2" fill={C.ink} />
+        {/* Antenna */}
+        <line x1="8" y1="-8" x2="14" y2="-18" stroke={C.ink} strokeWidth="0.9" strokeLinecap="round" />
+        <text y="38" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>listener</text>
+      </g>
+
+      {/* Agent (center) */}
+      <g transform="translate(160, 165)">
+        <rect x="-36" y="-24" width="72" height="48" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.8" />
+        <text textAnchor="middle" y="-4" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>MSD</text>
+        <text textAnchor="middle" y="10" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>detect + act</text>
+      </g>
+
+      {/* Arrows: clock → agent, listener → agent */}
+      <g stroke={C.inkSoft} strokeWidth="1.4" fill="none" strokeLinecap="round">
+        <path d="M85 108 Q 110 130 132 148" />
+        <path d="M126 142 L132 148 L124 150" />
+        <path d="M235 108 Q 210 130 188 148" />
+        <path d="M194 150 L188 148 L192 140" />
+      </g>
+
+      {/* Inbox (bottom) */}
+      <g transform="translate(160, 240)">
+        <circle r="24" fill={C.lavender} opacity="0.6" />
+        <circle r="24" fill="none" stroke={C.ink} strokeWidth="1.2" />
+        <rect x="-14" y="-10" width="28" height="20" rx="2" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+        <path d="M-14 -10 L0 2 L14 -10" fill="none" stroke={C.ink} strokeWidth="0.8" />
+        <text y="38" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>inbox</text>
+      </g>
+
+      {/* Arrow: agent → inbox */}
+      <g stroke={C.inkSoft} strokeWidth="1.4" fill="none" strokeLinecap="round">
+        <path d="M160 192 L160 212" />
+        <path d="M155 206 L160 214 L165 206" />
+      </g>
+
+      {/* Signal labels */}
+      <text x="55" y="148" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>stale PRs</text>
+      <text x="232" y="148" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>CI failures</text>
+      <text x="196" y="232" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>Slack / TG</text>
+
+      {/* Caption */}
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
+        listen → detect → deliver
+      </text>
     </svg>
   );
 }
