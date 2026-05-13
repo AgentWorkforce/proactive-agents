@@ -9,6 +9,7 @@ import { PostNav } from "@/components/post-nav";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { Asterism } from "@/components/decorations";
+import { AgentActions } from "@/components/agent-actions";
 import {
   jsonLd,
   articleSchema,
@@ -110,6 +111,8 @@ export default async function PostPage({
         </ol>
       </nav>
 
+      <AgentActions slug={slug} title={post.title} />
+
       <article className="relative mx-auto max-w-5xl px-5 py-14 sm:px-8 sm:py-28">
         <PostParagraphReveal />
         <div className={`prose-essay ${post.dropcap ? "dropcap" : ""}`}>
@@ -132,7 +135,7 @@ export default async function PostPage({
             >
               GitHub
             </a>
-            . Or email <span className="font-mono text-[0.95em]">hello@agent-relay.com</span>.
+            . Or email <span className="font-mono text-[0.95em]">hello@agentrelay.com</span>.
           </p>
         </div>
       </article>
