@@ -10,7 +10,7 @@ Six months ago, nobody was really shipping proactive agents. Now every major AI 
 
 This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **listener** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
 
-*Last updated: May 12, 2026.*
+*Last updated: May 13, 2026.*
 
 <Scene figure={<LandscapeGridFigure />} caption="The landscape scored against three primitives.">
 
@@ -31,6 +31,7 @@ This page maps the landscape through the [three-primitives framework](/posts/thr
 <tr><td>Playbooks</td><td>Writer</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Proactive AI Agents</td><td>Tonkean</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>AI Workers</td><td>MindStudio</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
+<tr><td>Agency</td><td>Browser Use</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Agent Relay</td><td>Agent Relay</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipping</td></tr>
 </tbody>
 </table>
@@ -78,6 +79,8 @@ Managerbot, Writer, and Tonkean share something the horizontal assistants don't 
 The target audience is non-technical operators, which is a different market segment than developer-focused tools. The open question is depth: 3,000+ integrations could mean deep event subscriptions or thin polling wrappers. At beta stage, there's no public data on reliability or error recovery for the 24/7 agents.
 
 **[MindStudio](https://www.mindstudio.ai/)** is a no-code platform for building and deploying AI agents, with access to 200+ models and 1,000+ integrations. Agents can run on custom schedules (daily, weekly, or interval-based), trigger from webhooks and inbound emails, and deliver results via email, Slack, and SMS. The platform sits at the builder layer rather than the application layer: you construct the proactive behavior yourself rather than getting it out of the box. MindStudio also publishes [consistently good content](https://www.mindstudio.ai/blog) on agent design patterns and workflows, which makes their blog worth following for anyone building in this space.
+
+**[Agency](https://browser-use.com/) (Browser Use)** flips the interaction model: instead of you prompting the AI, the AI prompts you. Agency watches your connected tools, identifies useful work, drafts the action, and sends it to you for one-click approval. It runs 24/7 through Telegram with thousands of integrations including Gmail, Slack, DataDog, and Linear. It works with Claude Code and Codex subscriptions, which means the agent and the app share a machine and the agent can edit and improve itself based on your decisions. All three primitives are present: scheduled monitoring, real-time change detection across integrations, and delivery through Telegram. The self-improvement loop is the interesting differentiator here.
 
 <Callout tone="cool" label="Disclosure">
 We build [Agent Relay](https://agentrelay.com), a developer SDK that provides the clock, listener, and inbox as composable primitives. It sits at the infrastructure layer, not the application layer. This analysis applies the same framework to everyone on the list, including us.
