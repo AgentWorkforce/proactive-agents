@@ -102,7 +102,7 @@ export default function RootLayout({
       <head>
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />
       </head>
-      <body className="relative min-h-screen">
+      <body className="relative min-h-screen" suppressHydrationWarning>
         <div className="paper-grain" aria-hidden />
         <div className="relative z-10 flex min-h-screen flex-col">
           <SiteNav />

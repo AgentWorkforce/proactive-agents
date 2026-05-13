@@ -18,6 +18,12 @@ export const metadata = {
       "Written by Khaliq Gant, co-founder of AgentWorkforce. A working manual on proactive AI agents.",
     url: `${SITE_URL}/about/`,
   },
+  twitter: {
+    card: "summary",
+    title: "About — Proactive Agents",
+    description:
+      "Written by Khaliq Gant, co-founder of AgentWorkforce. A working manual on proactive AI agents.",
+  },
 };
 
 export default function AboutPage() {

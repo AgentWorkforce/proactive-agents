@@ -15,6 +15,12 @@ export const metadata = {
       "In-depth essays on building proactive AI agents — architecture patterns, working code, and lessons from production.",
     url: `${SITE_URL}/posts/`,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Essays on Proactive Agents",
+    description:
+      "In-depth essays on building proactive AI agents — architecture patterns, working code, and lessons from production.",
+  },
 };
 
 const ACCENT_BG: Record<string, string> = {
@@ -36,11 +42,34 @@ export default async function PostsIndex() {
     { name: "Essays", url: `${SITE_URL}/posts/` },
   ]);
 
+  const postsList = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Essays on Proactive Agents",
+    description:
+      "In-depth essays on building proactive AI agents — reactive vs proactive architecture, the webhook tax, event-driven triggers, agent state management, and practical patterns for developers.",
+    url: `${SITE_URL}/posts/`,
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: posts.length,
+      itemListElement: posts.map((p, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: `${SITE_URL}/posts/${p.slug}/`,
+        name: p.title,
+      })),
+    },
+  };
+
   return (
     <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-24 sm:px-10 sm:pt-24 sm:pb-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(postsList) }}
       />
       <div className="max-w-3xl">
         <p className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-ink-soft">

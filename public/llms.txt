@@ -14,11 +14,28 @@ This site is a working manual on proactive agents: AI agents that act without be
 
 ## Content
 
-- [Guide: What Are Proactive Agents](/guide/): Comprehensive definition, architecture, comparison with reactive agents, and how to build them.
-- [Essay: Proactive agents need three primitives](/posts/three-primitives/): Why agents need a clock, a watcher, and an inbox wired together with durable state.
-- [Essay: Reactive vs proactive, with examples](/posts/reactive-vs-proactive/): Side-by-side code comparison of the same agent built both ways.
-- [Essay: The eight-week webhook tax](/posts/the-webhook-tax/): The real engineering cost of making an agent proactive against multiple providers.
-- [Essay: Why we stopped saying multi-agent coordination](/posts/why-we-stopped-saying-multi-agent/): How renaming from "multi-agent coordination" to "proactive agents" clarified the product and the market.
+### Guide
+- [What Are Proactive Agents? The Definitive Guide](/guide/): Comprehensive definition, architecture, comparison with reactive agents, and how to build them.
+
+### Essays
+- [Proactive agents need three primitives](/posts/three-primitives/): Why agents need a clock, a watcher, and an inbox wired together with durable state.
+- [Reactive vs proactive, with examples](/posts/reactive-vs-proactive/): Side-by-side code comparison of the same agent built both ways.
+- [The eight-week webhook tax](/posts/the-webhook-tax/): The real engineering cost of making an agent proactive against multiple providers.
+- [What makes proactive agents hard to build](/posts/why-proactive-is-hard/): Three problems compound in production: knowing when to wake up, remembering across runs, and knowing when to stay quiet.
+- [The proactive agent wish list](/posts/the-wish-list/): A personal list of agents I want but don't have yet, across music, news, money, and work.
+- [ChatGPT Pulse and the missing primitives](/posts/chatgpt-pulse/): ChatGPT Pulse has one of the three primitives. Here's what's missing.
+- [Building the weekly-digest agent](/posts/building-weekly-digest/): Production postmortem of a weekly-digest agent that scans sources, clusters mentions, and files GitHub issues.
+- [What would a magical agent actually do?](/posts/magical-agents/): The best agents feel like an intern who already handled the thing you were about to ask about.
+- [Where push architectures break](/posts/push-breaks-too/): Where webhooks fail and what production mitigation looks like.
+- [The prompt can't save you](/posts/the-prompt-cant-save-you/): Why proactive agents need a runtime, not a better system prompt.
+- [A review agent in three acts](/posts/review-agent-three-acts/): From webhook-triggered PR reviewer to multi-surface proactive agent. Each phase taught something about what proactive agents need.
+- [The genesis](/posts/the-genesis/): How it started: three terminal windows and too much copy-pasting.
+
+### Market Intelligence
+- [Proactive Agent Landscape](/market/): Who's building proactive agents — landscape analysis, news tracking, and a startup directory across enterprise vendors and early-stage companies.
+- [Startup Directory](/market/): 14+ early-stage companies building proactive agents, each with a profile page. Categories: agent governance, creator tools, collaboration, consumer AI, productivity, HR, DevOps, and more.
+
+### Other
 - [Agent Activity Log](/agent/): Live feed of what the proactive agents running this site have done.
 - [About](/about/): Background on the author and the project.
 

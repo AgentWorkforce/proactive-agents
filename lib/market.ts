@@ -21,11 +21,25 @@ export type NewsItem = {
   source: string;
   sourceLabel: string;
   summary: string;
+  tweetEmbed?: string;
   content: string;
+};
+
+export type Startup = {
+  slug: string;
+  name: string;
+  website: string | null;
+  twitter: string | null;
+  founder: string;
+  firstSeen: string;
+  source: string;
+  summary: string;
+  market: string | null;
 };
 
 const MARKET_DIR = path.join(process.cwd(), "content", "market");
 const NEWS_DIR = path.join(process.cwd(), "content", "market", "news");
+const STARTUPS_DIR = path.join(process.cwd(), "content", "market", "startups");
 
 function estimateReadingTime(text: string): string {
   const words = text.trim().split(/\s+/).length;
@@ -99,9 +113,63 @@ export async function getAllNews(): Promise<NewsItem[]> {
           source: data.source as string,
           sourceLabel: data.sourceLabel as string,
           summary: data.summary as string,
+          tweetEmbed: (data.tweetEmbed as string) || undefined,
           content,
         } satisfies NewsItem;
       })
   );
   return items.sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+export async function getStartup(slug: string): Promise<Startup | null> {
+  try {
+    const raw = await fs.readFile(
+      path.join(STARTUPS_DIR, `${slug}.mdx`),
+      "utf8"
+    );
+    const { data } = matter(raw);
+    return {
+      slug,
+      name: data.name as string,
+      website: (data.website as string) || null,
+      twitter: (data.twitter as string) || null,
+      founder: data.founder as string,
+      firstSeen: data.firstSeen as string,
+      source: data.source as string,
+      summary: data.summary as string,
+      market: (data.market as string) || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getAllStartups(): Promise<Startup[]> {
+  let files: string[];
+  try {
+    files = await fs.readdir(STARTUPS_DIR);
+  } catch {
+    return [];
+  }
+  const items = await Promise.all(
+    files
+      .filter((f) => f.endsWith(".mdx"))
+      .map(async (f) => {
+        const slug = f.replace(/\.mdx$/, "");
+        const raw = await fs.readFile(path.join(STARTUPS_DIR, f), "utf8");
+        const { data } = matter(raw);
+        return {
+          slug,
+          name: data.name as string,
+          website: (data.website as string) || null,
+          twitter: (data.twitter as string) || null,
+          founder: data.founder as string,
+          firstSeen: data.firstSeen as string,
+          source: data.source as string,
+          summary: data.summary as string,
+          market: (data.market as string) || null,
+        } satisfies Startup;
+      })
+  );
+  return items.sort((a, b) => a.name.localeCompare(b.name));
 }

@@ -4,7 +4,7 @@
 
 Site: https://proactiveagents.dev
 Author: Khaliq Gant, co-founder of AgentWorkforce
-Last updated: 2026-05-11
+Last updated: 2026-05-13
 
 ---
 
@@ -117,16 +117,118 @@ The path from "we want our agent proactive against four providers" to production
 
 ---
 
-## Essay: Why we stopped saying multi-agent coordination
+## Essay: What makes proactive agents hard to build
 
-Published: 2026-03-09
+Published: 2026-05-11
 Author: Khaliq Gant
 
-For about a year, we described what we were building as a "multi-agent coordination layer." This was technically accurate but the wrong pitch. Three problems: (1) Almost nobody is running multi-agent systems in production yet — most teams are building one agent. (2) The phrase pattern-matches to frameworks (LangGraph, CrewAI) rather than infrastructure. (3) It understates the product — making one agent proactive is the first-order story.
+Proactive agents look simple in demos. In production, three problems compound: knowing when to wake up, remembering across runs, and knowing when to stay quiet. Wake-up infrastructure (webhooks, signature verification, delivery guarantees) is plumbing that most teams underestimate. State management between runs is harder than it looks — most agents wake up amnesiac. And calibrated restraint (knowing when NOT to act) is still a frontier research problem.
 
-We now say we build proactive agents. This renames the market (reactive is dominant; "proactive" picks a fight with that pattern), makes single-agent customers first-class, and makes our architecture legible: the scheduling service is the clock, the integration filesystem is the watcher, headless Slack is the inbox, the hosted control plane is the runtime, workflow reliability is the durability ring.
+---
 
-We're betting "proactive" becomes a category the way "frontend cloud" became a category — by being the obvious word for something developers were already trying to do.
+## Essay: The proactive agent wish list
+
+Published: 2026-05-11
+Author: Khaliq Gant
+
+A personal list of agents I want but don't have yet, across music, news, money, and work. Every entry needs the same three things: a trigger, persistent state, and durability. The wish list is also a design exercise — it surfaces what "proactive" means in concrete product terms rather than abstract architecture.
+
+---
+
+## Essay: ChatGPT Pulse and the missing primitives
+
+Published: 2026-05-11
+Author: Khaliq Gant
+
+ChatGPT Pulse has one of the three primitives a proactive agent needs — a time trigger. But it's missing change triggers (webhook-based push) and durable state that persists across runs. Analyzes what Pulse would need to become indispensable rather than just convenient.
+
+---
+
+## Essay: Building the weekly-digest agent: a production postmortem
+
+Published: 2026-05-11
+Author: Khaliq Gant
+
+Our weekly-digest agent scans four sources, clusters mentions, and files a GitHub issue. Here's what worked and what broke. A production postmortem covering trigger selection, deduplication, state persistence, and the real-world failure modes of a proactive agent running unattended.
+
+---
+
+## Essay: What would a magical agent actually do?
+
+Published: 2026-05-11
+Author: Khaliq Gant
+
+The best agents feel like an amazing intern who already handled the thing you were about to ask about. That feeling isn't a model quality — it's plumbing. The "magical" quality comes from three things: acting before being asked, acting on the right thing, and not acting on the wrong thing. All three are infrastructure problems, not prompt engineering problems.
+
+---
+
+## Essay: Where push architectures break
+
+Published: 2026-05-11
+Author: Khaliq Gant
+
+Push architectures break in specific, painful ways. Webhooks fail when providers change schemas, when delivery is out of order, when replay storms overwhelm queues, and when signatures rotate. Production mitigation requires dead-letter handling, idempotency, payload completion, and graceful degradation to polling.
+
+---
+
+## Essay: The prompt can't save you
+
+Published: 2026-05-11
+Author: Khaliq Gant
+
+Two pieces from the OpenClaw ecosystem show why proactive agents need a runtime, not a better system prompt. No matter how sophisticated the prompt, an agent without persistent state, durable triggers, and failure recovery will hit the same walls.
+
+---
+
+## Essay: A review agent in three acts
+
+Published: 2026-05-12
+Author: Khaliq Gant
+
+My Senior Dev started as a webhook-triggered PR reviewer. Then it went multi-surface. Then it learned to watch. Each phase taught us something about what proactive agents actually need — and each phase exposed a new category of failure mode that the previous architecture couldn't handle.
+
+---
+
+## Essay: The genesis
+
+Published: 2026-05-10
+Author: Khaliq Gant
+
+It started with three terminal windows and too much copy-pasting. The inbox came first, then the clock, then the listener. The origin story of how the proactive agents concept emerged from practical frustration with reactive agent workflows.
+
+---
+
+## Market: Proactive Agent Landscape
+
+The market page tracks who is building proactive agents across enterprise vendors and startups.
+
+### Enterprise Signals (as of May 2026)
+
+- **Microsoft** reframed Copilot as the operating layer for proactive agents with Agent 365 (Wave 3, May 2026). Cross-cloud registry sync with AWS Bedrock and Google Cloud in public preview.
+- **Salesforce** launched Agentforce Operations with an anti-bottleneck engine for back-office proactive agents (April 2026).
+- **AWS** previewed Bedrock AgentCore Payments — agents can autonomously pay for APIs, MCP servers, and other agents (May 2026).
+- **Google** internal proactive agent "Remy" spotted in employee dogfood — monitors Gmail, Calendar, Docs, Drive, GitHub, WhatsApp (May 2026).
+- **Anthropic** shipped Managed Agent "dreaming" phase for self-improvement and Orbit proactive assistant (May 2026).
+- **a16z Speedrun** (Kenan Saleh) publicly framed "proactive AI agents" as the next product paradigm — "ask → answer" to "observe → act" (May 2026).
+
+### Startup Directory
+
+Early-stage companies building proactive agents, tracked as they surface. Each has a profile page at /market/startups/{slug}/.
+
+- **Collabute** (collabute.ai) — Collaborative AI platform.
+- **Atta** (atta.app) — Reservation-based product.
+- **Strat** (@joinstrat_) — AI-Native Workspace for YouTube creators.
+- **Echostate** (@MattStack_) — Agent accountability: state receipts, permission boundaries, rollback paths.
+- **Sherlock** (getsherlock.xyz) — Proactive agent startup.
+- **Centraligence** (centraligence.com) — Proactive agent startup.
+- **Skillfully** (skillfully.sh) — Proactive agent startup.
+- **Echo Agents** (@EchoAgentsAI) — Proactive agent startup, no public website yet.
+- **Pepper** (pepper.thestartupcompany.xyz) — Proactive agent startup.
+- **Para** (getpara.ai) — Proactive agent startup.
+- **Dossium** (dossium.ai) — Proactive agent startup.
+- **Hatcher** (hatcher.host) — Proactive agent startup.
+- **Mimetic** (trymimetic.com) — Proactive agent startup.
+- **Concya** (concya.com) — Proactive agent startup.
 
 ---
 

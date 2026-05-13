@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { getAllMarketPosts, getAllNews } from "@/lib/market";
+import { getAllMarketPosts, getAllNews, getAllStartups } from "@/lib/market";
 import { formatDate } from "@/lib/posts";
 import { Asterism, Squiggle, Sparkle } from "@/components/decorations";
 import { CardArt } from "@/components/card-illustrations";
+import { TweetEmbed } from "@/components/tweet-embed";
 import { jsonLd, breadcrumbSchema, SITE_URL } from "@/lib/seo";
 
 export const metadata = {
@@ -15,6 +16,12 @@ export const metadata = {
     description:
       "Landscape analysis and news tracking for the proactive AI agent market.",
     url: `${SITE_URL}/market/`,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Market — Proactive Agent Landscape",
+    description:
+      "Who's building proactive agents? Landscape analysis, competitive scorecards, news tracking, and a startup directory.",
   },
 };
 
@@ -32,17 +39,62 @@ const TILTS = ["-1.4deg", "0.8deg", "-0.6deg", "1.2deg", "-0.9deg", "0.4deg"];
 export default async function MarketIndex() {
   const posts = await getAllMarketPosts();
   const news = await getAllNews();
+  const startups = await getAllStartups();
 
   const crumbs = breadcrumbSchema([
     { name: "Home", url: `${SITE_URL}/` },
     { name: "Market", url: `${SITE_URL}/market/` },
   ]);
 
+  const newsList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Proactive AI Agent News",
+    description:
+      "Notable developments in the proactive AI agent market — enterprise launches, VC signals, and product announcements.",
+    numberOfItems: news.length,
+    itemListElement: news.map((n, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: n.title,
+      url: n.source,
+    })),
+  };
+
+  const startupList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Startups Building Proactive AI Agents",
+    description:
+      "A tracker of early-stage companies building proactive AI agents — agents that observe, predict, and act without being prompted.",
+    numberOfItems: startups.length,
+    itemListElement: startups.map((s, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: s.name,
+      url: `${SITE_URL}/market/startups/${s.slug}/`,
+      item: {
+        "@type": "Organization",
+        name: s.name,
+        description: s.summary,
+        ...(s.website && { url: s.website }),
+      },
+    })),
+  };
+
   return (
     <section className="relative mx-auto max-w-6xl px-5 pt-12 pb-24 sm:px-10 sm:pt-24 sm:pb-32">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(newsList) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(startupList) }}
       />
       <div className="max-w-3xl">
         <p className="flex items-center gap-3 text-xs uppercase tracking-[0.3em] text-ink-soft">
@@ -154,11 +206,65 @@ export default async function MarketIndex() {
                     <p className="mt-2 font-serif text-[0.95rem] leading-relaxed text-ink-soft">
                       {n.summary}
                     </p>
+                    {n.tweetEmbed && <TweetEmbed tweetUrl={n.tweetEmbed} />}
                   </div>
                 </div>
               </li>
             ))}
           </ul>
+        </>
+      )}
+
+      {/* Startups section */}
+      {startups.length > 0 && (
+        <>
+          <h2 className="mt-24 font-display text-2xl tracking-tight text-ink">
+            Startups
+          </h2>
+          <p className="mt-3 font-serif text-ink-soft">
+            Early-stage companies building proactive agents, tracked as they surface.
+          </p>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {startups.map((s) => (
+              <li key={s.slug}>
+                <Link
+                  href={`/market/startups/${s.slug}`}
+                  className="group block rounded-xl border border-rule bg-cream/40 p-5 transition-colors hover:border-terracotta/40"
+                >
+                  <div className="flex items-center gap-3">
+                    <h3 className="font-display text-base text-ink group-hover:text-terracotta transition-colors">
+                      {s.name}
+                    </h3>
+                    {s.market && (
+                      <span className="rounded-full bg-sage/30 px-2 py-0.5 text-[0.65rem] font-medium uppercase tracking-wider text-ink-faint">
+                        {s.market}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-1 text-xs text-ink-faint">
+                    {s.founder}
+                    {" · "}
+                    first seen {formatDate(s.firstSeen)}
+                  </p>
+                  <p className="mt-2 font-serif text-sm leading-relaxed text-ink-soft">
+                    {s.summary}
+                  </p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 font-serif text-sm text-ink-soft">
+            Working on proactive agents?{" "}
+            <a
+              href="https://github.com/AgentWorkforce/proactive-agents/issues/new?title=Add+startup%3A+%5Byour+company+name%5D&body=**Company+name%3A**%0A**Website%3A**%0A**Twitter%2FX%3A**%0A**One-line+description%3A**%0A%0ATell+us+what+you%27re+building+and+how+it+relates+to+proactive+agents.&labels=startup-profile"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-terracotta underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta"
+            >
+              Add your startup here
+            </a>
+            .
+          </p>
         </>
       )}
 

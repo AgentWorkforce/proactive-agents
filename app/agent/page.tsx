@@ -14,6 +14,12 @@ export const metadata = {
       "Watch real proactive agents work: time-triggered digests, change-triggered publishing, message-triggered responses. Build in public.",
     url: `${SITE_URL}/agent/`,
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Agent Activity Log — Proactive Agents in Action",
+    description:
+      "Watch real proactive agents work: time-triggered digests, change-triggered publishing, message-triggered responses.",
+  },
 };
 
 const ACCENT_BG: Record<string, string> = {
