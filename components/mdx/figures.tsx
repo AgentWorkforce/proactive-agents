@@ -1538,3 +1538,136 @@ export function ReviewProactiveFigure() {
     </svg>
   );
 }
+
+/** Token cost breakdown — four phases of a proactive wake-up. */
+export function TokenStackFigure() {
+  const barX = 60;
+  const barW = 200;
+  const phases = [
+    { label: "context", pct: 0.25, color: C.sky },
+    { label: "triage", pct: 0.40, color: C.butter },
+    { label: "action", pct: 0.20, color: C.sage },
+    { label: "report", pct: 0.15, color: C.lavender },
+  ];
+
+  let cumY = 50;
+  const gap = 6;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <text x="160" y="30" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>
+        tokens per wake-up
+      </text>
+
+      {phases.map((p, i) => {
+        const h = p.pct * 180;
+        const y = cumY;
+        cumY += h + gap;
+        return (
+          <g key={i}>
+            <rect x={barX} y={y} width={barW} height={h} rx="4" fill={p.color} opacity="0.7" stroke={C.ink} strokeWidth="0.8" />
+            <text x={barX + 8} y={y + h / 2 + 4} fontFamily="var(--font-mono)" fontSize="10" fill={C.ink}>
+              {p.label}
+            </text>
+            <text x={barX + barW - 8} y={y + h / 2 + 4} textAnchor="end" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+              {Math.round(p.pct * 100)}%
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Annotation — triage bracket */}
+      <g stroke={C.terracotta} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <path d="M268 56 L278 56 L278 128 L268 128" />
+        <circle cx="278" cy="92" r="2" fill={C.terracotta} />
+      </g>
+      <text x="286" y="88" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.terracotta}>
+        most wake-ups
+      </text>
+      <text x="286" y="98" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.terracotta}>
+        stop here
+      </text>
+
+      {/* Reactive comparison */}
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        reactive agents skip context + triage
+      </text>
+      <line x1="80" y1="296" x2="240" y2="296" stroke={C.faint} strokeWidth="0.6" />
+    </svg>
+  );
+}
+
+/** Model cascade — cheap triage routes to expensive execution. */
+export function CascadeFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      {/* Incoming signals (top) */}
+      {[-40, 0, 40].map((dx, i) => (
+        <g key={i}>
+          <circle cx={160 + dx} cy={35} r="8" fill={C.peach} opacity="0.6" stroke={C.ink} strokeWidth="0.8" />
+          <line x1={160 + dx} y1={43} x2={160 + dx * 0.3} y2={75} stroke={C.inkSoft} strokeWidth="1" strokeLinecap="round" />
+        </g>
+      ))}
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+        wake-ups
+      </text>
+
+      {/* Triage model (cheap) */}
+      <rect x="90" y="80" width="140" height="50" rx="8" fill={C.butter} opacity="0.5" stroke={C.ink} strokeWidth="1.4" />
+      <text x="160" y="102" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>
+        triage model
+      </text>
+      <text x="160" y="118" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+        haiku · fast · cheap
+      </text>
+
+      {/* Split arrows */}
+      <g stroke={C.inkSoft} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        {/* "no action" arrow — left, stops */}
+        <path d="M120 130 L80 160" />
+        <line x1="74" y1="154" x2="84" y2="162" stroke={C.faint} strokeWidth="1.8" />
+        <line x1="84" y1="154" x2="74" y2="162" stroke={C.faint} strokeWidth="1.8" />
+
+        {/* "act" arrow — right, continues down */}
+        <path d="M200 130 L220 155 L220 180" />
+        <path d="M215 174 L220 182 L225 174" />
+      </g>
+
+      <text x="72" y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+        94 of 96
+      </text>
+      <text x="72" y="188" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>
+        no action
+      </text>
+
+      <text x="240" y="165" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        act
+      </text>
+
+      {/* Execution model (expensive) */}
+      <rect x="150" y="190" width="140" height="50" rx="8" fill={C.sage} opacity="0.5" stroke={C.ink} strokeWidth="1.4" />
+      <text x="220" y="212" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>
+        execution model
+      </text>
+      <text x="220" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+        opus · deep · capable
+      </text>
+
+      {/* Output arrow */}
+      <g stroke={C.inkSoft} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <path d="M220 240 L220 268" />
+        <path d="M215 262 L220 270 L225 262" />
+      </g>
+
+      {/* Result */}
+      <rect x="186" y="274" width="68" height="24" rx="4" fill={C.lavender} opacity="0.5" stroke={C.ink} strokeWidth="0.8" />
+      <text x="220" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>
+        2 of 96
+      </text>
+
+      <text x="160" y="314" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        pay the big model only when it matters
+      </text>
+    </svg>
+  );
+}

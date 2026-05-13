@@ -29,6 +29,7 @@ This site is a working manual on proactive agents: AI agents that act without be
 - [Where push architectures break](/posts/push-breaks-too/): Where webhooks fail and what production mitigation looks like.
 - [The prompt can't save you](/posts/the-prompt-cant-save-you/): Why proactive agents need a runtime, not a better system prompt.
 - [A review agent in three acts](/posts/review-agent-three-acts/): From webhook-triggered PR reviewer to multi-surface proactive agent. Each phase taught something about what proactive agents need.
+- [What proactive agents actually cost](/posts/what-proactive-agents-cost/): The token economics of always-on agents — where the spend goes, model cascading patterns, and how teams architect around the cost of proactivity.
 - [The genesis](/posts/the-genesis/): How it started: three terminal windows and too much copy-pasting.
 
 ### Market Intelligence

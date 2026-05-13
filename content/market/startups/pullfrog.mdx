@@ -1,0 +1,46 @@
+---
+name: "Pullfrog"
+website: "https://pullfrog.com/"
+github: "https://github.com/pullfrog/pullfrog"
+twitter: "https://x.com/colinhacks"
+founder: "@colinhacks"
+firstSeen: "2026-05-13"
+market: "DevOps / Code Review"
+source: "direct-research"
+summary: "Open-source (MIT), AI-powered GitHub bot by Colin McDonnell (creator of Zod). Orchestrates coding agents entirely inside GitHub Actions — listens for issues, PRs, CI failures, @mentions, and cron schedules, then launches agent runs that create PRs, post reviews, fix CI, and triage issues autonomously. Multi-model (Claude, GPT, Gemini, Grok, DeepSeek), BYOK, persistent per-repo learnings, incremental review via git range-diff, and structured JSON output for CI pipeline integration. Proactive by design: auto-reviews new PRs, self-heals CI failures on its own PRs, auto-labels issues, and addresses review feedback without human prompting. $0.07/run plus model costs, with a free tier at 30 runs/month."
+---
+
+## Open-source details
+
+- **Repo**: [github.com/pullfrog/pullfrog](https://github.com/pullfrog/pullfrog)
+- **License**: MIT
+- **Stack**: TypeScript, Node.js 24, esbuild, pnpm
+- **Agent harnesses**: Claude Code (`@anthropic-ai/claude-code`) and OpenCode (`opencode-ai`)
+- **MCP server**: Purpose-built with 24+ tools for git/GitHub operations via `fastmcp`
+- **Runtime**: GitHub Actions (`ubuntu-latest` runners)
+
+## Proactive agent primitives
+
+Pullfrog implements all three proactive agent primitives:
+
+- **Clock**: Cron-based scheduled runs for periodic automation
+- **Listener**: GitHub webhook triggers on new issues, PRs, CI failures, review submissions, and @mentions
+- **Inbox**: Delivers results as PR comments, reviews, issue labels, and new pull requests directly in GitHub
+
+## Persistent memory
+
+Two-tier learnings system:
+- **Repo-level**: Durable facts about the codebase (package manager, test commands, architecture patterns) that persist across all runs
+- **PR-level**: Rolling snapshot scoped to individual PRs (change objectives, prior review progress, unresolved questions)
+
+## Pricing
+
+| Tier | Cost | Details |
+|------|------|---------|
+| Free | $0 | 30 runs/month, unlimited repos, BYOK |
+| Pay-as-you-go | $0.07/run + model costs | Unlimited runs, failed runs free |
+| Enterprise | Custom | GitHub Enterprise, SSO, audit logs, RBAC |
+
+## Competitive positioning
+
+Positions against GitHub Copilot (pay-per-run vs per-seat, programmable triggers vs human-only, BYOK vs closed model set) and vendor agent actions like Claude Code Action and OpenAI Codex (pre-built tooling, persistent state, incremental review, eight operational modes with distinct permissions).

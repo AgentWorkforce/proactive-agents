@@ -1,0 +1,85 @@
+---
+title: "What proactive agents actually cost"
+summary: "Every team building proactive agents hits the same wall — always-on means always spending. The ones shipping anyway found patterns worth stealing."
+date: "2026-05-13"
+accent: "butter"
+dropcap: true
+---
+
+I've been talking to a lot of teams building agents over the past few months. Infrastructure companies, dev tool startups, enterprise platforms, small shops with a single engineer automating a deploy pipeline. The conversations are different in specifics but identical in shape: someone walks me through what they've built, we discuss architecture, they describe what they want the agent to do next, and then the same question lands.
+
+"What does this cost when it's running all the time?"
+
+The question has weight to it. Not because these teams can't afford tokens. Most of them can. The anxiety is that they don't know where the spend goes. A reactive agent is predictable: you invoke it, it runs, you see the bill. A proactive agent is running between your invocations, waking itself up, checking state, reasoning about whether something matters, and occasionally deciding to do nothing. All of that consumes tokens. The "doing nothing" part especially bothers people, because you're paying for an agent to think and then stay quiet.
+
+<Scene figure={<TokenStackFigure />} caption="Where tokens go in a proactive agent wake-up.">
+
+## The anatomy of a proactive token bill
+
+Every proactive agent wake-up has four phases. First, context loading: the agent reads its environment. What changed since last time? What's the current state of the things it watches? This alone can be substantial if the agent tracks a lot of surface area. Second, triage: the agent reasons about whether the changes matter. This is the LLM call that burns the most tokens relative to value, because most of the time the answer is "no, nothing actionable." Third, action: if the agent decides to act, it does the work. Fourth, reporting: it delivers results to wherever they need to go.
+
+Reactive agents skip phases one and two entirely. A human already decided something matters by invoking the agent, so it goes straight to work. Proactive agents run the full cycle every time they wake up, and most wake-ups produce no action. You're paying for judgment, not just execution.
+
+One integration platform I spoke with measured this precisely. Their average cost was about $0.20 per sync with a lightweight model. Then they ran the same workload through a frontier model to compare. They put $40 in the API wallet. The frontier model ate through $37 and only got halfway. Over 10x the cost, and the team concluded the cheaper model was good enough for the routine work. They stopped worrying about token usage after that.
+
+A different team told me they'd burned through a competitor's credits in three days using an always-on Slack agent. Their own system, built around file-based context and specialized agents per domain, had used about $20 over two months for similar coverage. The difference wasn't the model. It was how the system loaded context and decided when to engage.
+
+<Callout tone="thought" label="The empty wake-up problem">
+A proactive agent that checks every fifteen minutes and acts twice a day runs 96 wake-ups for 2 actions. The other 94 are pure triage cost. Teams that don't account for this discover it on the invoice.
+</Callout>
+
+</Scene>
+
+## The model cascade
+
+The most common cost pattern I see working is what you might call a cascade. Cheap, fast models handle triage. They read the context, evaluate whether anything changed, and make a binary decision: act or don't. When the answer is "act," the expensive model takes over.
+
+One team described using small models for orchestration and communication between agents while reserving the frontier model for deep analytical work. The smaller models were fast and good at coordination. The big model went deep. You don't want your coordinator going deep. You want it dispatching.
+
+This maps onto how human teams work. A project manager doesn't need to be the strongest engineer. They need to know who to hand things to and when. The triage model is the project manager. It costs a fraction of what the execution model costs, and it runs dozens of times more often.
+
+<Scene side="right" figure={<CascadeFigure />} caption="Cheap triage routes to expensive execution.">
+
+## Patterns that survive contact with the bill
+
+Beyond model cascading, a handful of strategies keep showing up independently across teams I talk to.
+
+**File-based context.** Instead of stuffing everything into the LLM's context window, agents read structured files. A sync status file, a config file, a recent-changes log. This keeps context loading cheap and predictable. One team built their entire agent loop around translating external state into local files that the agent reads on wake-up. Token usage dropped because the agent stopped ingesting raw API responses with all their noise.
+
+**Narrow specialization.** A single agent watching everything is a single agent paying to load everything into context. Teams that split work into focused agents, each watching a smaller slice, pay less per wake-up and get better results. One marketing team I spoke with had separate agents for lead qualification, ad keyword research, and webinar recommendations. Each agent had a small context window and a clear mandate. They hadn't connected the agents to each other yet, and honestly, for their use case they didn't need to.
+
+**Burn tracking.** The teams with the best cost control all built some form of token analytics. One team built a "burn" dashboard showing token waste versus tokens used over the last 24 hours. Another tracked cost per action across their pipeline to identify which integration steps were disproportionately expensive. Most agent frameworks don't ship with spend visibility, so teams build their own. The pattern is consistent enough that it should be a default feature, which is why we're building [Burn](https://github.com/AgentWorkforce/burn), an open-source tool for tracking where your agent tokens go.
+
+**Scheduled over real-time.** Not every proactive behavior needs instant detection. A daily digest doesn't need to poll every fifteen minutes. A weekly report doesn't need webhooks. One enterprise team described routing agent workloads across cloud providers by hour to capture pricing differences during off-peak windows. The proactivity was in the intelligent routing, not in constant vigilance.
+
+<Callout tone="warm" label="The invisible ledger">
+Token spend is a line item you can see. The cost of a PR sitting open for three days, a failing check nobody re-runs, an alert nobody triages until Monday morning: those costs are real but they never show up on a dashboard. Teams that frame proactivity purely as a cost question are reading half the ledger.
+</Callout>
+
+</Scene>
+
+## The context tax
+
+There's a subtler cost that teams discover later. Long-running agents accumulate context, and context degrades.
+
+One team building feature-scoping workflows described the problem clearly: after a hundred messages in a Slack conversation, the agent's output became unreliable. Not wrong exactly, just noisy. The context contained too much irrelevant history, and the agent couldn't separate what mattered from what didn't. They solved it by adding explicit gating stages where an agent consolidates and summarizes before the next phase begins. Each summary step carries its own token cost, but the alternative was an agent producing output nobody trusted.
+
+Another team found that adding a checkpoint-review agent, a second model that grades the first model's work at each stage, cut their error rate in half. It also nearly doubled their per-task spend. The review model consumed almost as many tokens as the primary worker. They kept it anyway because the reliability improvement justified the cost, but only after they measured both sides carefully.
+
+The recurring lesson: teams that try to optimize tokens first build fragile systems. Teams that optimize for reliability first, then trim costs once things work, end up in a better place. Cost discipline is a feature of mature agent systems, not a starting constraint.
+
+<Callout tone="cool" label="Sequence matters">
+Don't optimize tokens until your agent reliably does the right thing. A cheap agent that acts wrong costs more than an expensive agent that acts right, because you pay for the wrong action's consequences too.
+</Callout>
+
+## What I'd tell someone starting now
+
+If you're building a proactive agent and worried about cost, here's what I've taken from these conversations.
+
+Start with the cheapest model that handles triage. Small models are surprisingly capable at "should I act?" decisions. Reserve expensive models for work that genuinely requires them.
+
+Keep your agent's context small by design. File-based state, narrow scopes, explicit summarization boundaries. Every token in the context window is a recurring cost on every wake-up, not a one-time investment.
+
+Measure where tokens go before you try to reduce them. Most teams find that 80% of spend comes from one or two phases of the agent loop, and those are rarely the phases they expected.
+
+And accept that proactivity costs more than reactivity. It should. You're paying for an agent that watches, reasons, and decides on its own. The alternative is paying a human to do the watching, or accepting that nobody watches at all. The teams I've talked to who shipped proactive agents all made that tradeoff deliberately, and none of them have gone back.

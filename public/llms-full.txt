@@ -228,7 +228,36 @@ Early-stage companies building proactive agents, tracked as they surface. Each h
 - **Dossium** (dossium.ai) — Proactive agent startup.
 - **Hatcher** (hatcher.host) — Proactive agent startup.
 - **Mimetic** (trymimetic.com) — Proactive agent startup.
+- **Pullfrog** (pullfrog.com) — Open-source (MIT) AI-powered GitHub bot by Colin McDonnell (creator of Zod). Orchestrates coding agents inside GitHub Actions with proactive triggers for issues, PRs, CI failures, and cron schedules. Multi-model, BYOK, persistent per-repo learnings.
 - **Concya** (concya.com) — Proactive agent startup.
+
+---
+
+## What Proactive Agents Actually Cost
+
+Every team building proactive agents hits the same wall: always-on means always spending. The economics differ from reactive agents in a structural way.
+
+### Where Tokens Go
+
+Every proactive agent wake-up has four phases: context loading (reading environment state), triage (deciding whether changes matter), action (doing the work), and reporting (delivering results). Reactive agents skip context loading and triage because a human already decided something matters. Proactive agents run all four phases every wake-up, and most wake-ups produce no action.
+
+Key finding: One integration platform measured a 10x cost difference between a lightweight model ($0.20/sync) and a frontier model ($37 for half the workload) on the same tasks. Another team burned a competitor's credits in 3 days with an always-on Slack agent, while their own file-based architecture used $20 over 2 months.
+
+### Patterns That Reduce Cost
+
+1. **Model cascading**: Cheap models (Haiku-class) handle triage; expensive models (Opus-class) handle execution. Most wake-ups never reach the expensive model.
+2. **File-based context**: Agents read structured files instead of raw API responses, keeping context loading predictable and small.
+3. **Narrow specialization**: Focused agents with small scopes cost less per wake-up than one agent watching everything.
+4. **Burn tracking**: Token analytics dashboards showing waste vs. useful spend. Most frameworks don't ship this; teams build their own.
+5. **Scheduled proactivity**: Not everything needs real-time detection. Daily digests, weekly reports, and time-shifted workloads reduce unnecessary wake-ups.
+
+### The Context Tax
+
+Long-running agents accumulate context that degrades quality. Teams solve this with gating stages (summarize before continuing) and checkpoint-review agents (a second model grading the first). Both add cost but improve reliability.
+
+### Core Tradeoff
+
+Token spend is visible; the cost of inaction (stale PRs, missed alerts, unmonitored systems) is invisible. Teams that optimize for reliability first, then trim token costs, build more durable systems than teams that start with cost constraints.
 
 ---
 

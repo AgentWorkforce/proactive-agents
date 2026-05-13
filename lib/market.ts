@@ -30,6 +30,7 @@ export type Startup = {
   name: string;
   website: string | null;
   twitter: string | null;
+  github: string | null;
   founder: string;
   firstSeen: string;
   source: string;
@@ -133,6 +134,7 @@ export async function getStartup(slug: string): Promise<Startup | null> {
       name: data.name as string,
       website: (data.website as string) || null,
       twitter: (data.twitter as string) || null,
+      github: (data.github as string) || null,
       founder: data.founder as string,
       firstSeen: data.firstSeen as string,
       source: data.source as string,
@@ -163,6 +165,7 @@ export async function getAllStartups(): Promise<Startup[]> {
           name: data.name as string,
           website: (data.website as string) || null,
           twitter: (data.twitter as string) || null,
+          github: (data.github as string) || null,
           founder: data.founder as string,
           firstSeen: data.firstSeen as string,
           source: data.source as string,

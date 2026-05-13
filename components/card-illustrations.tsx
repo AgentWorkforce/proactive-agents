@@ -24,6 +24,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "push-breaks-too": PushBreaksArt,
   "why-proactive-is-hard": WhyHardArt,
   "review-agent-three-acts": ThreeActsArt,
+  "what-proactive-agents-cost": TokenCostArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -555,6 +556,40 @@ function ThreeActsArt() {
           <text x="-60" y="38" textAnchor="middle" fontFamily="inherit" fontSize="10" fill={C.ink} strokeWidth="0">I</text>
           <text x="40" y="38" textAnchor="middle" fontFamily="inherit" fontSize="10" fill={C.ink} strokeWidth="0">II</text>
           <text x="108" y="38" textAnchor="middle" fontFamily="inherit" fontSize="10" fill={C.ink} strokeWidth="0">III</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function TokenCostArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Stacked bars — token cost breakdown */}
+          <rect x="-35" y="-45" width="70" height="18" rx="2" strokeWidth="1.4" />
+          <rect x="-35" y="-23" width="70" height="28" rx="2" strokeWidth="1.6" />
+          <rect x="-35" y="9" width="70" height="14" rx="2" strokeWidth="1.2" />
+          <rect x="-35" y="27" width="70" height="10" rx="2" strokeWidth="1" />
+          {/* Dollar sign */}
+          <g transform="translate(-55, 0)" strokeWidth="1.6">
+            <path d="M-4 -12 C-12 -8 -10 0 0 0 S12 8 4 12" />
+            <line x1="0" y1="-16" x2="0" y2="16" />
+          </g>
+          {/* Upward arrow — cost rising */}
+          <line x1="48" y1="35" x2="48" y2="-40" strokeWidth="1.4" />
+          <path d="M42 -34 L48 -42 L54 -34" strokeWidth="1.4" />
         </g>
       </g>
     </svg>
