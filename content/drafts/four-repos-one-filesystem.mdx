@@ -1,0 +1,93 @@
+---
+title: "Four repos, one filesystem"
+summary: "Building the listener primitive took four repositories, 549 commits, and a few painful pivots. Here's what proactive agents actually need from their integration layer."
+date: "2026-05-14"
+accent: "sky"
+dropcap: true
+---
+
+In [the three primitives](/posts/three-primitives) we argued that a proactive agent needs a clock, a listener, and an inbox. The clock is cron. The inbox is messaging. The listener is the hard one: the thing that wakes an agent up when something changes in the outside world, without the agent having to ask.
+
+We've been building the listener for the past 86 days. This is a look at what it actually took, sourced from `git log` across four open-source repositories, plus a hosted cloud layer. The decisions are interesting not because they're clever, but because they reveal what a proactive agent demands from its integration infrastructure.
+
+<Scene figure={<LayerStackFigure />} caption="Four open-source repos, one dependency chain.">
+
+## The map
+
+The listener lives across four repos. We didn't plan it that way. [Relay](https://github.com/AgentWorkforce/relay) started as a tmux wrapper for making two Claude instances talk to each other. When we needed an integration filesystem that could push change events to agents, [relayfile](https://github.com/AgentWorkforce/relayfile) split off. When the number of SaaS providers grew past what one repo could hold, [adapters](https://github.com/AgentWorkforce/relayfile-adapters) moved out. When OAuth got complex, [providers](https://github.com/AgentWorkforce/relayfile-providers) split.
+
+<table>
+  <thead>
+    <tr><th>Repo</th><th>Started</th><th>Commits</th><th>Role</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://github.com/AgentWorkforce/relay">relay</a></td><td>Dec 2025</td><td>4,437</td><td>Agent messaging + workflows</td></tr>
+    <tr><td><a href="https://github.com/AgentWorkforce/relayfile">relayfile</a></td><td>Feb 2026</td><td>549</td><td>Filesystem engine + sync</td></tr>
+    <tr><td><a href="https://github.com/AgentWorkforce/relayfile-adapters">relayfile-adapters</a></td><td>Mar 2026</td><td>368</td><td>39 provider adapters</td></tr>
+    <tr><td><a href="https://github.com/AgentWorkforce/relayfile-providers">relayfile-providers</a></td><td>Mar 2026</td><td>72</td><td>OAuth and proxy</td></tr>
+  </tbody>
+</table>
+
+Each layer exists because a proactive agent's integration needs are bigger than any single concern. Auth is separate from file mapping is separate from sync is separate from orchestration. If you're building anything that makes agents responsive to external changes, expect this kind of stratification. It happens faster than you'd think.
+
+</Scene>
+
+## Three things from the git log worth knowing
+
+**The first commit was 10,774 lines.** Not a prototype. A Go server, a TypeScript SDK, a full OpenAPI spec, and 4,000 lines of tests. The filesystem abstraction was the idea from day zero: agents should read and write files, and when a file changes because the underlying SaaS record changed, the agent should get a push event. Five days later, PR #1 rewrote the internals to be provider-agnostic, because the initial version was coupled to Notion. A listener that only hears one source isn't much of a listener.
+
+**FUSE landed in March. We stopped using it in April.** A real kernel-level FUSE mount shipped on March 26. Three weeks later, we replaced it with a synced directory using [@parcel/watcher](https://github.com/parcel-bundler/watcher). The reason: proactive agents run in containers, and FUSE doesn't work in Docker without `--privileged`. Our agents run in [Daytona](https://www.daytona.io/) sandboxes. An always-on agent that requires kernel extensions to mount its workspace is an agent that can't deploy to most of the places it needs to run.
+
+**OAuth is someone else's problem.** [Nango](https://nango.dev) handles token refresh, pagination, and webhook normalization. [Composio](https://composio.dev/) offers a different execution model. The providers repo wraps both behind one interface. Every week we didn't spend on token rotation was a week spent on the change-event semantics that actually make an agent proactive.
+
+<Callout tone="thought" label="Start specific, generalize early">
+Pick one provider to make the first version real. Generalize before anyone depends on the specifics. That five-day window between "it works with Notion" and "it works with anything" was the most important refactor in the project's history.
+</Callout>
+
+<Scene side="right" figure={<NamingEvolutionFigure />} caption="Three stages of making filenames useful to agents.">
+
+## The naming problem
+
+A proactive agent has a tighter time budget than a reactive one. A reactive agent can explore at leisure because a human is waiting and expects some latency. A proactive agent that wakes up because a Linear issue moved to "blocked" needs to orient fast: what changed, what else is nearby, what should I do? If the agent spends 9 of 23 turns reconstructing directory structure, it's burning tokens and time before it even starts thinking about the actual event.
+
+That's what happened in Round 1 of our [benchmarks](https://agentrelay.com/blog/just-give-the-agent-files). Every file was named by UUID: `87389837-62b1-4e1a-a237-59218bab2974.json`. Stable, but the agent had no way to scan a directory and know what it was looking at.
+
+The fix came in two fast PRs. First, the `name__id` convention: `AGE-16__87389837-…2974.json`. Human-readable prefix, double-underscore delimiter. Then, alias directories: `by-state/blocked/`, `by-assignee/khaliq/`. An agent that just received a `file.updated` event for a blocked issue can `ls by-state/blocked/` to see the full picture in one call. The listener delivers the event. The naming makes the context around that event navigable.
+
+<Callout tone="warm" label="Convergent naming">
+[Mirage](https://github.com/strukto-ai/mirage) from [Strukto](https://www.strukto.ai/) converged on a nearly identical filename shape independently. When two teams arrive at the same naming scheme, the problem is choosing the solution.
+</Callout>
+
+</Scene>
+
+<Scene figure={<AdapterGrowthFigure />} caption="The adapter pattern made batch expansion possible.">
+
+## 5 to 39 in a day
+
+A proactive agent that only listens to GitHub is a GitHub bot. The whole point of the listener primitive is coverage: the agent wakes up when *something in the world* changes, not just something in one tool.
+
+The adapters repo started with five providers on March 29: GitHub, Notion, Linear, Slack, Confluence. On May 7, four batches shipped in a single day. HubSpot, Salesforce, Jira. Asana, ClickUp, Zendesk. Stripe, Shopify, SendGrid. Then the long tail: Google Calendar, Teams, S3, Postgres, GitLab, Airtable, and more. Current count: 39.
+
+How? A shared base class (`IntegrationAdapter`) means each new adapter is about 200 lines of mapping code. Everything else, the `_index.json` files, the `by-*` aliases, the `LAYOUT.md` descriptions, is inherited from the core. The adapter contract is what makes breadth possible. Invest in the contract, not the adapter.
+
+## Agents building the listener
+
+The relayfile repo has 60+ numbered workflow scripts. Each one uses [relay workflows](https://github.com/AgentWorkforce/relay), our system for orchestrating multiple agents on a single task. A workflow defines a small team: an architect on Claude plans the contracts, a builder on Codex implements them, a reviewer validates the result.
+
+Workflow `001` designed the `ConnectionProvider` and `IntegrationAdapter` contracts with a three-agent team. Workflow `064` productized the cloud mount experience with seven agents and a four-hour timeout. One workflow used agents to design the correct end-to-end validation workflow. Agents designing workflows that test the listener.
+
+The git log also shows bot identities as significant contributors. Writeback Reliability Bot has 78 commits to relayfile. Proactive Runtime Bot has 30. These are agents built on the platform, running multi-PR campaigns against the codebase. The Writeback Reliability Bot added dead-letter queues and retry logic. The Proactive Runtime Bot drove an entire five-milestone feature sprint.
+
+Proactive agents building proactive agent infrastructure. If you're building this kind of system, dogfood early. The bots found bugs in multi-step operations that unit tests don't cover.
+
+</Scene>
+
+## Who else is building listeners
+
+The "give agents a filesystem" idea is converging independently. [Turso's AgentFS](https://github.com/tursodatabase/agentfs) backs each agent with SQLite, focused on isolation and checkpointing. [Mirage](https://github.com/strukto-ai/mirage) mounts multiple backends under one root, targeting coding agents with adapters for Claude Code and [OpenHands](https://github.com/All-Hands-AI/OpenHands). [Amazon S3 Files](https://aws.amazon.com/s3/) gives agents native filesystem access to object storage.
+
+The differences are in what sits behind the filesystem. AgentFS optimizes for agent state. S3 Files for storage. Relayfile for the listener use case specifically: SaaS records as files, change events as push, writebacks as file writes. Each approach bets on a different slice of what agents spend their time doing. But the convergence on "files as the interface" suggests the abstraction is durable, regardless of which primitive it serves.
+
+<Callout tone="cool" label="Further reading">
+Relayfile [launched yesterday](https://agentrelay.com/blog/just-give-the-agent-files) with the full walkthrough, benchmarks, and setup instructions. The repos are linked in the table above if you want to read the commit history yourself.
+</Callout>

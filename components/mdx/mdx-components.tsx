@@ -34,6 +34,12 @@ import {
   ReviewProactiveFigure,
   TokenStackFigure,
   CascadeFigure,
+  LayerStackFigure,
+  NamingEvolutionFigure,
+  AdapterGrowthFigure,
+  PareAsymmetryFigure,
+  PatienceFigure,
+  ExecutionGapFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -73,6 +79,12 @@ export const mdxComponents = {
   ReviewProactiveFigure,
   TokenStackFigure,
   CascadeFigure,
+  LayerStackFigure,
+  NamingEvolutionFigure,
+  AdapterGrowthFigure,
+  PareAsymmetryFigure,
+  PatienceFigure,
+  ExecutionGapFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"

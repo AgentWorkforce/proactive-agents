@@ -25,8 +25,8 @@
       "description": "Optimizes content for AI discovery and citation with GEO patterns such as answer-first structure, llms.txt readiness, citation depth, and entity clarity."
     },
     {
-      "id": "coreyhaines31/marketingskills@schema-markup",
-      "source": "https://github.com/coreyhaines31/marketingskills#schema-markup",
+      "id": "coreyhaines31/marketingskills@schema",
+      "source": "https://github.com/coreyhaines31/marketingskills#schema",
       "description": "Implements and validates JSON-LD schema markup for content, product, and organizational entities to improve rich results and AI comprehension."
     },
     {

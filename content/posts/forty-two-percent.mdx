@@ -1,0 +1,95 @@
+---
+title: "What forty-two percent tells us"
+summary: "UCSB and Apple built the first realistic benchmark for proactive agents. The best model succeeds less than half the time, and the ones that succeed most are the ones that speak up least."
+date: "2026-05-14"
+accent: "sky"
+dropcap: true
+---
+
+Back in early April 2026, a group of researchers at [UCSB](https://ucsb.edu) and [Apple](https://apple.com) published a paper asking a question that sounds obvious in hindsight: how do you actually test a proactive agent?
+
+Six weeks is a lifetime in AI. New models ship, benchmarks get saturated, yesterday's frontier becomes today's baseline. But this paper's findings aren't about a specific model's performance. They're about the structure of the problem itself, and structural insights age differently than leaderboard entries.
+
+The question the paper asks is narrower and harder than the usual benchmark fare: if an agent is watching what you do on your phone, inferring your goals from your behavior, and then deciding whether and when to offer help, how do you measure whether it's actually useful?
+
+Their answer is a paper called [PARE](https://arxiv.org/abs/2604.00842) (Proactive Agent Research Environment), and the benchmark they built from it, PARE-Bench, is the first evaluation framework that puts a simulated user and a proactive assistant together in the same environment and lets them interact. The user navigates apps screen by screen. The agent watches, reads, thinks, and occasionally proposes. The user accepts or rejects. Then the agent tries to execute.
+
+The headline result: the best model succeeds 42% of the time. That number will climb as models improve. The patterns underneath it are what matter.
+
+<Scene figure={<PareAsymmetryFigure />} caption="Same operation, different interfaces: the core design asymmetry in PARE.">
+
+## Why nobody had tested this before
+
+Every prior attempt at evaluating proactive agents shared the same limitation: the user was passive. Prior frameworks represent user activities as text descriptions where nobody executes actual tool calls, or they evaluate on static dataset samples, or they add sensory context but still lack a dynamic environment where the agent's actions change what the user does next. In all cases, the evaluation assumes user behavior is fixed regardless of what the agent does.
+
+That assumption breaks proactive assistance. A user who sees a helpful, well-timed proposal behaves differently than one who gets interrupted with something irrelevant. The user might accept, reject, or pause what they're doing to gather more information before deciding. Each response changes what happens next. Static test sets can't capture this.
+
+PARE solves the problem by building an asymmetric simulation. The user simulator navigates apps through finite state machines that mirror real phone interfaces. To send a message, the user opens the messaging app, searches for the conversation, opens it, then sends. The proactive assistant, like a real on-device assistant, has flat API access to every app at once. It calls `send_message(to, body)` and it's done.
+
+The asymmetry extends to observation. The user gets truncated notifications, a sender name and subject line the way a phone lock screen would show it. The agent gets full serialized content. The user can only see their own past actions. The agent sees the user's actions plus all environment events. The paper formalizes this as a Stackelberg POMDP, a game where the user moves first and the agent observes before deciding whether to act.
+
+<Callout tone="thought" label="The interaction loop">
+The core design insight is that proactive agents can only be faithfully evaluated through interaction. Because user behavior is shaped by assistant behavior, testing the agent against static expected outputs misses the feedback loop entirely. PARE is the first benchmark to close that loop.
+</Callout>
+
+</Scene>
+
+## The headline number
+
+Seven models were tested: four frontier (Claude 4.5 Sonnet, GPT-5, Gemini 3 Pro, Gemini 3 Flash) and three small open-weights models (Qwen 3 4B, Llama 3.2 3B, Gemma 3 4B). The benchmark covers 143 tasks spanning email, calendar, messaging, shopping, and apartment search. The tasks are ordinary phone assistant work: schedule a meeting mentioned in an email, remove over-budget apartments from a saved list, forward relevant information to a contact.
+
+The best overall success rate: 42%, achieved by both Claude 4.5 Sonnet and Gemini 3 Flash. GPT-5 reached 37.4%. Qwen 3 4B landed at 18.5%. Gemma 3 4B managed 3%.
+
+Forty-two percent from a frontier model is a useful calibration point. In a controlled simulation with well-defined tasks and a cooperative simulated user, the best available models fail more often than they succeed. If your internal proactive agent benchmarks show 80%, the evaluation probably isn't realistic enough.
+
+The consistency data is equally telling. When the researchers ran each model four times, they measured "Success@4" (succeeds at least once) and "Success^4" (succeeds every time). Claude drops from 60.8% to 18.2%, a 3.3x reduction. Llama drops from 23.8% to 1.4%, a 17x reduction. For smaller models, the successful runs look more like lucky breaks than reliable capability.
+
+<Scene side="right" figure={<PatienceFigure />} caption="Fewer proposals, higher acceptance: patience as strategy.">
+
+## The patient agent wins
+
+The most revealing pattern in the results isn't the success rate itself. It's the relationship between how often a model proposes and how often those proposals land.
+
+Claude proposes a task on 12.8% of its turns. When it does, the user accepts 78.2% of the time. GPT-5 proposes on 28.1% of turns with 70.2% acceptance. Gemini 3 Flash sits between them at 19.1% and 67.1%. The top models achieve comparable raw acceptance rates, but Claude's selectivity means nearly four out of five proposals lead somewhere useful. It gathers information and waits until it's confident.
+
+A finer-grained analysis in the paper makes this clearer. The researchers categorize user responses into three buckets: direct accept, reject, or "gather context," where the user ignores the proposal and continues exploring the environment before deciding. Claude gets 72.1% direct acceptances and only 7.8% rejections. Gemma gets 16.0% direct acceptances and triggers the "gather context" response 74.7% of the time. Nearly three-quarters of Gemma's proposals arrive before the user has enough context to evaluate them.
+
+The "gather context" outcome deserves particular attention. When a user enters this mode, about 65% of the time they run out of turns before resolving the proposal. The simulation has a 10-turn limit, and premature proposals consume turns that the user needs for their own tasks. An eager agent doesn't just risk rejection. It actively eats the interaction budget.
+
+Information gathering correlates with performance too. The top-performing models average about 20 read-only actions per scenario before proposing. Smaller models average 16-17. Gemma averages 8.8. Sufficient observation is a prerequisite for accurate inference, and there's no shortcut around it.
+
+<Callout tone="warm" label="The observer's advantage">
+The paper's prompt for the observer agent frames timing as "an optimization problem that you have to solve." It warns: proposing too often "will annoy the user." Claude's behavior suggests it learned this tradeoff well. The models that propose infrequently but accurately outperform the ones that propose often and correct course based on feedback.
+</Callout>
+
+</Scene>
+
+<Scene figure={<ExecutionGapFigure />} caption="Small models can identify goals but struggle to act on them.">
+
+## Observation works, execution doesn't
+
+The three small models tell a specific story about where the bottleneck sits for on-device proactive agents.
+
+Qwen 3 4B achieves 63.7% acceptance. Users agree with nearly two-thirds of what it proposes, which means its goal inference is reasonable. But its success rate is only 18.5%. The model can figure out what the user wants and articulate it clearly enough to get approval, then fails at the multi-step API orchestration required to actually do the work. Llama shows a similar shape: 58.4% acceptance but only 10% success.
+
+The paper's own architecture, called Observe-Execute, naturally accommodates this finding. The agent is split into two sub-agents: an observer with read-only access that monitors and proposes, and an executor with full API access that runs only after the user approves. There's no technical reason these need to be the same model.
+
+The authors argue, and the data supports, an asymmetric deployment where a small quantized model runs continuously on-device for observation while a frontier model is invoked remotely only for execution, and only after explicit user consent. The observation model preserves privacy by staying local. The execution model runs in the cloud but accesses user data only when the user explicitly accepts a proposal. It's a privacy architecture as much as a performance one.
+
+Even with unlimited observation and the most permissive simulated user (the paper tests with three different user models), Qwen achieves 0% "Success^4," meaning it never succeeds reliably across all four runs. Information gathering alone doesn't compensate for weak execution. I've written before about [what makes proactive agents hard to build](/posts/why-proactive-is-hard); this paper provides the first quantitative evidence that the hardest part isn't knowing when to act. It's acting correctly once you decide to.
+
+<Callout tone="cool" label="Robustness under noise">
+Two robustness experiments round out the picture. Claude holds steady at 40-45% success even with 40% tool failure probability, and its performance is flat across noise densities up to 6 spurious notifications per minute. Qwen also stays stable under noise despite its lower baseline. Robustness to distraction appears to be a learned capability that varies independently of raw model size.
+</Callout>
+
+</Scene>
+
+## What builders should take from this
+
+The PARE benchmark is open source at [github.com/deepakn97/pare](https://github.com/deepakn97/pare), and the findings point in several directions that matter for anyone building proactive agents today.
+
+The [cost structure we've been tracking](/posts/what-proactive-agents-cost) maps directly onto these results. The paper's "read actions" are the context-loading phase that generates most token spend. The observe-then-execute split is the model cascade that cost-conscious teams have converged on independently. The turns where the agent watches and decides not to act are the empty wake-ups that show up on the invoice. PARE gives controlled measurements of how these costs translate to outcomes.
+
+The 42% ceiling will move. Models will get better, benchmarks will expand, and the evaluation will get harder. But the structural insight is durable: proactive assistance is a timing and judgment problem at least as much as a capability problem. The models that watch carefully, gather sufficient context, and speak up only when they have something specific and correct to say will continue to outperform the ones that try to help at every opportunity.
+
+If you're evaluating proactive agents today on static test sets or single-run success metrics, the gap between your numbers and real-world performance is probably wider than you think. Four runs. Active users. Acceptance rate alongside success rate. The paper makes a convincing case that anything less isn't testing what you think it's testing.

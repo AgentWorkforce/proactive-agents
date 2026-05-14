@@ -25,6 +25,8 @@ const SLUGS: Record<string, React.ComponentType> = {
   "why-proactive-is-hard": WhyHardArt,
   "review-agent-three-acts": ThreeActsArt,
   "what-proactive-agents-cost": TokenCostArt,
+  "four-repos-one-filesystem": FiveReposArt,
+  "forty-two-percent": FortyTwoPercentArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -590,6 +592,98 @@ function TokenCostArt() {
           {/* Upward arrow — cost rising */}
           <line x1="48" y1="35" x2="48" y2="-40" strokeWidth="1.4" />
           <path d="M42 -34 L48 -42 L54 -34" strokeWidth="1.4" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function FiveReposArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 108)">
+          {/* Five stacked layers */}
+          {[
+            { y: -48, w: 50 },
+            { y: -26, w: 60 },
+            { y: -4, w: 70 },
+            { y: 18, w: 60 },
+            { y: 40, w: 50 },
+          ].map((l, i) => (
+            <rect
+              key={i}
+              x={-l.w / 2}
+              y={l.y}
+              width={l.w}
+              height={18}
+              rx="3"
+              strokeWidth={i === 2 ? "2" : "1.4"}
+            />
+          ))}
+          {/* Connecting dashed lines */}
+          {[-30, -8, 14, 36].map((y, i) => (
+            <line
+              key={i}
+              x1="0"
+              y1={y}
+              x2="0"
+              y2={y + 4}
+              strokeWidth="1"
+              strokeDasharray="1.5 2"
+            />
+          ))}
+          {/* Git branch decoration */}
+          <circle cx="-40" cy="-38" r="2.5" fill={C.ink} stroke="none" />
+          <circle cx="-40" cy="-16" r="2.5" fill={C.ink} stroke="none" />
+          <line x1="-40" y1="-35" x2="-40" y2="-19" strokeWidth="1.2" />
+          <line x1="-40" y1="-16" x2="-30" y2="-4" strokeWidth="1" strokeDasharray="2 3" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function FortyTwoPercentArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Target / bullseye */}
+          <circle r="48" strokeWidth="1.6" />
+          <circle r="32" strokeWidth="1.2" />
+          <circle r="16" strokeWidth="1" />
+          <circle r="3" fill={C.ink} stroke="none" />
+          {/* Scattered dots — some hit, some miss */}
+          <circle cx="6" cy="-4" r="2.5" fill={C.ink} stroke="none" />
+          <circle cx="-10" cy="8" r="2.5" fill={C.ink} stroke="none" />
+          <circle cx="18" cy="-20" r="2" fill={C.ink} stroke="none" />
+          <circle cx="-25" cy="15" r="2" fill={C.ink} stroke="none" />
+          <circle cx="35" cy="28" r="2" fill={C.ink} stroke="none" />
+          <circle cx="-40" cy="-30" r="2" fill={C.ink} stroke="none" />
+          <circle cx="12" cy="38" r="1.8" fill={C.ink} stroke="none" />
+          {/* Dashed line at ~42% of radius */}
+          <circle r="20" strokeWidth="1.2" strokeDasharray="4 3" />
         </g>
       </g>
     </svg>

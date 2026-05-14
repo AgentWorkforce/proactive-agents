@@ -1671,3 +1671,287 @@ export function CascadeFigure() {
     </svg>
   );
 }
+
+/** Four-repo layer stack — dependency flow for the relayfile ecosystem. */
+export function LayerStackFigure() {
+  const layers = [
+    { label: "relay", role: "orchestration", color: C.lavender, y: 40 },
+    { label: "relayfile", role: "filesystem", color: C.peach, y: 110 },
+    { label: "adapters", role: "39 providers", color: C.sage, y: 180 },
+    { label: "providers", role: "auth + proxy", color: C.butter, y: 250 },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      {layers.map((l, i) => (
+        <g key={l.label}>
+          <rect x="50" y={l.y} width="220" height="44" rx="6" fill={l.color} opacity="0.55" stroke={C.ink} strokeWidth="1.2" />
+          <text x="80" y={l.y + 27} fontFamily="var(--font-mono)" fontSize="12" fill={C.ink} fontWeight="600">
+            {l.label}
+          </text>
+          <text x="270" y={l.y + 27} textAnchor="end" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+            {l.role}
+          </text>
+          {i < layers.length - 1 && (
+            <g stroke={C.inkSoft} strokeWidth="1" fill="none" strokeLinecap="round">
+              <line x1="160" y1={l.y + 44} x2="160" y2={l.y + 60} strokeDasharray="3 3" />
+              <path d={`M155 ${l.y + 55} L160 ${l.y + 60} L165 ${l.y + 55}`} />
+            </g>
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/** Filename evolution — UUID → name__id → by-* aliases. */
+export function NamingEvolutionFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      {/* Stage 1: UUID */}
+      <rect x="20" y="20" width="280" height="64" rx="6" fill={C.rose} opacity="0.3" stroke={C.ink} strokeWidth="0.8" />
+      <text x="30" y="42" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>stage 1 · raw UUID</text>
+      <text x="30" y="62" fontFamily="var(--font-mono)" fontSize="9.5" fill={C.ink}>
+        87389837-62b1-…-59218bab2974.json
+      </text>
+      <text x="290" y="62" textAnchor="end" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>stable, opaque</text>
+
+      {/* Arrow */}
+      <g stroke={C.inkSoft} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <line x1="160" y1="84" x2="160" y2="108" />
+        <path d="M155 103 L160 110 L165 103" />
+      </g>
+
+      {/* Stage 2: name__id */}
+      <rect x="20" y="114" width="280" height="64" rx="6" fill={C.sage} opacity="0.3" stroke={C.ink} strokeWidth="0.8" />
+      <text x="30" y="136" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>stage 2 · name__id</text>
+      <text x="30" y="156" fontFamily="var(--font-mono)" fontSize="9.5" fill={C.ink}>
+        AGE-16__87389837-…2974.json
+      </text>
+      <text x="290" y="156" textAnchor="end" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>scannable + stable</text>
+
+      {/* Arrow */}
+      <g stroke={C.inkSoft} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <line x1="160" y1="178" x2="160" y2="202" />
+        <path d="M155 197 L160 204 L165 197" />
+      </g>
+
+      {/* Stage 3: by-* aliases */}
+      <rect x="20" y="208" width="280" height="90" rx="6" fill={C.sky} opacity="0.3" stroke={C.ink} strokeWidth="0.8" />
+      <text x="30" y="230" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>stage 3 · semantic aliases</text>
+      <text x="30" y="250" fontFamily="var(--font-mono)" fontSize="9.5" fill={C.ink}>by-state/blocked/</text>
+      <text x="30" y="266" fontFamily="var(--font-mono)" fontSize="9.5" fill={C.ink}>by-assignee/khaliq/</text>
+      <text x="30" y="282" fontFamily="var(--font-mono)" fontSize="9.5" fill={C.ink}>by-title/login-bug__…/</text>
+      <text x="290" y="266" textAnchor="end" fontFamily="var(--font-mono)" fontSize="8" fill={C.plum}>navigable</text>
+    </svg>
+  );
+}
+
+/** Adapter growth — timeline showing the expansion from 5 to 39. */
+export function AdapterGrowthFigure() {
+  const data = [
+    { date: "Mar 29", count: 5, h: 16 },
+    { date: "Apr 15", count: 7, h: 22 },
+    { date: "May 1", count: 9, h: 30 },
+    { date: "May 7", count: 37, h: 120 },
+    { date: "May 13", count: 39, h: 126 },
+  ];
+  const barW = 36;
+  const gap = 16;
+  const totalW = data.length * barW + (data.length - 1) * gap;
+  const startX = (320 - totalW) / 2;
+  const baseY = 260;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
+        adapters over time
+      </text>
+
+      {/* Baseline */}
+      <line x1={startX - 10} y1={baseY} x2={startX + totalW + 10} y2={baseY} stroke={C.rule} strokeWidth="1" />
+
+      {data.map((d, i) => {
+        const x = startX + i * (barW + gap);
+        const isBig = d.date === "May 7";
+        return (
+          <g key={d.date}>
+            <rect
+              x={x} y={baseY - d.h} width={barW} height={d.h}
+              rx="4"
+              fill={isBig ? C.peach : C.sage}
+              opacity={isBig ? 0.7 : 0.45}
+              stroke={C.ink}
+              strokeWidth={isBig ? 1.4 : 0.8}
+            />
+            <text x={x + barW / 2} y={baseY - d.h - 8} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill={C.ink} fontWeight={isBig ? "600" : "400"}>
+              {d.count}
+            </text>
+            <text x={x + barW / 2} y={baseY + 16} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+              {d.date}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Annotation for May 7 spike */}
+      <g>
+        <line x1={startX + 3 * (barW + gap) + barW / 2} y1={baseY - 136} x2={startX + 3 * (barW + gap) + barW / 2} y2={baseY - 128} stroke={C.terracotta} strokeWidth="1" />
+        <text x={startX + 3 * (barW + gap) + barW / 2} y={baseY - 142} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+          4 batches, 1 day
+        </text>
+      </g>
+
+      <text x="160" y={baseY + 36} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        invest in the contract, not the adapter
+      </text>
+    </svg>
+  );
+}
+
+/** PARE asymmetry — user navigates FSM screens, agent calls flat API. */
+export function PareAsymmetryFigure() {
+  const screens = ["open app", "search", "open convo", "send"];
+  const boxH = 28;
+  const gap = 12;
+  const startY = 42;
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      {/* Divider */}
+      <line x1="160" y1="30" x2="160" y2="260" stroke={C.rule} strokeWidth="1" strokeDasharray="4 3" />
+
+      {/* User column */}
+      <text x="75" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.1em">USER</text>
+      {screens.map((label, i) => {
+        const y = startY + i * (boxH + gap);
+        return (
+          <g key={i}>
+            <rect x="25" y={y} width="100" height={boxH} rx="4" fill={C.lavender} stroke={C.plum} strokeWidth="1" opacity="0.8" />
+            <text x="75" y={y + boxH / 2 + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{label}</text>
+            {i < screens.length - 1 && (
+              <g>
+                <line x1="75" y1={y + boxH} x2="75" y2={y + boxH + gap} stroke={C.faint} strokeWidth="1.2" />
+                <path d={`M71 ${y + boxH + gap - 4} L75 ${y + boxH + gap} L79 ${y + boxH + gap - 4}`} stroke={C.faint} strokeWidth="1.2" fill="none" />
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Agent column */}
+      <text x="240" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.1em">AGENT</text>
+      <rect x="190" y={startY + 50} width="100" height="44" rx="4" fill={C.sage} stroke={C.moss} strokeWidth="1" opacity="0.8" />
+      <text x="240" y={startY + 68} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.ink}>send_message(</text>
+      <text x="240" y={startY + 80} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.ink}>{"  to, body)"}</text>
+
+      {/* Counts */}
+      <text x="75" y="220" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill={C.terracotta} fontWeight="600">4 transitions</text>
+      <text x="240" y="220" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill={C.moss} fontWeight="600">1 API call</text>
+
+      <text x="160" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>same operation, different interfaces</text>
+    </svg>
+  );
+}
+
+/** Patience vs eagerness — proposal rate vs acceptance. */
+export function PatienceFigure() {
+  const barW = 38;
+  const maxH = 140;
+  const models = [
+    { name: "Claude", proposals: 12.8, accepted: 78.2, color: C.sage },
+    { name: "Gemini", proposals: 19.1, accepted: 67.1, color: C.butter },
+    { name: "GPT-5", proposals: 28.1, accepted: 70.2, color: C.sky },
+  ];
+  const baseY = 240;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.06em">
+        proposal rate vs. acceptance rate
+      </text>
+
+      {models.map((m, i) => {
+        const cx = 55 + i * 105;
+        const propH = (m.proposals / 30) * maxH;
+        const accH = (m.accepted / 100) * maxH;
+        return (
+          <g key={i}>
+            {/* Proposal rate bar (left, narrow) */}
+            <rect x={cx - barW / 2 - 2} y={baseY - propH} width={barW / 2 - 2} height={propH} rx="3" fill={C.rose} opacity="0.5" stroke={C.ink} strokeWidth="0.6" />
+            <text x={cx - barW / 4 - 1} y={baseY - propH - 6} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{m.proposals}%</text>
+
+            {/* Acceptance rate bar (right, wider) */}
+            <rect x={cx + 2} y={baseY - accH} width={barW / 2 - 2} height={accH} rx="3" fill={m.color} opacity="0.7" stroke={C.ink} strokeWidth="0.6" />
+            <text x={cx + barW / 4 + 1} y={baseY - accH - 6} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{m.accepted}%</text>
+
+            {/* Model name */}
+            <text x={cx} y={baseY + 16} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{m.name}</text>
+          </g>
+        );
+      })}
+
+      {/* Legend */}
+      <g transform="translate(90, 290)">
+        <rect x="0" y="-8" width="10" height="10" rx="2" fill={C.rose} opacity="0.5" />
+        <text x="14" y="0" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>proposals</text>
+        <rect x="68" y="-8" width="10" height="10" rx="2" fill={C.sage} opacity="0.7" />
+        <text x="82" y="0" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>accepted</text>
+      </g>
+
+      {/* Baseline */}
+      <line x1="20" y1={baseY} x2="300" y2={baseY} stroke={C.rule} strokeWidth="1" />
+    </svg>
+  );
+}
+
+/** Execution gap — acceptance vs success rate for small models. */
+export function ExecutionGapFigure() {
+  const barH = 24;
+  const fullW = 220;
+  const startX = 50;
+  const models = [
+    { name: "Qwen 3 4B", accept: 63.7, success: 18.5 },
+    { name: "Llama 3.2 3B", accept: 58.4, success: 10.0 },
+    { name: "Gemma 3 4B", accept: 17.6, success: 3.0 },
+  ];
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full">
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.06em">
+        goal inference vs. execution
+      </text>
+
+      {models.map((m, i) => {
+        const groupY = 50 + i * 90;
+        const accW = (m.accept / 100) * fullW;
+        const sucW = (m.success / 100) * fullW;
+
+        return (
+          <g key={i}>
+            <text x={startX - 4} y={groupY} textAnchor="end" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink} fontWeight="600">{m.name}</text>
+
+            {/* Acceptance bar */}
+            <rect x={startX} y={groupY + 8} width={accW} height={barH} rx="4" fill={C.sage} opacity="0.6" stroke={C.moss} strokeWidth="0.8" />
+            <text x={startX + accW + 6} y={groupY + 8 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="9" fill={C.moss}>{m.accept}%</text>
+            <text x={startX + 4} y={groupY + 8 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>accepted</text>
+
+            {/* Success bar */}
+            <rect x={startX} y={groupY + 8 + barH + 6} width={sucW} height={barH} rx="4" fill={C.peach} opacity="0.7" stroke={C.terracotta} strokeWidth="0.8" />
+            <text x={startX + sucW + 6} y={groupY + 8 + barH + 6 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>{m.success}%</text>
+            <text x={startX + 4} y={groupY + 8 + barH + 6 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>succeeded</text>
+
+            {/* Gap bracket */}
+            {m.accept > 25 && (
+              <g>
+                <line x1={startX + sucW} y1={groupY + 8 + barH + 2} x2={startX + accW} y2={groupY + 8 + barH + 2} stroke={C.terracotta} strokeWidth="1" strokeDasharray="3 2" />
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        they know what to do — they can't do it
+      </text>
+    </svg>
+  );
+}
