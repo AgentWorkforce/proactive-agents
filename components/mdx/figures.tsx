@@ -2342,6 +2342,106 @@ export function ExecutionGapFigure() {
   );
 }
 
+/** PostHog enricher — code file annotated with production data. */
+export function PHEnricherFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="ph-enrich-title">
+      <title id="ph-enrich-title">The enricher reads source code, fetches production data from PostHog, and injects inline annotations the LLM can see</title>
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        what the agent sees
+      </text>
+
+      {/* Source file box */}
+      <rect x="20" y="38" width="280" height="100" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+      <text x="32" y="56" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>isFeatureEnabled(&apos;checkout&apos;)</text>
+      <text x="32" y="72" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>// → 23% rollout · stale · exp +4%</text>
+      <text x="32" y="92" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>posthog.capture(&apos;purchase&apos;)</text>
+      <text x="32" y="108" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>// → 1,240 events/30d · verified</text>
+      <text x="32" y="128" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>isFeatureEnabled(&apos;old-banner&apos;)</text>
+      <text x="32" y="144" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>// → 0% rollout · no evals 60d</text>
+
+      {/* Enricher arrow */}
+      <g transform="translate(160, 170)">
+        <line x1="-40" y1="0" x2="40" y2="0" stroke={C.ink} strokeWidth="1.5" strokeDasharray="4 3" />
+        <text x="0" y="-8" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>enricher</text>
+      </g>
+
+      {/* Two source boxes below */}
+      <rect x="20" y="190" width="125" height="70" rx="8" fill={C.sage} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+      <text x="82" y="212" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>source code</text>
+      <text x="82" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>tree-sitter parse</text>
+      <text x="82" y="242" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>import resolution</text>
+
+      <rect x="175" y="190" width="125" height="70" rx="8" fill={C.sky} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+      <text x="237" y="212" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>PostHog API</text>
+      <text x="237" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>flags, events</text>
+      <text x="237" y="242" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>experiments, funnels</text>
+
+      {/* Arrows up from both boxes */}
+      <line x1="82" y1="190" x2="120" y2="170" stroke={C.faint} strokeWidth="1.2" />
+      <line x1="237" y1="190" x2="200" y2="170" stroke={C.faint} strokeWidth="1.2" />
+
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.faint}>
+        code + production context
+      </text>
+    </svg>
+  );
+}
+
+/** PostHog signal gap — production signals exist but no trigger connects them to agent action. */
+export function PHSignalGapFigure() {
+  const signals = [
+    { x: 50, label: "stale flag", sub: "60d no evals", fill: C.rose },
+    { x: 160, label: "dead event", sub: "0 fires/30d", fill: C.butter },
+    { x: 270, label: "error spike", sub: "after deploy", fill: C.peach },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="ph-gap-title">
+      <title id="ph-gap-title">Production signals like stale flags, dead events, and error spikes exist in PostHog data but have no trigger to reach the coding agent</title>
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        signals that exist in production
+      </text>
+
+      {/* Signal bubbles */}
+      {signals.map((s) => (
+        <g key={s.label}>
+          <rect x={s.x - 40} y={40} width={80} height={50} rx="10" fill={s.fill} fillOpacity="0.5" stroke={C.ink} strokeWidth="1.2" />
+          <text x={s.x} y={58} textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>{s.label}</text>
+          <text x={s.x} y={74} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>{s.sub}</text>
+        </g>
+      ))}
+
+      {/* Gap zone */}
+      <line x1="30" y1="120" x2="290" y2="120" stroke={C.rule} strokeWidth="1" strokeDasharray="6 4" />
+      <line x1="30" y1="185" x2="290" y2="185" stroke={C.rule} strokeWidth="1" strokeDasharray="6 4" />
+      <text x="160" y="156" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.terracotta}>no trigger</text>
+      <text x="160" y="172" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>requires human to start a session</text>
+
+      {/* Dashed arrows from signals that don't connect */}
+      {signals.map((s) => (
+        <line key={s.label + "-line"} x1={s.x} y1={90} x2={s.x} y2={118} stroke={C.faint} strokeWidth="1" strokeDasharray="3 3" />
+      ))}
+
+      {/* X marks */}
+      {signals.map((s) => (
+        <g key={s.label + "-x"} transform={`translate(${s.x}, 120)`}>
+          <line x1="-4" y1="-4" x2="4" y2="4" stroke={C.terracotta} strokeWidth="1.8" strokeLinecap="round" />
+          <line x1="4" y1="-4" x2="-4" y2="4" stroke={C.terracotta} strokeWidth="1.8" strokeLinecap="round" />
+        </g>
+      ))}
+
+      {/* Agent box at bottom */}
+      <rect x="105" y="210" width="110" height="55" rx="14" fill={C.sage} fillOpacity="0.3" stroke={C.ink} strokeWidth="1.5" />
+      <text x="160" y="234" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>agent</text>
+      <text x="160" y="252" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>idle</text>
+
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.faint}>
+        data exists — no path to action
+      </text>
+    </svg>
+  );
+}
+
 /** CodeRabbit context aggregation — hub-and-spoke diagram. */
 export function CRContextFigure() {
   const tools = [

@@ -28,6 +28,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "four-repos-one-filesystem": FiveReposArt,
   "forty-two-percent": FortyTwoPercentArt,
   "agent-moves-first": AgentMovesFirstArt,
+  "posthog-code": PostHogCodeArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -938,6 +939,48 @@ function AgentMovesFirstArt() {
           y1="100"
           x2="286"
           y2="110"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+        />
+      </g>
+    </svg>
+  );
+}
+
+function PostHogCodeArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* Bar chart (analytics) */}
+        <g transform="translate(200, 130)">
+          <line x1="-50" y1="30" x2="50" y2="30" strokeWidth="1.2" />
+          <rect x="-42" y="5" width="14" height="25" rx="2" strokeWidth="1.4" />
+          <rect x="-22" y="-15" width="14" height="45" rx="2" strokeWidth="1.4" />
+          <rect x="-2" y="-5" width="14" height="35" rx="2" strokeWidth="1.4" />
+          <rect x="18" y="-25" width="14" height="55" rx="2" strokeWidth="1.4" />
+        </g>
+        {/* Code brackets */}
+        <g transform="translate(320, 110)">
+          <path d="M-8 -28 L-20 0 L-8 28" strokeWidth="1.8" />
+          <path d="M8 -28 L20 0 L8 28" strokeWidth="1.8" />
+          <line x1="-6" y1="4" x2="6" y2="-4" strokeWidth="1.3" />
+        </g>
+        {/* Arrow connecting them */}
+        <line
+          x1="252"
+          y1="118"
+          x2="298"
+          y2="112"
           strokeWidth="1"
           strokeDasharray="3 4"
         />
