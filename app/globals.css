@@ -369,3 +369,24 @@ html { scroll-behavior: smooth; }
 .agent-actions-link:hover {
   color: var(--color-terracotta);
 }
+
+/* Figure modal */
+dialog.figure-modal {
+  border: none;
+  outline: none;
+}
+dialog.figure-modal[open] {
+  display: flex;
+  animation: modal-fade-in 0.2s ease-out;
+}
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+dialog.figure-modal[open] > div {
+  animation: modal-scale-in 0.2s ease-out;
+}
+@keyframes modal-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
