@@ -27,6 +27,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "what-proactive-agents-cost": TokenCostArt,
   "four-repos-one-filesystem": FiveReposArt,
   "forty-two-percent": FortyTwoPercentArt,
+  "agent-moves-first": AgentMovesFirstArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -883,6 +884,64 @@ export function ClockListenerInbox() {
       >
         A clock, a listener, an inbox.
       </text>
+    </svg>
+  );
+}
+
+function AgentMovesFirstArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* Chat bubble */}
+        <g transform="translate(190, 105)">
+          <path
+            d="M-45 -32 Q-45 -50 -28 -50 L28 -50 Q45 -50 45 -32 L45 8 Q45 26 28 26 L-8 26 L-22 44 L-18 26 L-28 26 Q-45 26 -45 8 Z"
+            strokeWidth="1.6"
+          />
+          <circle cx="-14" cy="-12" r="3.5" fill={C.ink} stroke="none" />
+          <circle cx="6" cy="-12" r="3.5" fill={C.ink} stroke="none" />
+          <circle cx="26" cy="-12" r="3.5" fill={C.ink} stroke="none" />
+        </g>
+        {/* Small clock */}
+        <g transform="translate(310, 118)">
+          <circle r="22" strokeWidth="1.5" />
+          <circle r="1.5" fill={C.ink} stroke="none" />
+          {[0, 3, 6, 9].map((i) => {
+            const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+            return (
+              <line
+                key={i}
+                x1={Math.cos(a) * 16}
+                y1={Math.sin(a) * 16}
+                x2={Math.cos(a) * 20}
+                y2={Math.sin(a) * 20}
+                strokeWidth="1.4"
+              />
+            );
+          })}
+          <line x1="0" y1="0" x2="0" y2="-13" strokeWidth="1.8" />
+          <line x1="0" y1="0" x2="9" y2="4" strokeWidth="1.3" />
+        </g>
+        {/* Dashed connection */}
+        <line
+          x1="238"
+          y1="100"
+          x2="286"
+          y2="110"
+          strokeWidth="1"
+          strokeDasharray="3 4"
+        />
+      </g>
     </svg>
   );
 }

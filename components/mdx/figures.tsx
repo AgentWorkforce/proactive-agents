@@ -2341,3 +2341,99 @@ export function ExecutionGapFigure() {
     </svg>
   );
 }
+
+/** CodeRabbit context aggregation — hub-and-spoke diagram. */
+export function CRContextFigure() {
+  const tools = [
+    { x: 55, y: 60, label: "GitHub", fill: C.sage },
+    { x: 160, y: 35, label: "Jira", fill: C.butter },
+    { x: 265, y: 60, label: "Datadog", fill: C.rose },
+    { x: 80, y: 260, label: "Sentry", fill: C.peach },
+    { x: 240, y: 260, label: "Slack", fill: C.sky },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="cr-ctx-title">
+      <title id="cr-ctx-title">CodeRabbit agent at center, pulling context from GitHub, Jira, Datadog, Sentry, and Slack</title>
+      <rect x="105" y="125" width="110" height="55" rx="14" fill={C.lavender} stroke={C.ink} strokeWidth="2" />
+      <text x="160" y="149" textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={C.ink}>agent</text>
+      <text x="160" y="168" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>in Slack</text>
+      {tools.map((t) => (
+        <g key={t.label}>
+          <rect x={t.x - 32} y={t.y - 14} width={64} height={28} rx="8" fill={t.fill} stroke={C.ink} strokeWidth="1.2" />
+          <text x={t.x} y={t.y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.ink}>{t.label}</text>
+          <line
+            x1={t.x}
+            y1={t.y < 150 ? t.y + 14 : t.y - 14}
+            x2={160}
+            y2={t.y < 150 ? 125 : 180}
+            stroke={C.faint}
+            strokeWidth="1.2"
+            strokeDasharray="4 3"
+          />
+          <circle
+            cx={160}
+            cy={t.y < 150 ? 127 : 178}
+            r="2.5"
+            fill={C.terracotta}
+          />
+        </g>
+      ))}
+      <text x="160" y="305" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
+        one agent, many sources
+      </text>
+    </svg>
+  );
+}
+
+/** Schedule gap — timeline comparing scheduled polling vs event-driven detection. */
+export function CRScheduleGapFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="cr-gap-title">
+      <title id="cr-gap-title">Scheduled agent checks every 30 minutes and misses events between checks. Event-driven agent detects changes instantly.</title>
+      <text x="160" y="28" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        when does the agent notice?
+      </text>
+
+      {/* Scheduled row */}
+      <text x="30" y="72" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>scheduled</text>
+      <line x1="30" y1="92" x2="290" y2="92" stroke={C.rule} strokeWidth="1.5" />
+      {[0, 1, 2, 3].map((i) => {
+        const x = 30 + i * 86;
+        return (
+          <g key={i}>
+            <line x1={x} y1="84" x2={x} y2="100" stroke={C.ink} strokeWidth="1.5" />
+            <text x={x} y="114" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>{i * 30}m</text>
+          </g>
+        );
+      })}
+      {/* Event marker at ~5 min */}
+      <circle cx="44" cy="92" r="6" fill={C.rose} stroke={C.ink} strokeWidth="1" />
+      <text x="44" y="78" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>event</text>
+      {/* Detection at 30-min check */}
+      <circle cx="116" cy="92" r="8" fill={C.sage} stroke={C.ink} strokeWidth="1.5" />
+      <text x="116" y="95" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>✓</text>
+      {/* Gap bracket */}
+      <path d="M44 126 L44 132 L116 132 L116 126" fill="none" stroke={C.terracotta} strokeWidth="1.2" />
+      <text x="80" y="146" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>~25 min gap</text>
+
+      {/* Event-driven row */}
+      <text x="30" y="200" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>event-driven</text>
+      <line x1="30" y1="220" x2="290" y2="220" stroke={C.rule} strokeWidth="1.5" />
+      {/* Event marker */}
+      <circle cx="44" cy="220" r="6" fill={C.rose} stroke={C.ink} strokeWidth="1" />
+      <text x="44" y="206" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>event</text>
+      {/* Immediate arrow */}
+      <line x1="52" y1="220" x2="70" y2="220" stroke={C.terracotta} strokeWidth="2" strokeLinecap="round" />
+      <path d="M66 216 L72 220 L66 224" fill="none" stroke={C.terracotta} strokeWidth="1.5" strokeLinecap="round" />
+      {/* Instant detection */}
+      <circle cx="82" cy="220" r="8" fill={C.sage} stroke={C.ink} strokeWidth="1.5" />
+      <text x="82" y="223" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>✓</text>
+      {/* Label */}
+      <text x="63" y="246" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.moss}>instant</text>
+
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.faint}>
+        the thirty-minute gap
+      </text>
+    </svg>
+  );
+}
