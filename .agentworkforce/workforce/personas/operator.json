@@ -53,6 +53,11 @@
       "id": "local/khaliq-voice",
       "source": ".agentworkforce/workforce/skills/khaliq-voice.md",
       "description": "Khaliq Gant's writing voice calibration: conversational narrative style, personal tone, anti-AI-prose rules, and pre-publish voice checks. Load before writing or editing essays, blog posts, or long-form content."
+    },
+    {
+      "id": "local/figure-design",
+      "source": ".agentworkforce/workforce/skills/figure-design.md",
+      "description": "SVG figure design standards: color palette, sizing, text readability, layout patterns, and anti-patterns. Load when creating or editing figure components for essays."
     }
   ],
   "inputs": {
