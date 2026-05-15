@@ -40,16 +40,6 @@ import {
   PareAsymmetryFigure,
   PatienceFigure,
   ExecutionGapFigure,
-  CostCompareFigure,
-  DeliveryChoiceFigure,
-  FullPrimitiveFigure,
-  CompoundGainsFigure,
-  TwoLayerFigure,
-  ContextDegradeFigure,
-  ThreeActsEvolutionFigure,
-  PrimitiveDiscoveryFigure,
-  ProviderMultiplierFigure,
-  ComplexityGradientFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -95,16 +85,6 @@ export const mdxComponents = {
   PareAsymmetryFigure,
   PatienceFigure,
   ExecutionGapFigure,
-  CostCompareFigure,
-  DeliveryChoiceFigure,
-  FullPrimitiveFigure,
-  CompoundGainsFigure,
-  TwoLayerFigure,
-  ContextDegradeFigure,
-  ThreeActsEvolutionFigure,
-  PrimitiveDiscoveryFigure,
-  ProviderMultiplierFigure,
-  ComplexityGradientFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"

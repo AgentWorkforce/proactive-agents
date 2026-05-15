@@ -392,39 +392,40 @@ export function SyncFallbackFigure() {
 /** Reactive vs proactive comparison — side-by-side agent postures. */
 export function PostureFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 200" className="w-full">
       <defs>
-        <radialGradient id="pograd" cx="50%" cy="40%" r="55%">
-          <stop offset="0%" stopColor={C.sage} stopOpacity="0.7" />
-          <stop offset="100%" stopColor={C.butter} stopOpacity="0.4" />
-        </radialGradient>
+        <marker id="posArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill={C.ink} />
+        </marker>
+        <marker id="posArrowT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill={C.terracotta} />
+        </marker>
       </defs>
-      <circle cx="160" cy="150" r="105" fill="url(#pograd)" />
-      {/* Reactive side */}
-      <g transform="translate(85, 90)">
-        <rect x="-40" y="-10" width="80" height="50" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
-        <text y="8" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>reactive</text>
-        <text y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>waits for you</text>
-      </g>
-      {/* Proactive side */}
-      <g transform="translate(235, 90)">
-        <rect x="-40" y="-10" width="80" height="50" rx="8" fill={C.paper} stroke={C.terracotta} strokeWidth="2" />
-        <text y="8" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>proactive</text>
-        <text y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>acts on its own</text>
-      </g>
-      {/* Reactive: user→agent arrow */}
-      <g stroke={C.faint} strokeWidth="1.4" fill="none" strokeLinecap="round">
-        <text x="85" y="170" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>user → agent</text>
-        <text x="85" y="190" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>query → answer</text>
-        <text x="85" y="210" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>prompt → done</text>
-      </g>
-      {/* Proactive: world→agent→action */}
-      <g>
-        <text x="235" y="170" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>world → agent</text>
-        <text x="235" y="190" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>change → act</text>
-        <text x="235" y="210" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>event → ongoing</text>
-      </g>
-      <line x1="160" y1="80" x2="160" y2="230" stroke={C.faint} strokeWidth="0.8" strokeDasharray="4 4" />
+
+      {/* Reactive row */}
+      <text x="16" y="28" fontFamily="var(--font-display)" fontSize="11" fill={C.faint}>reactive</text>
+      <circle cx="56" cy="64" r="22" fill={C.rose} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+      <text x="56" y="68" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>user</text>
+      <line x1="82" y1="64" x2="132" y2="64" stroke={C.ink} strokeWidth="1.2" markerEnd="url(#posArrow)" />
+      <rect x="138" y="44" width="60" height="40" rx="7" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+      <text x="168" y="68" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>agent</text>
+      <line x1="202" y1="64" x2="252" y2="64" stroke={C.ink} strokeWidth="1.2" markerEnd="url(#posArrow)" />
+      <rect x="258" y="48" width="50" height="32" rx="6" fill="none" stroke={C.faint} strokeWidth="1" strokeDasharray="4 3" />
+      <text x="283" y="68" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.faint}>reply</text>
+
+      {/* Divider */}
+      <line x1="20" y1="104" x2="300" y2="104" stroke={C.rule} strokeWidth="1" />
+
+      {/* Proactive row */}
+      <text x="16" y="128" fontFamily="var(--font-display)" fontSize="11" fill={C.terracotta}>proactive</text>
+      <circle cx="56" cy="160" r="22" fill={C.sage} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+      <text x="56" y="164" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>world</text>
+      <line x1="82" y1="160" x2="132" y2="160" stroke={C.terracotta} strokeWidth="1.2" markerEnd="url(#posArrowT)" />
+      <rect x="138" y="140" width="60" height="40" rx="7" fill={C.paper} stroke={C.terracotta} strokeWidth="1.5" />
+      <text x="168" y="164" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>agent</text>
+      <line x1="202" y1="160" x2="252" y2="160" stroke={C.terracotta} strokeWidth="1.2" markerEnd="url(#posArrowT)" />
+      <rect x="258" y="144" width="50" height="32" rx="6" fill={C.peach} fillOpacity="0.35" stroke={C.terracotta} strokeWidth="1" />
+      <text x="283" y="164" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>action</text>
     </svg>
   );
 }
@@ -2145,31 +2146,31 @@ export function PrimitiveDiscoveryFigure() {
     { label: "listener", sub: "change events", fill: C.sage },
   ];
   return (
-    <svg viewBox="0 0 320 200" className="w-full">
-      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+    <svg viewBox="0 0 400 200" className="w-full">
+      <text x="200" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         discovered in order
-      </text>
-      {steps.map((s, i) => {
-        const x = 30 + i * 100;
-        return (
-          <g key={s.label}>
-            <circle cx={x + 40} cy={90} r="34" fill={s.fill} fillOpacity="0.5" stroke={C.ink} strokeWidth="1.5" />
-            <text x={x + 40} y={86} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{s.label}</text>
-            <text x={x + 40} y={100} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>{s.sub}</text>
-            {i < steps.length - 1 && (
-              <line x1={x + 78} y1={90} x2={x + 96} y2={90} stroke={C.faint} strokeWidth="1.2" markerEnd="url(#discArrow)" />
-            )}
-          </g>
-        );
-      })}
-      <text x="160" y="160" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
-        each one revealed the next
       </text>
       <defs>
         <marker id="discArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill={C.faint} />
         </marker>
       </defs>
+      {steps.map((s, i) => {
+        const cx = 70 + i * 130;
+        return (
+          <g key={s.label}>
+            <circle cx={cx} cy={94} r="42" fill={s.fill} fillOpacity="0.45" stroke={C.ink} strokeWidth="1.5" />
+            <text x={cx} y={90} textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={C.ink}>{s.label}</text>
+            <text x={cx} y={106} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>{s.sub}</text>
+            {i < steps.length - 1 && (
+              <line x1={cx + 46} y1={94} x2={cx + 80} y2={94} stroke={C.faint} strokeWidth="1.2" markerEnd="url(#discArrow)" />
+            )}
+          </g>
+        );
+      })}
+      <text x="200" y="168" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        each one revealed the next
+      </text>
     </svg>
   );
 }

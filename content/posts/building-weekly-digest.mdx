@@ -12,7 +12,7 @@ I wanted to write about it because every other post on this site is kind of theo
 
 So here are the receipts.
 
-<Scene figure={<DigestPipelineFigure />} caption="The full pipeline — sources to GitHub issue.">
+<Scene figure="DigestPipelineFigure" caption="The full pipeline — sources to GitHub issue.">
 
 ## How it works
 
@@ -64,7 +64,7 @@ Some parts of this agent were surprisingly painless. Worth calling out, because 
 
 **Dedup via a flat JSON file is laughably simple and works fine.** At our scale (roughly 30 mentions per week, maybe 1,500 per year), a flat file of URLs is perfectly adequate. There's no bloom filter, no Redis set, no expiry policy. The file grows by a few kilobytes per week and we can read the whole thing in a glance. Sometimes the right data structure is a list.
 
-<Scene side="right" figure={<DigestTimelineFigure />} caption="A timeline of things that broke — in order of discovery.">
+<Scene side="right" figure="DigestTimelineFigure" caption="A timeline of things that broke — in order of discovery.">
 
 ## What broke
 
@@ -84,7 +84,7 @@ For two weeks in April, the agent found zero new mentions after dedup. The log s
 
 </Scene>
 
-<Scene figure={<DeliveryChoiceFigure />} caption="The channel shapes the behavior more than the content.">
+<Scene figure="DeliveryChoiceFigure" caption="The channel shapes the behavior more than the content.">
 
 ## The delivery choice
 

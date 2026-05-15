@@ -12,7 +12,7 @@ I've been talking to a lot of teams building agents over the past few months. In
 
 The question has weight to it. Not because these teams can't afford tokens. Most of them can. The anxiety is that they don't know where the spend goes. A reactive agent is predictable: you invoke it, it runs, you see the bill. A proactive agent is running between your invocations, waking itself up, checking state, reasoning about whether something matters, and occasionally deciding to do nothing. All of that consumes tokens. The "doing nothing" part especially bothers people, because you're paying for an agent to think and then stay quiet.
 
-<Scene figure={<TokenStackFigure />} caption="Where tokens go in a proactive agent wake-up.">
+<Scene figure="TokenStackFigure" caption="Where tokens go in a proactive agent wake-up.">
 
 ## The anatomy of a proactive token bill
 
@@ -38,7 +38,7 @@ One team described using small models for orchestration and communication betwee
 
 This maps onto how human teams work. A project manager doesn't need to be the strongest engineer. They need to know who to hand things to and when. The triage model is the project manager. It costs a fraction of what the execution model costs, and it runs dozens of times more often.
 
-<Scene side="right" figure={<CascadeFigure />} caption="Cheap triage routes to expensive execution.">
+<Scene side="right" figure="CascadeFigure" caption="Cheap triage routes to expensive execution.">
 
 ## Patterns that survive contact with the bill
 
@@ -58,7 +58,7 @@ Token spend is a line item you can see. The cost of a PR sitting open for three 
 
 </Scene>
 
-<Scene figure={<ContextDegradeFigure />} caption="Context degrades — summarize before it poisons the output.">
+<Scene figure="ContextDegradeFigure" caption="Context degrades — summarize before it poisons the output.">
 
 ## The context tax
 

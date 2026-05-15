@@ -12,7 +12,7 @@ The second time you do it — for production, with the same provider, after the 
 
 Here is what *correctly* looks like.
 
-<Scene figure={<WebhookTaxFigure />} caption="The plumbing per provider — × every integration.">
+<Scene figure="WebhookTaxFigure" caption="The plumbing per provider — × every integration.">
 
 ## What "production-ready" actually means
 
@@ -81,7 +81,7 @@ HubSpot has webhooks, but only for CRM objects and only if you're building a pub
 
 For these providers, the fallback is always the same: **scheduled syncs.**
 
-<Scene side="right" figure={<SyncFallbackFigure />} caption="When there's no webhook — the sync fallback.">
+<Scene side="right" figure="SyncFallbackFigure" caption="When there's no webhook — the sync fallback.">
 
 ## The scheduled sync tax
 
@@ -103,7 +103,7 @@ If a provider offers webhooks, you need eight to ten pieces of infrastructure pe
 
 </Scene>
 
-<Scene figure={<CostCompareFigure />} caption="Polling vs push — same coverage, different cost.">
+<Scene figure="CostCompareFigure" caption="Polling vs push — same coverage, different cost.">
 
 ## Why this matters for proactive agents specifically
 

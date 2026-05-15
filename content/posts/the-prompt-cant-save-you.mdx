@@ -10,7 +10,7 @@ Prompt engineering isn't going to save you. You need the right infrastructure un
 
 Two recent pieces from the OpenClaw ecosystem show what I mean. One is a tutorial from xCloud — [*7 Proactive OpenClaw Agent Workflows*](https://xcloud.host/proactive-openclaw-agent-workflows/) — mapping seven patterns for making agents do things without being asked. The other is Hal the Lobster's [*Proactive Agent Skill*](https://clawhub.ai/halthelobster/proactive-agent), a system prompt that tries to turn any OpenClaw agent into a proactive, persistent, self-improving partner. Both are worth reading. Both correctly identify the same problems we've been writing about. And both solve them at the wrong layer.
 
-<Scene figure={<PromptLayerFigure />} caption="The fundamental split: what the prompt advises vs what the runtime enforces.">
+<Scene figure="PromptLayerFigure" caption="The fundamental split: what the prompt advises vs what the runtime enforces.">
 
 ## Seven workflows, one primitive
 
@@ -62,7 +62,7 @@ The same gap shows up everywhere:
 
 - **"Nothing goes external without approval"** is a guardrail against runaway action. But "internal" actions (reorganizing files, modifying configs, installing packages) can be just as destructive. The prompt cannot scope what tools the agent has access to. Auth boundaries live in infrastructure, not in prompt text.
 
-<Scene side="right" figure={<GapMapFigure />} caption="Five primitives. Two ecosystems. The pattern is consistent.">
+<Scene side="right" figure="GapMapFigure" caption="Five primitives. Two ecosystems. The pattern is consistent.">
 
 ## The gap map
 
@@ -80,7 +80,7 @@ Here is where both sources land against the primitives a proactive agent actuall
 
 </Scene>
 
-<Scene figure={<TwoLayerFigure />} caption="The prompt advises. The runtime enforces.">
+<Scene figure="TwoLayerFigure" caption="The prompt advises. The runtime enforces.">
 
 ## What belongs where
 

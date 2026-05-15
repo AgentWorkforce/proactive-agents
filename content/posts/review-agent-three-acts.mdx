@@ -10,7 +10,7 @@ I've been building [My Senior Dev](https://myseniordev.com) for about six months
 
 Over roughly a thousand commits, the product went through three phases, each one showing us something the previous architecture couldn't handle. By the end, we'd rebuilt it as a proactive agent running on the same [three primitives](/posts/three-primitives) we'd been writing about on this site.
 
-<Scene figure={<ReviewReactiveFigure />} caption="Act 1 — the webhook-triggered review loop.">
+<Scene figure="ReviewReactiveFigure" caption="Act 1 — the webhook-triggered review loop.">
 
 ## Act 1: The webhook reviewer
 
@@ -34,7 +34,7 @@ The web app we built around the reviewer was super fast. We designed it for powe
 
 But the web UI still required the developer to come to it. Open a browser, navigate to the dashboard, find the PR, read the review. Four steps before anyone sees the feedback.
 
-<Scene side="right" figure={<ReviewSurfacesFigure />} caption="Act 2 — same agent, more surfaces.">
+<Scene side="right" figure="ReviewSurfacesFigure" caption="Act 2 — same agent, more surfaces.">
 
 ## Act 2: The surface explosion
 
@@ -68,7 +68,7 @@ We're not the only ones who noticed. [Claude Code on the web](https://code.claud
 
 They all work well for clear-cut stuff. The edges are harder. [One review of Claude Code's auto-fix](https://paddo.dev/blog/claude-code-auto-fix-pr-lifecycle/) found that flaky tests send it into speculative fix loops, each attempt triggering another CI run. None of the three offer risk tiers to say "auto-fix test files but leave auth alone," and the governance layer between "CI failed" and "push a commit" is thin or absent. I hit the same problems when our own follow-ups started scaling. Detecting the event was the easy part.
 
-<Scene figure={<ReviewProactiveFigure />} caption="Act 3 — the agent watches, detects, and acts.">
+<Scene figure="ReviewProactiveFigure" caption="Act 3 — the agent watches, detects, and acts.">
 
 ## Act 3: The proactive shift
 
@@ -98,7 +98,7 @@ The agent also gained durability. In Act 1, a crashed worker meant a lost review
 
 </Scene>
 
-<Scene side="right" figure={<ThreeActsEvolutionFigure />} caption="Each phase revealed the next missing piece.">
+<Scene side="right" figure="ThreeActsEvolutionFigure" caption="Each phase revealed the next missing piece.">
 
 ## What the product taught me
 
