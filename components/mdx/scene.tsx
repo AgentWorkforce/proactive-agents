@@ -65,7 +65,7 @@ export function Scene({
           if (e.target === e.currentTarget) dialogRef.current?.close();
         }}
       >
-        <div className="relative mx-auto max-w-2xl rounded-3xl border border-rule bg-paper p-8 shadow-2xl">
+        <div className="relative mx-4 w-full max-w-4xl rounded-3xl border border-rule bg-paper p-10 shadow-2xl sm:mx-auto sm:p-14">
           <button
             onClick={() => dialogRef.current?.close()}
             className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-ink-faint transition-colors hover:bg-rule/40 hover:text-ink"
@@ -73,11 +73,11 @@ export function Scene({
           >
             ✕
           </button>
-          <div className="mt-2">
+          <div className="mx-auto max-w-3xl">
             {FigureComponent ? <FigureComponent /> : null}
           </div>
           {caption && (
-            <p className="mt-6 border-t border-rule/60 pt-3 font-display text-xs uppercase tracking-[0.22em] text-ink-faint">
+            <p className="mt-8 border-t border-rule/60 pt-3 font-display text-xs uppercase tracking-[0.22em] text-ink-faint">
               {caption}
             </p>
           )}
