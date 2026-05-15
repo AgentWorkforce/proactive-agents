@@ -54,6 +54,9 @@ import {
   CRScheduleGapFigure,
   PHEnricherFigure,
   PHSignalGapFigure,
+  NotionStackFigure,
+  NotionPrimitiveMapFigure,
+  NotionOpenFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -113,6 +116,9 @@ export const mdxComponents = {
   CRScheduleGapFigure,
   PHEnricherFigure,
   PHSignalGapFigure,
+  NotionStackFigure,
+  NotionPrimitiveMapFigure,
+  NotionOpenFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"

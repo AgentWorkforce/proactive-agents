@@ -10,7 +10,7 @@ Six months ago, nobody was really shipping proactive agents. Now every major AI 
 
 This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **listener** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
 
-*Last updated: May 13, 2026.*
+*Last updated: May 15, 2026.*
 
 <Scene figure={<LandscapeGridFigure />} caption="The landscape scored against three primitives.">
 
@@ -32,6 +32,7 @@ This page maps the landscape through the [three-primitives framework](/posts/thr
 <tr><td>Proactive AI Agents</td><td>Tonkean</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>AI Workers</td><td>MindStudio</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Agency</td><td>Browser Use</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
+<tr><td>Workers + Custom Agents</td><td>Notion</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Agent Relay</td><td>Agent Relay</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipping</td></tr>
 </tbody>
 </table>
@@ -63,6 +64,8 @@ Every product on this list runs on a schedule. That's the easy primitive to buil
 **[Block's Managerbot](https://venturebeat.com/data/block-introduces-managerbot-a-proactive-square-ai-agent-and-the-clearest)** is the strongest vertical proof point. Built into Square POS, it monitors seller business data continuously, identifies problems, and proposes solutions. It handles shift scheduling (analyzes forecasts, generates optimized schedules), inventory management, and marketing (drafts win-back campaigns targeting the best customer segments). Available to 1M+ US sellers in open beta, with GA expected June 2026. This is proactive AI delivering measurable business value, not just interesting cards.
 
 **[Writer's Playbooks](https://writer.com/blog/writer-agent-skills-playbooks-press-release/)** are event-driven enterprise workflows: listen for triggers (emails arriving, sales calls completing, files landing), then execute multi-step automations. All three primitives, focused on enterprise teams. The least consumer-visible product on this list, and potentially the most revenue-generating.
+
+**[Notion](https://www.notion.com/product/dev)** is attacking proactive agents from both sides of the stack simultaneously. [Workers](https://developers.notion.com/workers/get-started/overview) are a TypeScript SDK that gives developers three composable capabilities: `sync()` for scheduled data pulls, `webhook()` for real-time event ingestion, and `tool()` for agent-callable functions. [Custom Agents](https://www.notion.com/help/custom-agents) wrap the same architecture in a no-code layer with time-based and event-based triggers, natural language instructions, and Slack delivery. An [External Agents API](https://www.notion.com/product/dev) (alpha) opens the workspace to agents from other providers like Claude, Cursor, and Codex. Early testers built over 21,000 Custom Agents during beta. The positioning is unique on this list: Notion isn't shipping a proactive agent product, it's shipping the primitives as a platform. Deep dive in [Notion ships the primitives](/posts/notion-ships-the-primitives).
 
 **[Tonkean's Proactive AI Agents](https://www.tonkean.com/platform/proactive-ai-agents)** operate across 250+ enterprise systems as autonomous digital workers. Their agents run in three modes: time-based (scheduled), signal-based (event-driven change detection), and delegation-based (human-initiated). Delivery goes through Slack, Teams, email, and directly into enterprise platforms. The positioning is explicitly proactive, with agents that monitor continuously and anticipate renewals, risks, or anomalies before teams have to ask. Tonkean focuses on enterprise process orchestration, particularly procurement and operations, which gives it the same bounded-problem advantage as Managerbot and Writer.
 
