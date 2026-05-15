@@ -1903,6 +1903,347 @@ export function PatienceFigure() {
   );
 }
 
+/** Polling vs push cost — API call volume comparison. */
+export function CostCompareFigure() {
+  const barX = 60;
+  const barW = 180;
+  return (
+    <svg viewBox="0 0 320 220" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        daily API calls — 4 providers
+      </text>
+      {/* Polling bar */}
+      <rect x={barX} y="44" width={barW} height="36" rx="6" fill={C.rose} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+      <text x={barX + 8} y="66" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>polling</text>
+      <text x={barX + barW - 8} y="66" textAnchor="end" fontFamily="var(--font-mono)" fontSize="11" fill={C.ink}>~4,608</text>
+      {/* Mini arrows representing constant calls */}
+      {Array.from({ length: 14 }).map((_, i) => (
+        <line key={i} x1={barX + 12 + i * 12} y1="86" x2={barX + 12 + i * 12} y2="92" stroke={C.faint} strokeWidth="1" />
+      ))}
+      <text x="160" y="104" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>constant, mostly &quot;nothing changed&quot;</text>
+
+      {/* Push bar */}
+      <rect x={barX} y="124" width={52} height="36" rx="6" fill={C.sage} fillOpacity="0.5" stroke={C.ink} strokeWidth="1.2" />
+      <text x={barX + 8} y="146" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>push</text>
+      <text x={barX + 60} y="146" fontFamily="var(--font-mono)" fontSize="11" fill={C.ink}>~actual changes</text>
+      {/* Few arrows */}
+      {Array.from({ length: 3 }).map((_, i) => (
+        <line key={i} x1={barX + 12 + i * 16} y1="166" x2={barX + 12 + i * 16} y2="172" stroke={C.terracotta} strokeWidth="1.2" />
+      ))}
+      <text x="160" y="184" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>proportional to real changes</text>
+
+      <text x="160" y="210" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        same coverage, fraction of the calls
+      </text>
+    </svg>
+  );
+}
+
+/** Delivery channel — Slack (conversation) vs GitHub (reference). */
+export function DeliveryChoiceFigure() {
+  return (
+    <svg viewBox="0 0 320 280" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        delivery channel shapes behavior
+      </text>
+      {/* Slack side */}
+      <g>
+        <rect x="20" y="40" width="125" height="130" rx="10" fill={C.rose} fillOpacity="0.2" stroke={C.ink} strokeWidth="1.2" />
+        <text x="82" y="62" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>Slack</text>
+        {/* chat bubbles */}
+        <rect x="34" y="74" width="60" height="16" rx="8" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+        <rect x="54" y="96" width="70" height="16" rx="8" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+        <rect x="34" y="118" width="50" height="16" rx="8" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+        <rect x="44" y="140" width="65" height="16" rx="8" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+        <text x="82" y="180" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>conversation</text>
+      </g>
+      {/* GitHub side */}
+      <g>
+        <rect x="175" y="40" width="125" height="130" rx="10" fill={C.sage} fillOpacity="0.2" stroke={C.ink} strokeWidth="1.2" />
+        <text x="237" y="62" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>GitHub Issue</text>
+        {/* document lines */}
+        <line x1="192" y1="78" x2="280" y2="78" stroke={C.faint} strokeWidth="1" />
+        <line x1="192" y1="94" x2="268" y2="94" stroke={C.faint} strokeWidth="1" />
+        <line x1="192" y1="110" x2="275" y2="110" stroke={C.faint} strokeWidth="1" />
+        <line x1="192" y1="126" x2="260" y2="126" stroke={C.faint} strokeWidth="1" />
+        <line x1="192" y1="142" x2="270" y2="142" stroke={C.faint} strokeWidth="1" />
+        <text x="237" y="180" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>reference</text>
+      </g>
+      {/* Labels */}
+      <text x="82" y="200" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>demands attention</text>
+      <text x="237" y="200" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>waits for you</text>
+    </svg>
+  );
+}
+
+/** Three primitives all active — what indispensable looks like. */
+export function FullPrimitiveFigure() {
+  const items = [
+    { x: 60, y: 80, label: "clock", fill: C.butter, sub: "overnight + real-time" },
+    { x: 160, y: 80, label: "listener", fill: C.sage, sub: "email, calendar, APIs" },
+    { x: 260, y: 80, label: "inbox", fill: C.lavender, sub: "Slack, email, tickets" },
+  ];
+  return (
+    <svg viewBox="0 0 320 240" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        all three primitives active
+      </text>
+      {/* connecting lines to center hub */}
+      <line x1="60" y1="120" x2="160" y2="180" stroke={C.terracotta} strokeWidth="1.4" />
+      <line x1="160" y1="120" x2="160" y2="180" stroke={C.terracotta} strokeWidth="1.4" />
+      <line x1="260" y1="120" x2="160" y2="180" stroke={C.terracotta} strokeWidth="1.4" />
+      {items.map((it) => (
+        <g key={it.label}>
+          <circle cx={it.x} cy={it.y} r="36" fill={it.fill} fillOpacity="0.5" stroke={C.ink} strokeWidth="1.5" />
+          <text x={it.x} y={it.y - 2} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>{it.label}</text>
+          <text x={it.x} y={it.y + 12} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>{it.sub}</text>
+          {/* checkmark */}
+          <path d={`M${it.x + 22} ${it.y - 26} l3 3 6 -6`} stroke={C.terracotta} strokeWidth="2" fill="none" strokeLinecap="round" />
+        </g>
+      ))}
+      {/* Hub */}
+      <rect x="126" y="176" width="68" height="32" rx="8" fill={C.paper} stroke={C.terracotta} strokeWidth="1.8" />
+      <text x="160" y="196" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>agent</text>
+    </svg>
+  );
+}
+
+/** Three benefits compounding — latency, edge cases, state surface. */
+export function CompoundGainsFigure() {
+  const gains = [
+    { label: "latency", desc: "seconds, not minutes", fill: C.peach },
+    { label: "edge cases", desc: "diff, not snapshot", fill: C.sage },
+    { label: "state surface", desc: "event, not batch", fill: C.sky },
+  ];
+  return (
+    <svg viewBox="0 0 320 220" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        benefits that compound
+      </text>
+      {gains.map((g, i) => {
+        const y = 44 + i * 56;
+        const w = 240 - i * 30;
+        return (
+          <g key={g.label}>
+            <rect x={(320 - w) / 2} y={y} width={w} height="40" rx="8" fill={g.fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+            <text x={160} y={y + 18} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>{g.label}</text>
+            <text x={160} y={y + 32} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>{g.desc}</text>
+          </g>
+        );
+      })}
+      <text x="160" y="216" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        removes exactly what breaks agents at 3am
+      </text>
+    </svg>
+  );
+}
+
+/** Prompt layer vs runtime layer responsibilities. */
+export function TwoLayerFigure() {
+  return (
+    <svg viewBox="0 0 320 260" className="w-full">
+      {/* Prompt layer */}
+      <rect x="30" y="20" width="260" height="90" rx="10" fill={C.lavender} fillOpacity="0.25" stroke={C.ink} strokeWidth="1.2" strokeDasharray="5 3" />
+      <text x="160" y="42" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>prompt</text>
+      <text x="160" y="56" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>advisory — model compliance</text>
+      <g fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>
+        <text x="80" y="80" textAnchor="middle">what to do</text>
+        <text x="160" y="80" textAnchor="middle">whether to act</text>
+        <text x="240" y="80" textAnchor="middle">how to report</text>
+      </g>
+
+      {/* Divider */}
+      <line x1="50" y1="126" x2="270" y2="126" stroke={C.rule} strokeWidth="1.5" />
+      <text x="160" y="136" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>enforcement boundary</text>
+
+      {/* Runtime layer */}
+      <rect x="30" y="148" width="260" height="90" rx="10" fill={C.sage} fillOpacity="0.25" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="170" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>runtime</text>
+      <text x="160" y="184" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>enforced — system guarantee</text>
+      <g fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>
+        <text x="70" y="210" textAnchor="middle">when to wake</text>
+        <text x="160" y="210" textAnchor="middle">where state lives</text>
+        <text x="250" y="210" textAnchor="middle">spend limits</text>
+      </g>
+    </svg>
+  );
+}
+
+/** Context degradation over accumulated messages. */
+export function ContextDegradeFigure() {
+  const pts = [
+    { x: 40, y: 60 }, { x: 80, y: 70 }, { x: 120, y: 85 },
+    { x: 160, y: 110 }, { x: 200, y: 145 }, { x: 240, y: 195 }, { x: 270, y: 240 },
+  ];
+  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
+  return (
+    <svg viewBox="0 0 320 300" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        context degrades as history grows
+      </text>
+      {/* Axes */}
+      <line x1="36" y1="40" x2="36" y2="260" stroke={C.ink} strokeWidth="1" />
+      <line x1="36" y1="260" x2="280" y2="260" stroke={C.ink} strokeWidth="1" />
+      <text x="20" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint} transform="rotate(-90,20,150)">signal quality</text>
+      <text x="160" y="278" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>accumulated messages</text>
+      {/* Curve */}
+      <path d={path} fill="none" stroke={C.terracotta} strokeWidth="2" strokeLinecap="round" />
+      {/* Danger zone */}
+      <rect x="180" y="130" width="100" height="130" rx="6" fill={C.rose} fillOpacity="0.15" stroke="none" />
+      <text x="230" y="148" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>danger zone</text>
+      {/* Summary gate */}
+      <line x1="180" y1="40" x2="180" y2="260" stroke={C.sage} strokeWidth="1.2" strokeDasharray="4 3" />
+      <text x="182" y="52" fontFamily="var(--font-mono)" fontSize="7" fill={C.moss}>summarize here</text>
+    </svg>
+  );
+}
+
+/** Three acts evolution — webhook → multi-surface → proactive. */
+export function ThreeActsEvolutionFigure() {
+  const acts = [
+    { label: "Act 1", sub: "webhook", fill: C.peach, w: 60 },
+    { label: "Act 2", sub: "+ surfaces", fill: C.butter, w: 80 },
+    { label: "Act 3", sub: "+ primitives", fill: C.sage, w: 100 },
+  ];
+  return (
+    <svg viewBox="0 0 320 180" className="w-full">
+      {acts.map((a, i) => {
+        const x = 20 + i * 105;
+        const y = 30;
+        return (
+          <g key={a.label}>
+            <rect x={x} y={y} width={a.w} height="90" rx="10" fill={a.fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+            <text x={x + a.w / 2} y={y + 30} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{a.label}</text>
+            <text x={x + a.w / 2} y={y + 48} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>{a.sub}</text>
+            {/* Growing capability dots */}
+            {Array.from({ length: i + 1 }).map((_, j) => (
+              <circle key={j} cx={x + a.w / 2 - (i * 6) + j * 12} cy={y + 70} r="4" fill={C.terracotta} fillOpacity={0.5 + j * 0.2} />
+            ))}
+            {i < acts.length - 1 && (
+              <line x1={x + a.w + 4} y1={y + 45} x2={x + a.w + 20} y2={y + 45} stroke={C.faint} strokeWidth="1.2" markerEnd="url(#evoArrow)" />
+            )}
+          </g>
+        );
+      })}
+      <text x="160" y="155" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        each phase revealed the next missing piece
+      </text>
+      <defs>
+        <marker id="evoArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill={C.faint} />
+        </marker>
+      </defs>
+    </svg>
+  );
+}
+
+/** Primitive discovery — inbox → clock → listener. */
+export function PrimitiveDiscoveryFigure() {
+  const steps = [
+    { label: "inbox", sub: "agents talking", fill: C.lavender },
+    { label: "clock", sub: "heartbeats", fill: C.butter },
+    { label: "listener", sub: "change events", fill: C.sage },
+  ];
+  return (
+    <svg viewBox="0 0 320 200" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        discovered in order
+      </text>
+      {steps.map((s, i) => {
+        const x = 30 + i * 100;
+        return (
+          <g key={s.label}>
+            <circle cx={x + 40} cy={90} r="34" fill={s.fill} fillOpacity="0.5" stroke={C.ink} strokeWidth="1.5" />
+            <text x={x + 40} y={86} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{s.label}</text>
+            <text x={x + 40} y={100} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>{s.sub}</text>
+            {i < steps.length - 1 && (
+              <line x1={x + 78} y1={90} x2={x + 96} y2={90} stroke={C.faint} strokeWidth="1.2" markerEnd="url(#discArrow)" />
+            )}
+          </g>
+        );
+      })}
+      <text x="160" y="160" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        each one revealed the next
+      </text>
+      <defs>
+        <marker id="discArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill={C.faint} />
+        </marker>
+      </defs>
+    </svg>
+  );
+}
+
+/** Provider multiplier — problems × providers. */
+export function ProviderMultiplierFigure() {
+  const providers = ["Zendesk", "GitHub", "Linear", "Slack"];
+  const problems = ["webhook fmt", "state schema", "confidence"];
+  return (
+    <svg viewBox="0 0 320 240" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        every provider multiplies the problem
+      </text>
+      {/* Grid */}
+      {providers.map((p, pi) => (
+        <g key={p}>
+          <text x="18" y={62 + pi * 44} fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{p}</text>
+          {problems.map((_, qi) => (
+            <rect
+              key={qi}
+              x={84 + qi * 72}
+              y={46 + pi * 44}
+              width="60"
+              height="28"
+              rx="5"
+              fill={C.rose}
+              fillOpacity={0.15 + pi * 0.1}
+              stroke={C.faint}
+              strokeWidth="0.8"
+            />
+          ))}
+        </g>
+      ))}
+      {/* Column headers */}
+      {problems.map((pr, i) => (
+        <text key={pr} x={114 + i * 72} y="40" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>{pr}</text>
+      ))}
+      <text x="160" y="230" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        4 providers × 3 problems = 12 integrations
+      </text>
+    </svg>
+  );
+}
+
+/** Complexity gradient — easy, medium, hard. */
+export function ComplexityGradientFigure() {
+  const tiers = [
+    { label: "easy", items: "HN, Reddit, GitHub", fill: C.sage, w: 200 },
+    { label: "medium", items: "Sentry, Spotify, calendar", fill: C.butter, w: 160 },
+    { label: "hard", items: "banking, package tracking", fill: C.rose, w: 120 },
+  ];
+  return (
+    <svg viewBox="0 0 320 220" className="w-full">
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+        start where stakes are low
+      </text>
+      {tiers.map((t, i) => {
+        const y = 40 + i * 56;
+        const x = (320 - t.w) / 2;
+        return (
+          <g key={t.label}>
+            <rect x={x} y={y} width={t.w} height="42" rx="8" fill={t.fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+            <text x={160} y={y + 18} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>{t.label}</text>
+            <text x={160} y={y + 32} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>{t.items}</text>
+          </g>
+        );
+      })}
+      <text x="160" y="216" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        infra from easy agents transfers to hard ones
+      </text>
+    </svg>
+  );
+}
+
 /** Execution gap — acceptance vs success rate for small models. */
 export function ExecutionGapFigure() {
   const barH = 24;

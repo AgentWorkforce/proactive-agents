@@ -80,6 +80,8 @@ Here is where both sources land against the primitives a proactive agent actuall
 
 </Scene>
 
+<Scene figure={<TwoLayerFigure />} caption="The prompt advises. The runtime enforces.">
+
 ## What belongs where
 
 This goes beyond OpenClaw — the pattern shows up everywhere. Teams reach for the prompt when the problem is underneath it.
@@ -106,6 +108,8 @@ The model should own the first list. It really shouldn't own the second. I've se
 We want to be direct: both pieces are genuine contributions. The xCloud article maps seven real workflow patterns that real teams use. Hal's skill is the most rigorous treatment of agent state we've seen outside of academic papers — the WAL metaphor, the danger zone protocol, the anti-drift limits, the priority ordering. Some of these ideas are better-named than our own.
 
 The thinking is super solid. It's just aimed at the wrong layer. Once you push scheduling, change detection, delivery, state, and durability into the runtime, the prompt can finally just focus on deciding what to do next. Which is what it's actually good at.
+
+</Scene>
 
 <Callout tone="cool" label="Further reading">
 The xCloud article is at [xcloud.host/proactive-openclaw-agent-workflows](https://xcloud.host/proactive-openclaw-agent-workflows/). Hal's skill lives at [clawhub.ai/halthelobster/proactive-agent](https://clawhub.ai/halthelobster/proactive-agent). Our earlier essay, [*Proactive agents need three primitives*](/posts/three-primitives), lays out the clock/listener/inbox framework in full.

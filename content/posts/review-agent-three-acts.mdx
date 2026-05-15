@@ -98,6 +98,8 @@ The agent also gained durability. In Act 1, a crashed worker meant a lost review
 
 </Scene>
 
+<Scene side="right" figure={<ThreeActsEvolutionFigure />} caption="Each phase revealed the next missing piece.">
+
 ## What the product taught me
 
 Looking back, I kept running into the same missing infrastructure from a different angle each time.
@@ -111,6 +113,8 @@ By Act 3, all three were load-bearing: periodic scanning, real-time event detect
 I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. That's what convinced me the primitives were structural, not just a convenient grouping.
 
 If I'm being honest, I probably couldn't have designed the runtime without a product that kept showing me what was missing. The product and the infrastructure grew up together.
+
+</Scene>
 
 <Callout tone="thought" label="Where it goes next">
 We're migrating the review specialists to an agent-to-agent architecture right now. Each specialist (security, architecture, style) runs as its own process, communicating through the inbox. Going from "three LLM calls in one function" to "three agents coordinating through messages" is the next test. I'm super curious to see if the primitives hold up.

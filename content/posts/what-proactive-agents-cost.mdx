@@ -58,6 +58,8 @@ Token spend is a line item you can see. The cost of a PR sitting open for three 
 
 </Scene>
 
+<Scene figure={<ContextDegradeFigure />} caption="Context degrades — summarize before it poisons the output.">
+
 ## The context tax
 
 There's a subtler cost that teams discover later. Long-running agents accumulate context, and context degrades.
@@ -83,3 +85,5 @@ Keep your agent's context small by design. File-based state, narrow scopes, expl
 Measure where tokens go before you try to reduce them. Most teams find that 80% of spend comes from one or two phases of the agent loop, and those are rarely the phases they expected.
 
 And accept that proactivity costs more than reactivity. It should. You're paying for an agent that watches, reasons, and decides on its own. The alternative is paying a human to do the watching, or accepting that nobody watches at all. The teams I've talked to who shipped proactive agents all made that tradeoff deliberately, and none of them have gone back.
+
+</Scene>

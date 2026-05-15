@@ -84,6 +84,8 @@ For two weeks in April, the agent found zero new mentions after dedup. The log s
 
 </Scene>
 
+<Scene figure={<DeliveryChoiceFigure />} caption="The channel shapes the behavior more than the content.">
+
 ## The delivery choice
 
 When we designed the output channel, the obvious option was Slack. Post the digest to a `#mentions` channel, let people discuss it. We went with GitHub Issues instead, and the reasoning was about human behavior more than technology.
@@ -136,3 +138,5 @@ If you want to know whether your agent architecture holds up, build something th
 </Callout>
 
 The weekly-digest agent is not sophisticated. A cron job, four API calls, a dedup file, one LLM call, and a GitHub issue. Some weeks it finds a ton, some weeks it finds nothing. Both are fine. It looks so we don't have to, and stays quiet when there's nothing to report.
+
+</Scene>

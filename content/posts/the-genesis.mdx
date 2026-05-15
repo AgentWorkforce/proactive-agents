@@ -26,6 +26,8 @@ We set out to build "Slack for agents" so they could communicate by sending mess
 
 </Scene>
 
+<Scene side="right" figure={<PrimitiveDiscoveryFigure />} caption="Each primitive revealed the next.">
+
 ## The heartbeat wasn't enough
 
 Then at the end of January, OpenClaw went viral. I remembered seeing Peter tweet about it in November and thinking it was interesting, but I had no idea the impact it would have. Like many others, I picked up a Mac Mini, set it up, and began to see the beauty of an always-open assistant. I had my OpenClaw — named kjgbot — in Telegram, and while I was on the go I could discuss ideas, open GitHub issues, and use our Agent Relay primitives to spin up Claude and Codex agents for development tasks. The OpenClaw could effectively act as me by coordinating the agents.
@@ -46,7 +48,9 @@ Our recommendation was often: just sync the data. Because honestly, [webhooks ar
 
 That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *listener* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters. I wrote up the full framework in [Proactive agents need three primitives](/posts/three-primitives).
 
-<Scene side="right" figure={<NamingFigure />} caption="Three names, one thing.">
+</Scene>
+
+<Scene figure={<NamingFigure />} caption="Three names, one thing.">
 
 ## Naming the elephant
 

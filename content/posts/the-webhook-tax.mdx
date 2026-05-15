@@ -103,6 +103,8 @@ If a provider offers webhooks, you need eight to ten pieces of infrastructure pe
 
 </Scene>
 
+<Scene figure={<CostCompareFigure />} caption="Polling vs push — same coverage, different cost.">
+
 ## Why this matters for proactive agents specifically
 
 A reactive agent doesn't need any of this. It has a simple lifecycle: receive prompt, think, respond. The user is the trigger and the context provider.
@@ -159,3 +161,5 @@ A proactive agent needs a *listener:* a single interface that says "something ch
 The [three primitives](/posts/three-primitives) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
 
 Anyway, that's what it looks like when you build the listener from scratch, one provider at a time. It's a ton of work, and most of it has nothing to do with the agent itself.
+
+</Scene>

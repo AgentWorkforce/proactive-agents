@@ -72,6 +72,8 @@ Something I've learned: you really can't skip steps with trust. The pattern that
 
 </Scene>
 
+<Scene side="right" figure={<ProviderMultiplierFigure />} caption="Each provider multiplies all three problems.">
+
 ## Every provider multiplies the problem
 
 All three of these problems get worse every time you add another integration. Webhook formats are different between Zendesk and GitHub and Linear. State schemas are different. The confidence threshold for closing a support ticket has nothing to do with the threshold for escalating a PagerDuty incident.
@@ -89,3 +91,5 @@ Most teams honestly just sidestep all of this by putting a reactive agent on a c
 But for agents where being responsive is the whole point (monitoring, triage, customer health), you've got to actually solve these problems. You can build the infrastructure yourself, but what I keep running into is that the result works for one agent and doesn't really transfer to the next. That's actually why we started thinking about a runtime that handles wakeup, state, and delivery as shared primitives, so the agent code can just focus on behavior.
 
 Anyway, the rest of this series goes deeper on each piece: [the three primitives](/posts/three-primitives) that define the interface, [the webhook tax](/posts/the-webhook-tax) that motivated building a shared runtime, and [why the prompt layer can't do the job alone](/posts/the-prompt-cant-save-you). More soon.
+
+</Scene>

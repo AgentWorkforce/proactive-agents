@@ -77,6 +77,8 @@ The reactive version asks: *what changed in the last five minutes?* The proactiv
 
 </Scene>
 
+<Scene figure={<CompoundGainsFigure />} caption="Three gains that compound — removing what breaks agents at 3am.">
+
 ## What the difference actually buys
 
 Three things that compound:
@@ -104,6 +106,8 @@ What reactive is not great for is anything where the whole value of the agent is
 Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
 
 We've been building that part. More on the runtime in [Proactive agents need three primitives](/posts/three-primitives).
+
+</Scene>
 
 <Callout tone="cool" label="See it for yourself">
 This site runs a proactive agent of its own. The source lives in [`agents/`](https://github.com/AgentWorkforce/proactive-agents/tree/main/agents) on GitHub; what it has actually done shows up live at [/agent](/agent), every entry committed by the agent itself.
