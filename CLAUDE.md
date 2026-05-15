@@ -40,7 +40,8 @@ Your output must always include production-ready content or implementation artif
 - Do not end paragraphs or sections with "That is the [noun]." or "That's the [noun]." declaratives. They function as mic-drop closers that say nothing the preceding sentence didn't already say. Integrate the point into the paragraph or cut the line entirely.
 - Do not write grand closing lines that could be taglines ("Whoever gets there first...", "The flag goes here"). End pieces with a specific observation, a pointer to what comes next, or nothing at all. The reader doesn't need a drumroll.
 - The branded terminology ("clock, listener, inbox" / "the triple" / "the three primitives") should appear at most 2-3 times per essay outside of three-primitives.mdx, which defines it. In other posts, vary the reference or describe the concept without the formula. Repetition across posts makes the series feel like one idea said six ways.
-- Avoid tricolon lists ("Not X. Not Y. Not Z.") more than once per essay. Parallel structures where three items start with the same word are an LLM tell. One instance can be rhetorical; two is a pattern.\n- Never use "This matters because" as a sentence opener. It's a filler phrase that adds nothing. Just state why it matters. Similarly, avoid "uncomfortable truth/math/pattern" as labels — they're AI-flavored drama markers. Say what the thing is instead of announcing that it's uncomfortable.
+- Avoid tricolon lists ("Not X. Not Y. Not Z.") more than once per essay. Parallel structures where three items start with the same word are an LLM tell. One instance can be rhetorical; two is a pattern.
+- Never use "This matters because" as a sentence opener. It's a filler phrase that adds nothing. Just state why it matters. Similarly, avoid "uncomfortable truth/math/pattern" as labels — they're AI-flavored drama markers. Say what the thing is instead of announcing that it's uncomfortable.
 
 ## Tech Stack Conventions
 

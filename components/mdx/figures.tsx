@@ -20,7 +20,8 @@ const C = {
 /** Reactive agent — polling loop, hand-drawn diagram. */
 export function PollingFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="poll-title">
+      <title id="poll-title">Reactive polling loop: agent checks on a timer, processes what changed, then sleeps</title>
       <defs>
         <radialGradient id="pgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.peach} stopOpacity="0.9" />
@@ -55,7 +56,8 @@ export function PollingFigure() {
 /** Proactive — push wakeup. */
 export function ProactiveFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="proact-title">
+      <title id="proact-title">Proactive agent: the world pushes changes to the agent, which decides whether to act</title>
       <defs>
         <radialGradient id="prgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.9" />
@@ -100,7 +102,8 @@ export function TripleFigure() {
     { x: 160, y: 220, label: "inbox", sub: "relaycast", fill: C.lavender },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="triple-title">
+      <title id="triple-title">Three primitives — clock, listener, inbox — connected by dashed lines</title>
       {/* connecting lines */}
       <g stroke={C.faint} strokeWidth="1.4" strokeDasharray="4 4">
         <line x1="80" y1="70" x2="240" y2="70" />
@@ -128,7 +131,8 @@ export function TripleFigure() {
 /** Webhook tax — pile of plumbing. */
 export function WebhookTaxFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="whtax-title">
+      <title id="whtax-title">Webhook integration checklist: auth, validation, dedup, retries, and more</title>
       <rect x="20" y="40" width="280" height="240" rx="14" fill={C.paper} stroke={C.ink} strokeWidth="2" />
       {[
         "POST /webhooks/linear",
@@ -172,7 +176,8 @@ export function WebhookTaxFigure() {
 /** Prompt vs Runtime — two layers, different guarantees. */
 export function PromptLayerFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="prompt-title">
+      <title id="prompt-title">Two layers: prompt advises behavior, runtime enforces constraints</title>
       <defs>
         <radialGradient id="plgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.rose} stopOpacity="0.7" />
@@ -225,7 +230,8 @@ export function GapMapFigure() {
     { label: "durability", has: [false, false] },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="gapmap-title">
+      <title id="gapmap-title">Comparison grid showing gaps across agent capabilities</title>
       <defs>
         <radialGradient id="gmgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.rose} stopOpacity="0.6" />
@@ -266,7 +272,8 @@ export function GapMapFigure() {
 /** Terminal windows with arrows — the genesis of agent-to-agent communication. */
 export function TerminalsFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="term-title">
+      <title id="term-title">Terminal states: where agent runs end up — success, retry, or escalate</title>
       <defs>
         <radialGradient id="tgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.butter} stopOpacity="0.8" />
@@ -312,7 +319,8 @@ export function TerminalsFigure() {
 export function NamingFigure() {
   const oldNames = ["coordination layer", "headless slack", "integration fs"];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="naming-title">
+      <title id="naming-title">Naming evolution from chatbot to copilot to agent to proactive agent</title>
       <defs>
         <radialGradient id="ngrad" cx="50%" cy="50%" r="55%">
           <stop offset="0%" stopColor={C.butter} stopOpacity="0.7" />
@@ -343,7 +351,8 @@ export function NamingFigure() {
 /** Sync fallback — polling loop with cursor and rate limit. */
 export function SyncFallbackFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="syncfb-title">
+      <title id="syncfb-title">Sync fallback pattern: webhook preferred, polling as backup</title>
       <defs>
         <radialGradient id="sfgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
@@ -392,7 +401,8 @@ export function SyncFallbackFigure() {
 /** Reactive vs proactive comparison — side-by-side agent postures. */
 export function PostureFigure() {
   return (
-    <svg viewBox="0 0 320 200" className="w-full">
+    <svg viewBox="0 0 320 200" className="w-full" role="img" aria-labelledby="posture-title">
+      <title id="posture-title">Reactive vs proactive posture: user-initiated vs world-initiated</title>
       <defs>
         <marker id="posArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill={C.ink} />
@@ -439,7 +449,8 @@ export function MagicalInternFigure() {
     { x: 260, y: 180, label: "linear", fill: C.butter },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="intern-title">
+      <title id="intern-title">Magical intern analogy: agent watches, learns, then acts on its own</title>
       <defs>
         <radialGradient id="migrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.sky} stopOpacity="0.8" />
@@ -487,7 +498,8 @@ export function InfraMapFigure() {
     { x: 240, label: "inbox", fill: C.lavender },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="infra-title">
+      <title id="infra-title">Infrastructure map showing what proactive agents need beyond the model</title>
       <defs>
         <radialGradient id="imgrad" cx="50%" cy="50%" r="55%">
           <stop offset="0%" stopColor={C.sky} stopOpacity="0.7" />
@@ -541,7 +553,8 @@ export function WishlistCategoriesFigure() {
     { x: 70, y: 105, label: "productivity", icon: "▦" },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="wishcat-title">
+      <title id="wishcat-title">Wishlist categories organized by complexity and value</title>
       <defs>
         <radialGradient id="wcgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.butter} stopOpacity="0.8" />
@@ -579,7 +592,8 @@ export function PatternConvergeFigure() {
     { x: 210, y: 200, label: "inbox", fill: C.lavender },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="patconv-title">
+      <title id="patconv-title">Patterns converging across teams building proactive agents</title>
       <defs>
         <radialGradient id="pcgrad" cx="60%" cy="50%" r="55%">
           <stop offset="0%" stopColor={C.butter} stopOpacity="0.7" />
@@ -620,7 +634,8 @@ export function PatternConvergeFigure() {
 /** ChatGPT Pulse — nightly clock with morning cards. */
 export function PulseClockFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="pclock-title">
+      <title id="pclock-title">ChatGPT Pulse clock: overnight schedule fills one primitive, two remain empty</title>
       <defs>
         <radialGradient id="pcfgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.sky} stopOpacity="0.7" />
@@ -674,7 +689,8 @@ export function PulseCompleteFigure() {
     { x: 160, y: 220, label: "inbox", sub: "deliver anywhere", fill: C.lavender },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="pcomplete-title">
+      <title id="pcomplete-title">What a complete Pulse would look like with all three primitives</title>
       <defs>
         <radialGradient id="pcomplete" cx="50%" cy="50%" r="55%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />
@@ -721,7 +737,8 @@ export function LandscapeGridFigure() {
     { y: 280, name: "Relay", scores: [true, true, true] },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="landscape-title">
+      <title id="landscape-title">Landscape grid comparing proactive agent platforms and capabilities</title>
       <defs>
         <radialGradient id="lggrad" cx="50%" cy="40%" r="60%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.5" />
@@ -764,7 +781,8 @@ export function PushFailureFigure() {
     { x: 255, label: "process" },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="pushfail-title">
+      <title id="pushfail-title">Push architecture failure modes: dropped events, out-of-order delivery, replay storms</title>
       <defs>
         <radialGradient id="pfgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.rose} stopOpacity="0.8" />
@@ -851,7 +869,8 @@ export function PushFailureFigure() {
 /** Event ordering — out-of-order webhook delivery. */
 export function OrderingFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="order-title">
+      <title id="order-title">Event ordering challenges in distributed webhook delivery</title>
       <defs>
         <radialGradient id="ofgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
@@ -927,7 +946,8 @@ export function OrderingFigure() {
 /** Landscape layers — horizontal / vertical / infrastructure. */
 export function LandscapeLayersFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="lscape-title">
+      <title id="lscape-title">Landscape layers: scheduling, change detection, and delivery tiers</title>
       <defs>
         <radialGradient id="llgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.lavender} stopOpacity="0.5" />
@@ -975,7 +995,8 @@ export function DigestPipelineFigure() {
     { x: 40, y: 180, label: "reddit" },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="digpipe-title">
+      <title id="digpipe-title">Weekly digest agent pipeline: scan, deduplicate, cluster, deliver</title>
       <defs>
         <radialGradient id="dpgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.8" />
@@ -1041,7 +1062,8 @@ export function DigestTimelineFigure() {
     { week: "W3", label: "hallucinated cluster", y: 220, fill: C.butter },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="digtl-title">
+      <title id="digtl-title">Digest agent timeline showing four weeks to stability</title>
       <defs>
         <radialGradient id="dtgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.rose} stopOpacity="0.6" />
@@ -1074,7 +1096,8 @@ export function DigestTimelineFigure() {
 /** Demo vs production — what an afternoon demo hides. */
 export function DemoVsProdFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="demoprod-title">
+      <title id="demoprod-title">Gap between afternoon demo and production requirements for proactive agents</title>
       <defs>
         <radialGradient id="dvpgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
@@ -1158,7 +1181,8 @@ export function MemoryDriftFigure() {
     { x: 250, label: "run 3", items: ["C", "D", "E"], hasMem: false },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="memdrift-title">
+      <title id="memdrift-title">Memory drift: without persistent state, each agent run starts from zero</title>
       <defs>
         <radialGradient id="mdgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.rose} stopOpacity="0.6" />
@@ -1235,7 +1259,8 @@ export function MemoryDriftFigure() {
 /** Judgment gate — act / notify / ignore decision. */
 export function JudgmentGateFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="jgate-title">
+      <title id="jgate-title">Judgment gate between detecting a change and deciding whether to act</title>
       <defs>
         <radialGradient id="jggrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.7" />
@@ -1298,7 +1323,8 @@ export function RuntimeFigure() {
     { x: 220, y: 200, w: 70, h: 30, label: "burn" },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="runtime-title">
+      <title id="runtime-title">Runtime architecture with clock, listener, and inbox at the center</title>
       <circle cx="160" cy="160" r="44" fill={C.peach} stroke={C.ink} strokeWidth="2" />
       <text x="160" y="156" textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={C.ink}>
         runtime
@@ -1345,7 +1371,8 @@ export function RuntimeFigure() {
 /** Review agent Act 1 — reactive webhook-triggered review loop. */
 export function ReviewReactiveFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="revreact-title">
+      <title id="revreact-title">Review agent Act 1: reactive webhook-triggered code review</title>
       <defs>
         <radialGradient id="rrgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.peach} stopOpacity="0.9" />
@@ -1415,7 +1442,8 @@ export function ReviewSurfacesFigure() {
   const cx = 160, cy = 150, hubR = 28, spokeR = 95, nodeR = 22;
 
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="revsurf-title">
+      <title id="revsurf-title">Review agent Act 2: expanding to multiple surfaces beyond PRs</title>
       <defs>
         <radialGradient id="rsgrad" cx="50%" cy="42%" r="55%">
           <stop offset="0%" stopColor={C.lavender} stopOpacity="0.7" />
@@ -1459,7 +1487,8 @@ export function ReviewSurfacesFigure() {
 /** Review agent Act 3 — proactive detection with the three primitives wired in. */
 export function ReviewProactiveFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="revproact-title">
+      <title id="revproact-title">Review agent Act 3: fully proactive with all three primitives</title>
       <defs>
         <radialGradient id="rpgrad" cx="50%" cy="40%" r="55%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.8" />
@@ -1555,7 +1584,8 @@ export function TokenStackFigure() {
   const gap = 6;
 
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="tokstack-title">
+      <title id="tokstack-title">Token stack: where tokens go in a proactive agent wake-up cycle</title>
       <text x="160" y="30" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>
         tokens per wake-up
       </text>
@@ -1601,7 +1631,8 @@ export function TokenStackFigure() {
 /** Model cascade — cheap triage routes to expensive execution. */
 export function CascadeFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="cascade-title">
+      <title id="cascade-title">Model cascade: cheap triage model routes to expensive execution model</title>
       {/* Incoming signals (top) */}
       {[-40, 0, 40].map((dx, i) => (
         <g key={i}>
@@ -1682,7 +1713,8 @@ export function LayerStackFigure() {
     { label: "providers", role: "auth + proxy", color: C.butter, y: 250 },
   ];
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="laystack-title">
+      <title id="laystack-title">Layer stack showing prompt vs runtime responsibilities</title>
       {layers.map((l, i) => (
         <g key={l.label}>
           <rect x="50" y={l.y} width="220" height="44" rx="6" fill={l.color} opacity="0.55" stroke={C.ink} strokeWidth="1.2" />
@@ -1707,7 +1739,8 @@ export function LayerStackFigure() {
 /** Filename evolution — UUID → name__id → by-* aliases. */
 export function NamingEvolutionFigure() {
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="namevo-title">
+      <title id="namevo-title">Naming evolution of agent categories over time</title>
       {/* Stage 1: UUID */}
       <rect x="20" y="20" width="280" height="64" rx="6" fill={C.rose} opacity="0.3" stroke={C.ink} strokeWidth="0.8" />
       <text x="30" y="42" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>stage 1 · raw UUID</text>
@@ -1763,7 +1796,8 @@ export function AdapterGrowthFigure() {
   const baseY = 260;
 
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="adapt-title">
+      <title id="adapt-title">Adapter growth: each new provider adds more integration code</title>
       <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
         adapters over time
       </text>
@@ -1816,7 +1850,8 @@ export function PareAsymmetryFigure() {
   const gap = 12;
   const startY = 42;
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="pareasym-title">
+      <title id="pareasym-title">Asymmetry between detecting a change and acting on it correctly</title>
       {/* Divider */}
       <line x1="160" y1="30" x2="160" y2="260" stroke={C.rule} strokeWidth="1" strokeDasharray="4 3" />
 
@@ -1865,7 +1900,8 @@ export function PatienceFigure() {
   const baseY = 240;
 
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="patience-title">
+      <title id="patience-title">Patience curve: trust builds in stages from observe to advise to act</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.06em">
         proposal rate vs. acceptance rate
       </text>
@@ -1909,7 +1945,8 @@ export function CostCompareFigure() {
   const barX = 60;
   const barW = 180;
   return (
-    <svg viewBox="0 0 320 220" className="w-full">
+    <svg viewBox="0 0 320 220" className="w-full" role="img" aria-labelledby="cc-title">
+      <title id="cc-title">Daily API call comparison: polling makes ~4,608 calls vs push which only fires on actual changes</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         daily API calls — 4 providers
       </text>
@@ -1943,7 +1980,8 @@ export function CostCompareFigure() {
 /** Delivery channel — Slack (conversation) vs GitHub (reference). */
 export function DeliveryChoiceFigure() {
   return (
-    <svg viewBox="0 0 320 280" className="w-full">
+    <svg viewBox="0 0 320 280" className="w-full" role="img" aria-labelledby="dc-title">
+      <title id="dc-title">Delivery channel comparison: Slack demands attention as conversation, GitHub Issues wait for you as reference</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         delivery channel shapes behavior
       </text>
@@ -1985,7 +2023,8 @@ export function FullPrimitiveFigure() {
     { x: 260, y: 80, label: "inbox", fill: C.lavender, sub: "Slack, email, tickets" },
   ];
   return (
-    <svg viewBox="0 0 320 240" className="w-full">
+    <svg viewBox="0 0 320 240" className="w-full" role="img" aria-labelledby="fp-title">
+      <title id="fp-title">Three primitives — clock, listener, inbox — all active and feeding into the agent</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         all three primitives active
       </text>
@@ -2017,7 +2056,8 @@ export function CompoundGainsFigure() {
     { label: "state surface", desc: "event, not batch", fill: C.sky },
   ];
   return (
-    <svg viewBox="0 0 320 220" className="w-full">
+    <svg viewBox="0 0 320 220" className="w-full" role="img" aria-labelledby="compound-title">
+      <title id="compound-title">Three compounding benefits: latency, edge cases, and state surface</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         benefits that compound
       </text>
@@ -2042,7 +2082,8 @@ export function CompoundGainsFigure() {
 /** Prompt layer vs runtime layer responsibilities. */
 export function TwoLayerFigure() {
   return (
-    <svg viewBox="0 0 320 260" className="w-full">
+    <svg viewBox="0 0 320 260" className="w-full" role="img" aria-labelledby="twolayer-title">
+      <title id="twolayer-title">Prompt layer advises, runtime layer enforces — separated by enforcement boundary</title>
       {/* Prompt layer */}
       <rect x="30" y="20" width="260" height="90" rx="10" fill={C.lavender} fillOpacity="0.25" stroke={C.ink} strokeWidth="1.2" strokeDasharray="5 3" />
       <text x="160" y="42" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>prompt</text>
@@ -2078,7 +2119,8 @@ export function ContextDegradeFigure() {
   ];
   const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
   return (
-    <svg viewBox="0 0 320 300" className="w-full">
+    <svg viewBox="0 0 320 300" className="w-full" role="img" aria-labelledby="ctxdeg-title">
+      <title id="ctxdeg-title">Signal quality degrades as message history accumulates past the danger zone</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         context degrades as history grows
       </text>
@@ -2111,7 +2153,8 @@ export function ThreeActsEvolutionFigure() {
   const totalW = 3 * boxW + 2 * gap;
   const startX = (340 - totalW) / 2;
   return (
-    <svg viewBox="0 0 340 180" className="w-full">
+    <svg viewBox="0 0 340 180" className="w-full" role="img" aria-labelledby="threeacts-title">
+      <title id="threeacts-title">Three acts of evolution: webhook to surfaces to primitives</title>
       <defs>
         <marker id="evoArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill={C.faint} />
@@ -2149,7 +2192,8 @@ export function PrimitiveDiscoveryFigure() {
     { label: "listener", sub: "change events", fill: C.sage },
   ];
   return (
-    <svg viewBox="0 0 400 200" className="w-full">
+    <svg viewBox="0 0 400 200" className="w-full" role="img" aria-labelledby="primdisc-title">
+      <title id="primdisc-title">Primitives discovered in order: inbox, then clock, then listener</title>
       <text x="200" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         discovered in order
       </text>
@@ -2183,7 +2227,8 @@ export function ProviderMultiplierFigure() {
   const providers = ["Zendesk", "GitHub", "Linear", "Slack"];
   const problems = ["webhook fmt", "state schema", "confidence"];
   return (
-    <svg viewBox="0 0 320 240" className="w-full">
+    <svg viewBox="0 0 320 240" className="w-full" role="img" aria-labelledby="provmult-title">
+      <title id="provmult-title">Provider multiplier: 4 providers times 3 problems equals 12 integrations</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         every provider multiplies the problem
       </text>
@@ -2226,7 +2271,8 @@ export function ComplexityGradientFigure() {
     { label: "hard", items: "banking, package tracking", fill: C.rose, w: 120 },
   ];
   return (
-    <svg viewBox="0 0 320 220" className="w-full">
+    <svg viewBox="0 0 320 220" className="w-full" role="img" aria-labelledby="cxgrad-title">
+      <title id="cxgrad-title">Complexity gradient: start with easy integrations, infrastructure transfers to hard ones</title>
       <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         start where stakes are low
       </text>
@@ -2260,7 +2306,8 @@ export function ExecutionGapFigure() {
   ];
 
   return (
-    <svg viewBox="0 0 320 280" className="w-full">
+    <svg viewBox="0 0 320 280" className="w-full" role="img" aria-labelledby="execgap-title">
+      <title id="execgap-title">Execution gap: small models accept goals at high rates but succeed at much lower rates</title>
       {/* Legend */}
       <rect x="14" y="16" width="12" height="12" rx="3" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
       <text x="30" y="26" fontFamily="var(--font-display)" fontSize="11" fill={C.faint}>accepted goal</text>
