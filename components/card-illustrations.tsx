@@ -29,6 +29,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "forty-two-percent": FortyTwoPercentArt,
   "agent-moves-first": AgentMovesFirstArt,
   "posthog-code": PostHogCodeArt,
+  "notion-ships-the-primitives": NotionPrimitivesArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -686,6 +687,46 @@ function FortyTwoPercentArt() {
           <circle cx="12" cy="38" r="1.8" fill={C.ink} stroke="none" />
           {/* Dashed line at ~42% of radius */}
           <circle r="20" strokeWidth="1.2" strokeDasharray="4 3" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function NotionPrimitivesArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 108)">
+          {/* Three stacked platform layers */}
+          <rect x="-55" y="-40" width="110" height="24" rx="4" strokeWidth="1.6" />
+          <rect x="-42" y="-8" width="84" height="24" rx="4" strokeWidth="1.4" />
+          <rect x="-30" y="24" width="60" height="24" rx="4" strokeWidth="1.2" />
+          {/* Connecting dashes */}
+          <line x1="0" y1="-16" x2="0" y2="-8" strokeWidth="1" strokeDasharray="1.5 2" />
+          <line x1="0" y1="16" x2="0" y2="24" strokeWidth="1" strokeDasharray="1.5 2" />
+          {/* External arrows flowing in */}
+          <g strokeWidth="1.2">
+            <line x1="-70" y1="-20" x2="-55" y2="-28" />
+            <line x1="70" y1="-20" x2="55" y2="-28" />
+            <line x1="-65" y1="36" x2="-30" y2="36" />
+            <line x1="65" y1="36" x2="30" y2="36" />
+          </g>
+          {/* Small dots for external agents */}
+          <circle cx="-70" cy="-20" r="2.5" fill={C.ink} stroke="none" />
+          <circle cx="70" cy="-20" r="2.5" fill={C.ink} stroke="none" />
+          <circle cx="-65" cy="36" r="2" fill={C.ink} stroke="none" />
+          <circle cx="65" cy="36" r="2" fill={C.ink} stroke="none" />
         </g>
       </g>
     </svg>

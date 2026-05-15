@@ -728,13 +728,14 @@ export function LandscapeGridFigure() {
     { x: 260, label: "inbox", fill: C.lavender },
   ];
   const rows = [
-    { y: 100, name: "Pulse", scores: [true, false, false] },
-    { y: 130, name: "Orbit", scores: [true, true, false] },
-    { y: 160, name: "Remy", scores: [true, true, true] },
-    { y: 190, name: "Perplexity", scores: [true, true, true] },
-    { y: 220, name: "Managerbot", scores: [true, true, true] },
-    { y: 250, name: "CodeWords", scores: [true, false, false] },
-    { y: 280, name: "Relay", scores: [true, true, true] },
+    { y: 95, name: "Pulse", scores: [true, false, false] },
+    { y: 120, name: "Orbit", scores: [true, true, false] },
+    { y: 145, name: "Remy", scores: [true, true, true] },
+    { y: 170, name: "Perplexity", scores: [true, true, true] },
+    { y: 195, name: "Managerbot", scores: [true, true, true] },
+    { y: 220, name: "Notion", scores: [true, true, true] },
+    { y: 245, name: "CodeWords", scores: [true, false, false] },
+    { y: 270, name: "Relay", scores: [true, true, true] },
   ];
   return (
     <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="landscape-title">
@@ -2557,6 +2558,144 @@ export function CRScheduleGapFigure() {
       <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.faint}>
         the thirty-minute gap
       </text>
+    </svg>
+  );
+}
+
+/** Notion platform stack — three layers: Workers SDK, Custom Agents, External Agents. */
+export function NotionStackFigure() {
+  const layers = [
+    { y: 62, w: 260, h: 58, label: "Workers SDK", sub: "sync · webhook · tool", fill: C.sage },
+    { y: 138, w: 210, h: 58, label: "Custom Agents", sub: "schedules · triggers · delivery", fill: C.butter },
+    { y: 214, w: 160, h: 58, label: "External Agents", sub: "Claude · Cursor · Codex", fill: C.lavender },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="notion-stack-title">
+      <title id="notion-stack-title">Notion platform: Workers SDK at the base, Custom Agents in the middle, External Agents API on top</title>
+      <defs>
+        <radialGradient id="nsgrad" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={C.paper} stopOpacity="0.1" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="40" width="300" height="260" rx="14" fill="url(#nsgrad)" />
+      {layers.map((l, i) => {
+        const x = (320 - l.w) / 2;
+        return (
+          <g key={l.label}>
+            <rect x={x} y={l.y} width={l.w} height={l.h} rx="10" fill={l.fill} fillOpacity="0.5" stroke={C.ink} strokeWidth="1.4" />
+            <text x={160} y={l.y + 24} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink} fontWeight="600">{l.label}</text>
+            <text x={160} y={l.y + 42} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>{l.sub}</text>
+            {i < layers.length - 1 && (
+              <g stroke={C.faint} strokeWidth="1.2" fill="none" strokeLinecap="round">
+                <line x1={160} y1={l.y + l.h + 2} x2={160} y2={l.y + l.h + 18} strokeDasharray="3 3" />
+                <path d={`M154 ${l.y + l.h + 12} L160 ${l.y + l.h + 18} L166 ${l.y + l.h + 12}`} />
+              </g>
+            )}
+          </g>
+        );
+      })}
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        infrastructure → platform → ecosystem
+      </text>
+    </svg>
+  );
+}
+
+/** Notion primitives mapping — SDK methods on the left, three primitives on the right. */
+export function NotionPrimitiveMapFigure() {
+  const left = [
+    { y: 80, label: "sync()", fill: C.butter },
+    { y: 150, label: "webhook()", fill: C.sage },
+    { y: 220, label: "tool()", fill: C.lavender },
+  ];
+  const right = [
+    { y: 80, label: "clock", fill: C.butter },
+    { y: 150, label: "listener", fill: C.sage },
+    { y: 220, label: "inbox", fill: C.lavender },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="notion-map-title">
+      <title id="notion-map-title">Mapping Notion SDK methods to the three primitives: sync to clock, webhook to listener, tool to inbox</title>
+      <defs>
+        <radialGradient id="nmgrad" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={C.paper} stopOpacity="0.1" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="35" width="300" height="260" rx="14" fill="url(#nmgrad)" />
+      <text x="80" y="55" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.faint}>Notion SDK</text>
+      <text x="240" y="55" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.faint}>primitives</text>
+      <line x1="30" y1="62" x2="290" y2="62" stroke={C.rule} strokeWidth="1" />
+      {left.map((item, i) => (
+        <g key={item.label}>
+          <rect x="28" y={item.y - 16} width="104" height="32" rx="8" fill={item.fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+          <text x="80" y={item.y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill={C.ink}>{item.label}</text>
+          <rect x="188" y={right[i].y - 16} width="104" height="32" rx="8" fill={right[i].fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+          <text x="240" y={right[i].y + 2} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>{right[i].label}</text>
+          <g stroke={C.terracotta} strokeWidth="1.6" fill="none" strokeLinecap="round">
+            <line x1="132" y1={item.y} x2="188" y2={right[i].y} />
+            <path d={`M180 ${right[i].y - 4} L188 ${right[i].y} L180 ${right[i].y + 4}`} />
+          </g>
+        </g>
+      ))}
+      <text x="160" y="278" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        same architecture, arrived at independently
+      </text>
+    </svg>
+  );
+}
+
+/** Notion open platform vs walled gardens — central workspace with external arrows vs closed boxes. */
+export function NotionOpenFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="notion-open-title">
+      <title id="notion-open-title">Open platform: external agents flow into a shared workspace, vs walled gardens where agents are trapped inside products</title>
+      <defs>
+        <radialGradient id="nograd" cx="50%" cy="42%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={C.paper} stopOpacity="0.1" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="20" width="300" height="280" rx="14" fill="url(#nograd)" />
+      {/* Central workspace */}
+      <rect x="110" y="100" width="100" height="80" rx="12" fill={C.paper} stroke={C.ink} strokeWidth="2" />
+      <text x="160" y="132" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink} fontWeight="600">workspace</text>
+      <text x="160" y="148" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>pages · databases</text>
+      <text x="160" y="162" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>agents · tools</text>
+      {/* External agents flowing in */}
+      {[
+        { x: 40, y: 60, label: "Claude", angle: 35 },
+        { x: 260, y: 55, label: "Cursor", angle: -30 },
+        { x: 50, y: 220, label: "Codex", angle: -25 },
+        { x: 270, y: 225, label: "custom", angle: 30 },
+      ].map((agent) => (
+        <g key={agent.label}>
+          <circle cx={agent.x} cy={agent.y} r="20" fill={C.lavender} fillOpacity="0.5" stroke={C.ink} strokeWidth="1" />
+          <text x={agent.x} y={agent.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{agent.label}</text>
+          <g stroke={C.terracotta} strokeWidth="1.4" fill="none" strokeLinecap="round">
+            <line
+              x1={agent.x + (agent.x < 160 ? 20 : -20)}
+              y1={agent.y + (agent.y < 140 ? 8 : -8)}
+              x2={agent.x < 160 ? 110 : 210}
+              y2={140}
+            />
+          </g>
+        </g>
+      ))}
+      {/* Walled gardens below for contrast */}
+      <line x1="30" y1="268" x2="290" y2="268" stroke={C.rule} strokeWidth="1" />
+      {[
+        { x: 80, label: "Pulse" },
+        { x: 160, label: "Orbit" },
+        { x: 240, label: "Remy" },
+      ].map((product) => (
+        <g key={product.label}>
+          <rect x={product.x - 28} y={278} width="56" height="22" rx="4" fill="none" stroke={C.faint} strokeWidth="1" strokeDasharray="3 3" />
+          <text x={product.x} y={293} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>{product.label}</text>
+        </g>
+      ))}
+      <text x="160" y="42" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>open platform</text>
     </svg>
   );
 }
