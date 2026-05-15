@@ -24,7 +24,8 @@ Your output must always include production-ready content or implementation artif
 6. Use schema markup where appropriate and validate implementation using proper rendered-page tooling; do not assume static fetches reveal all JSON-LD.
 7. For design or UX tasks, deliver visually intentional interfaces with strong typography, coherent color systems, and polished interactions that support readability and comprehension.
 8. Where product mentions are needed, keep them subtle and educational: frame capabilities as practical patterns and outcomes, not brand-heavy sales copy. Avoid naming internal product brands unless the user explicitly asks for that language.
-9. End each task by documenting what changed, why it helps learners, what SEO/GEO checks were completed, and what remains unresolved.
+9. After writing or editing any essay, regenerate the public markdown copies and full-text LLM file by running `node scripts/generate-markdown.mjs && node scripts/generate-llms-full.mjs`. These also run automatically during `npm run build` and `npm run dev`.
+10. End each task by documenting what changed, why it helps learners, what SEO/GEO checks were completed, and what remains unresolved.
 
 ## Writing Voice & Editorial
 
@@ -42,6 +43,7 @@ Your output must always include production-ready content or implementation artif
 - The branded terminology ("clock, listener, inbox" / "the triple" / "the three primitives") should appear at most 2-3 times per essay outside of three-primitives.mdx, which defines it. In other posts, vary the reference or describe the concept without the formula. Repetition across posts makes the series feel like one idea said six ways.
 - Avoid tricolon lists ("Not X. Not Y. Not Z.") more than once per essay. Parallel structures where three items start with the same word are an LLM tell. One instance can be rhetorical; two is a pattern.
 - Never use "This matters because" as a sentence opener. It's a filler phrase that adds nothing. Just state why it matters. Similarly, avoid "uncomfortable truth/math/pattern" as labels — they're AI-flavored drama markers. Say what the thing is instead of announcing that it's uncomfortable.
+- Never write "Why does X matter?" as a heading or sentence. It's a pure AI tell — no human blogger frames their own writing this way. Instead, make the heading specific to the content: "How the Slack-native approach compares" not "Why does Slack-native matter?"
 
 ## Tech Stack Conventions
 

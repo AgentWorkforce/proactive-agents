@@ -1,7 +1,8 @@
 ---
-title: "A review agent in three acts"
-summary: "My Senior Dev started as a webhook-triggered PR reviewer. Then it went multi-surface. Then it learned to watch. Each phase taught us something about what proactive agents actually need."
+title: "A code review agent in three acts"
+summary: "From webhook-triggered PR reviewer to multi-surface to always-watching. Each phase taught us what proactive agents need."
 date: "2026-05-12"
+lastModified: "2026-05-15"
 accent: "peach"
 dropcap: true
 ---
@@ -102,7 +103,7 @@ The agent also gained durability. In Act 1, a crashed worker meant a lost review
 
 ## What the product taught me
 
-Looking back, I kept running into the same missing infrastructure from a different angle each time.
+Looking back, I kept running into the same missing infrastructure from a different angle each time — the same convergence described in [the genesis](/posts/the-genesis).
 
 In Act 1, I didn't need any of the primitives. Webhooks provided the only trigger, we only cared about one event type, and GitHub comments were the only output. The reactive architecture was sufficient.
 
@@ -110,7 +111,7 @@ Act 2 introduced message routing (deliver to Slack, Telegram, desktop) but I sti
 
 By Act 3, all three were load-bearing: periodic scanning, real-time event detection, multi-surface delivery. And underneath those, the durability layer: checkpointing, idempotency, scoped auth, retry with backoff. The stuff described in [what makes proactive agents hard to build](/posts/why-proactive-is-hard).
 
-I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. That's what convinced me the primitives were structural, not just a convenient grouping.
+I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. [PostHog Code](/posts/posthog-code) is an interesting contrast: it has the richest context of any coding agent, but the same missing infrastructure underneath. That's what convinced me the primitives were structural, not just a convenient grouping.
 
 If I'm being honest, I probably couldn't have designed the runtime without a product that kept showing me what was missing. The product and the infrastructure grew up together.
 

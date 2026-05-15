@@ -2,6 +2,7 @@
 title: "Where push architectures break"
 summary: "Push architectures break in specific, painful ways. Here's where webhooks fail and what production mitigation looks like."
 date: "2026-05-11"
+lastModified: "2026-05-15"
 accent: "rose"
 dropcap: true
 ---
@@ -35,6 +36,8 @@ Push is faster but it breaks when your provider has a bad day. Polling is slower
 <Scene side="right" figure="OrderingFigure" caption="Events arrive when the provider feels like sending them.">
 
 ## Ordering, replays, and thundering herds
+
+### What happens when events arrive out of order?
 
 Webhooks arrive in whatever order the provider sends them. An "issue closed" event can land before the "issue created" event if the provider's internal pipeline batches them differently or routes them through separate queues. Your agent receives a close event for an entity it has never seen. What does it do?
 

@@ -2,6 +2,7 @@
 title: "Reactive vs proactive, with examples"
 summary: "The same agent written twice: reactive and proactive. Same goal, same provider, different posture. The difference is who waits for whom."
 date: "2026-05-10"
+lastModified: "2026-05-15"
 accent: "sage"
 dropcap: false
 ---
@@ -103,7 +104,7 @@ What reactive is not great for is anything where the whole value of the agent is
 
 ## So what's the takeaway
 
-Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
+Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. The [PARE benchmark](/posts/forty-two-percent) bears this out: the models that observe carefully and propose selectively achieve far higher success rates than eager ones. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
 
 We've been building that part. More on the runtime in [Proactive agents need three primitives](/posts/three-primitives).
 

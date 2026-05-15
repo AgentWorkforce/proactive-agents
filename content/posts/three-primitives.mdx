@@ -2,6 +2,7 @@
 title: "Proactive agents need three primitives"
 summary: "A proactive agent needs three things: a clock, a listener, and an inbox, wired together with durable state. Here's why."
 date: "2026-05-10"
+lastModified: "2026-05-15"
 accent: "peach"
 dropcap: true
 ---
@@ -109,6 +110,6 @@ Because the language we've been using — *multi-agent coordination layer*, *hea
 
 If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last, you're building a proactive runtime by hand. I kept seeing that pattern over and over, and it's why we decided to build the runtime as a standalone layer that sits under whatever agent you happen to be writing.
 
-The next essays in this folio go deeper. *Reactive vs proactive: a tour of the difference* lays out the architectural divergence with examples. *The eight-week webhook tax* costs out the build-it-yourself path. *Why we stopped saying multi-agent coordination* is the longer version of why we relabelled the elephant.
+The next essays in this folio go deeper. *Reactive vs proactive: a tour of the difference* lays out the architectural divergence with examples. *The eight-week webhook tax* costs out the build-it-yourself path. [*The genesis of proactive agents*](/posts/the-genesis) tells the story of how these three ideas converged into a runtime. And [*Notion ships the proactive primitives*](/posts/notion-ships-the-primitives) shows a major platform arriving at the same architecture independently.
 
 Read them in any order — the clock, the listener, and the inbox show up in all of them.

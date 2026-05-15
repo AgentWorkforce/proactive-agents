@@ -1,7 +1,8 @@
 ---
-title: "The eight-week webhook tax"
+title: "The eight-week webhook tax per provider"
 summary: "Adding one webhook provider to a proactive agent takes a sprint. Four providers takes most of a quarter. Here's the real cost."
 date: "2026-05-10"
+lastModified: "2026-05-15"
 accent: "lavender"
 dropcap: false
 ---
@@ -18,6 +19,8 @@ Here is what *correctly* looks like.
 
 For one provider:
 
+### What infrastructure does a single webhook require?
+
 1. **A public endpoint.** Hosted somewhere, with a stable URL, behind your own TLS cert. Already non-trivial if your agent runs on a serverless runtime that doesn't expose long-lived URLs.
 
 2. **Signature verification.** Each provider does this differently. Linear is HMAC-SHA256 with a header named `X-Linear-Signature`. GitHub is HMAC-SHA256 with `X-Hub-Signature-256`. Slack is HMAC-SHA256 *plus a timestamp* to prevent replay. Notion has no signing — you're supposed to allow-list IPs. Each one has its own quirks (Linear sends the timestamp in a separate header that you also have to include in the signed payload; GitHub gives you `sha1` and `sha256` and the older one is still default in some webhooks).
@@ -27,6 +30,8 @@ For one provider:
 4. **A queue.** Because of #3, you cannot process the webhook inline. You have to ack-and-enqueue. That means Redis, SQS, or equivalent. Plus a worker. Plus dead-letter handling.
 
 5. **Deduplication.** Providers send duplicates under load. You must store a seen-set keyed by their event ID. Without this, agents will act on the same event repeatedly. Twenty-four hours of dedupe is usually enough; less and you'll see duplicates from retried deliveries; more and you'll see your Redis bill go up.
+
+### What about filtering, state, and observability?
 
 6. **Filtering.** The webhook fires for many event types. You probably care about three. The rest you have to either filter out at the registration step (each provider exposes this differently) or at the worker (which means paying to receive and parse them).
 

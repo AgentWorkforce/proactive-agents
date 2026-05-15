@@ -2,6 +2,7 @@
 title: "What makes proactive agents hard to build"
 summary: "Proactive agents look simple in demos. In production, three problems compound: knowing when to wake up, remembering across runs, and knowing when to stay quiet."
 date: "2026-05-11"
+lastModified: "2026-05-15"
 accent: "lavender"
 dropcap: true
 ---
@@ -62,7 +63,7 @@ Wakeup and memory are engineering problems. Throw enough time at them and you'll
 
 When should the agent act on its own? When should it flag a human? When should it just be quiet?
 
-With a chatbot, the user is always right there. They ask, they get an answer, and if the answer is wrong they ignore it and move on. With a proactive agent, that safety net is gone. If it closes a ticket that should have stayed open, or pages the on-call engineer for something that wasn't actually a problem, the damage happens before anyone gets a chance to weigh in. And it doesn't take a lot of mistakes. I've heard from multiple teams that one bad action in a week of correct ones is enough for people to start talking about turning the whole thing off.
+With a chatbot, the user is always right there. They ask, they get an answer, and if the answer is wrong they ignore it and move on. With a proactive agent, that safety net is gone. If it closes a ticket that should have stayed open, or pages the on-call engineer for something that wasn't actually a problem, the damage happens before anyone gets a chance to weigh in. And it doesn't take a lot of mistakes. I've heard from multiple teams that one bad action in a week of correct ones is enough for people to start talking about turning the whole thing off. The [PARE benchmark](/posts/forty-two-percent) later quantified this: the agents that propose less often but more accurately outperform the eager ones.
 
 For every change the agent picks up, it has to choose: act on it (confident, low risk), flag a human (not sure enough or stakes too high), or just log it quietly for future context. If it flags everything it turns into a notification firehose that everyone mutes. If it acts on everything it's eventually going to do something expensive. I've been surprised by how much product iteration it takes to find a good balance between those two.
 

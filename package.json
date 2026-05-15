@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/generate-markdown.mjs && next dev",
-    "build": "node scripts/generate-markdown.mjs && next build",
+    "dev": "node scripts/generate-markdown.mjs && node scripts/generate-llms-full.mjs && next dev",
+    "build": "node scripts/generate-markdown.mjs && node scripts/generate-llms-full.mjs && next build",
     "start": "next start",
     "lint": "eslint"
   },
