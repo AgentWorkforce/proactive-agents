@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Squiggle, Asterism } from "@/components/decorations";
+import { FigureExpand } from "@/components/figure-expand";
 import {
   jsonLd,
   breadcrumbSchema,
@@ -446,7 +447,9 @@ export default function GuidePage() {
             watching the world and acting when the moment is right.
           </p>
 
-          <ReactiveProactiveDiagram />
+          <FigureExpand caption="Reactive vs proactive agent activation flow.">
+            <ReactiveProactiveDiagram />
+          </FigureExpand>
 
           <p>
             The term appears in a{" "}
@@ -488,7 +491,9 @@ export default function GuidePage() {
             </li>
           </ol>
 
-          <ThreeTriggersDiagram />
+          <FigureExpand caption="Three triggers that wake a proactive agent.">
+            <ThreeTriggersDiagram />
+          </FigureExpand>
 
           <p>
             A truly proactive agent listens for all three. Pick one and you have
@@ -594,7 +599,9 @@ export default function GuidePage() {
             <li>Scoped authentication &mdash; limit blast radius per agent</li>
           </ul>
 
-          <PrimitivesStackDiagram />
+          <FigureExpand caption="Three primitives: wake-up, state, and durability.">
+            <PrimitivesStackDiagram />
+          </FigureExpand>
 
           <p>
             Together these three primitives form the infrastructure layer that
@@ -619,7 +626,9 @@ export default function GuidePage() {
             model problem. Here are the five steps:
           </p>
 
-          <BuildStepsDiagram />
+          <FigureExpand caption="Five steps to build a proactive agent.">
+            <BuildStepsDiagram />
+          </FigureExpand>
 
           <ol>
             {HOW_TO_STEPS.map((step) => (
