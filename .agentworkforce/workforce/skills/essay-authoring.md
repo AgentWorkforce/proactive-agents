@@ -9,7 +9,7 @@ Every essay should use the **Scene** component to pair figures with text. Scenes
 ### Scene component
 
 ```mdx
-<Scene figure={<MyFigure />} caption="Short description of the figure.">
+<Scene figure="MyFigure" caption="Short description of the figure.">
 
 ## Section heading
 
@@ -20,7 +20,7 @@ multiple paragraphs, lists, callouts, etc.
 ```
 
 Props:
-- `figure` (required): A React SVG figure component. These live in `components/mdx/figures.tsx`.
+- `figure` (required): The name of a figure component as a **string** (e.g. `"PollingFigure"`). The Scene component looks it up from a registry. Do NOT use JSX expressions like `figure={<MyFigure />}` — MDX `compileMDX` cannot evaluate JSX in prop values.
 - `caption` (optional): Short uppercase label below the figure.
 - `side` (optional): `"left"` (default) or `"right"`. Alternate sides for visual rhythm.
 

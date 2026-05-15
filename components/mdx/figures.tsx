@@ -2247,9 +2247,9 @@ export function ComplexityGradientFigure() {
 
 /** Execution gap — acceptance vs success rate for small models. */
 export function ExecutionGapFigure() {
-  const barH = 24;
-  const fullW = 220;
-  const startX = 50;
+  const barH = 18;
+  const maxW = 200;
+  const barX = 100;
   const models = [
     { name: "Qwen 3 4B", accept: 63.7, success: 18.5 },
     { name: "Llama 3.2 3B", accept: 58.4, success: 10.0 },
@@ -2257,41 +2257,39 @@ export function ExecutionGapFigure() {
   ];
 
   return (
-    <svg viewBox="0 0 320 320" className="w-full">
-      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.06em">
-        goal inference vs. execution
+    <svg viewBox="0 0 340 260" className="w-full">
+      <text x="14" y="30" fontFamily="var(--font-display)" fontSize="12" fill={C.faint}>
+        accepted goal
       </text>
+      <rect x={barX - 8} y="18" width="14" height="14" rx="3" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
+      <text x="160" y="30" fontFamily="var(--font-display)" fontSize="12" fill={C.faint}>
+        executed correctly
+      </text>
+      <rect x={152} y="18" width="14" height="14" rx="3" fill={C.peach} fillOpacity="0.6" stroke={C.terracotta} strokeWidth="0.8" />
 
       {models.map((m, i) => {
-        const groupY = 50 + i * 90;
-        const accW = (m.accept / 100) * fullW;
-        const sucW = (m.success / 100) * fullW;
+        const groupY = 60 + i * 72;
+        const accW = Math.max((m.accept / 100) * maxW, 4);
+        const sucW = Math.max((m.success / 100) * maxW, 4);
 
         return (
           <g key={i}>
-            <text x={startX - 4} y={groupY} textAnchor="end" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink} fontWeight="600">{m.name}</text>
+            <text x="14" y={groupY + 4} fontFamily="var(--font-display)" fontSize="13" fill={C.ink} fontWeight="600">{m.name}</text>
 
-            {/* Acceptance bar */}
-            <rect x={startX} y={groupY + 8} width={accW} height={barH} rx="4" fill={C.sage} opacity="0.6" stroke={C.moss} strokeWidth="0.8" />
-            <text x={startX + accW + 6} y={groupY + 8 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="9" fill={C.moss}>{m.accept}%</text>
-            <text x={startX + 4} y={groupY + 8 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>accepted</text>
+            <rect x={barX} y={groupY + 14} width={accW} height={barH} rx="4" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
+            <text x={barX + accW + 6} y={groupY + 14 + barH / 2 + 4} fontFamily="var(--font-mono)" fontSize="11" fill={C.moss} fontWeight="600">{m.accept}%</text>
 
-            {/* Success bar */}
-            <rect x={startX} y={groupY + 8 + barH + 6} width={sucW} height={barH} rx="4" fill={C.peach} opacity="0.7" stroke={C.terracotta} strokeWidth="0.8" />
-            <text x={startX + sucW + 6} y={groupY + 8 + barH + 6 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>{m.success}%</text>
-            <text x={startX + 4} y={groupY + 8 + barH + 6 + barH / 2 + 3} fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>succeeded</text>
+            <rect x={barX} y={groupY + 14 + barH + 6} width={sucW} height={barH} rx="4" fill={C.peach} fillOpacity="0.6" stroke={C.terracotta} strokeWidth="0.8" />
+            <text x={barX + sucW + 6} y={groupY + 14 + barH + 6 + barH / 2 + 4} fontFamily="var(--font-mono)" fontSize="11" fill={C.terracotta} fontWeight="600">{m.success}%</text>
 
-            {/* Gap bracket */}
             {m.accept > 25 && (
-              <g>
-                <line x1={startX + sucW} y1={groupY + 8 + barH + 2} x2={startX + accW} y2={groupY + 8 + barH + 2} stroke={C.terracotta} strokeWidth="1" strokeDasharray="3 2" />
-              </g>
+              <line x1={barX + sucW} y1={groupY + 14 + barH + 3} x2={barX + accW} y2={groupY + 14 + barH + 3} stroke={C.terracotta} strokeWidth="1" strokeDasharray="3 2" />
             )}
           </g>
         );
       })}
 
-      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+      <text x="170" y="250" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
         they know what to do — they can't do it
       </text>
     </svg>
