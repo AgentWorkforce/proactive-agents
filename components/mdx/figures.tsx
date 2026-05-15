@@ -2101,39 +2101,42 @@ export function ContextDegradeFigure() {
 
 /** Three acts evolution — webhook → multi-surface → proactive. */
 export function ThreeActsEvolutionFigure() {
+  const boxW = 84;
+  const gap = 30;
   const acts = [
-    { label: "Act 1", sub: "webhook", fill: C.peach, w: 60 },
-    { label: "Act 2", sub: "+ surfaces", fill: C.butter, w: 80 },
-    { label: "Act 3", sub: "+ primitives", fill: C.sage, w: 100 },
+    { label: "Act 1", sub: "webhook", fill: C.peach },
+    { label: "Act 2", sub: "+ surfaces", fill: C.butter },
+    { label: "Act 3", sub: "+ primitives", fill: C.sage },
   ];
+  const totalW = 3 * boxW + 2 * gap;
+  const startX = (340 - totalW) / 2;
   return (
-    <svg viewBox="0 0 320 180" className="w-full">
-      {acts.map((a, i) => {
-        const x = 20 + i * 105;
-        const y = 30;
-        return (
-          <g key={a.label}>
-            <rect x={x} y={y} width={a.w} height="90" rx="10" fill={a.fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
-            <text x={x + a.w / 2} y={y + 30} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{a.label}</text>
-            <text x={x + a.w / 2} y={y + 48} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>{a.sub}</text>
-            {/* Growing capability dots */}
-            {Array.from({ length: i + 1 }).map((_, j) => (
-              <circle key={j} cx={x + a.w / 2 - (i * 6) + j * 12} cy={y + 70} r="4" fill={C.terracotta} fillOpacity={0.5 + j * 0.2} />
-            ))}
-            {i < acts.length - 1 && (
-              <line x1={x + a.w + 4} y1={y + 45} x2={x + a.w + 20} y2={y + 45} stroke={C.faint} strokeWidth="1.2" markerEnd="url(#evoArrow)" />
-            )}
-          </g>
-        );
-      })}
-      <text x="160" y="155" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
-        each phase revealed the next missing piece
-      </text>
+    <svg viewBox="0 0 340 180" className="w-full">
       <defs>
         <marker id="evoArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
           <path d="M0 0 L10 5 L0 10 z" fill={C.faint} />
         </marker>
       </defs>
+      {acts.map((a, i) => {
+        const x = startX + i * (boxW + gap);
+        const y = 26;
+        return (
+          <g key={a.label}>
+            <rect x={x} y={y} width={boxW} height="90" rx="10" fill={a.fill} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
+            <text x={x + boxW / 2} y={y + 32} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{a.label}</text>
+            <text x={x + boxW / 2} y={y + 50} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.inkSoft}>{a.sub}</text>
+            {Array.from({ length: i + 1 }).map((_, j) => (
+              <circle key={j} cx={x + boxW / 2 - (i * 6) + j * 12} cy={y + 72} r="4" fill={C.terracotta} fillOpacity={0.5 + j * 0.2} />
+            ))}
+            {i < acts.length - 1 && (
+              <line x1={x + boxW + 4} y1={y + 45} x2={x + boxW + gap - 4} y2={y + 45} stroke={C.faint} strokeWidth="1.2" markerEnd="url(#evoArrow)" />
+            )}
+          </g>
+        );
+      })}
+      <text x="170" y="155" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        each phase revealed the next missing piece
+      </text>
     </svg>
   );
 }
