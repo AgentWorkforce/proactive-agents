@@ -1,0 +1,75 @@
+---
+title: "PostHog Code and the production signal"
+summary: "PostHog Code is the first coding agent that reads your production data — feature flags, funnels, error rates — and injects it as context while the agent works. It's entirely reactive today, but the enricher pattern points toward something bigger."
+date: "2026-05-15"
+accent: "sage"
+dropcap: true
+---
+
+[PostHog](https://posthog.com) launched [Code](https://posthog.com/code) this spring, and the most interesting thing about it is what the coding agent can see.
+
+Most AI coding tools share the same context surface: your source files, maybe your git history, sometimes your open tickets. PostHog Code adds something none of the others have: your production data. Feature flag rollout percentages, event volumes over the last 30 days, experiment results, stale flag detection, funnel dropoff rates. The agent doesn't just read your code. It reads what your code is doing in the real world.
+
+I dug through PostHog's [open-source repository](https://github.com/PostHog/code) to understand how the system works under the hood, and the architecture reveals both genuine innovation and a clear gap when viewed through the lens of proactive agents.
+
+<Scene figure="PHEnricherFigure" caption="The enricher bridges code and production data.">
+
+## What the enricher does
+
+The core of PostHog Code's differentiation lives in a package called the enricher. When the agent reads a file during a coding session, the enricher runs tree-sitter-based static analysis to find PostHog SDK calls: `posthog.capture`, `posthog.isFeatureEnabled`, feature flag checks, experiment hooks. It doesn't just match direct calls. It resolves imports to trace wrapper functions, so if your codebase has a `track()` helper that internally calls `posthog.capture`, the enricher finds it through the import chain.
+
+For each detected call, it fetches live data from the PostHog API: the feature flag's current rollout percentage, whether the flag has been evaluated recently or is classified as stale, the linked experiment's status and results, and whether the tracked event has actually fired in the last 30 days with volume counts. Then it injects this data as inline comments in the file content that the LLM receives.
+
+The result: when the agent reads a file containing `if (posthog.isFeatureEnabled('new-checkout'))`, it also sees that the flag is at 23% rollout, was last modified six weeks ago, and the linked experiment concluded with a 4% lift in conversion. The code and its production reality arrive in the same context window.
+
+This changes the quality of the agent's suggestions in ways that matter. When it recommends removing a feature flag, it knows whether the flag is actively gating traffic for 40% of users or sitting dormant at 0%. That distinction is the difference between "clean up dead code" and "careful, this is live."
+
+<Callout tone="thought" label="Context other agents can't match">
+[CodeRabbit](/posts/agent-moves-first) connects to Datadog and Sentry for observability context. [Devin](https://devin.ai) goes deep on code execution. PostHog Code occupies a different niche entirely: it sees the product analytics layer. Feature flags, experiments, funnels, event volumes. For teams that run on PostHog, no other coding agent has this view.
+</Callout>
+
+</Scene>
+
+## The architecture underneath
+
+PostHog Code is a monorepo built on the [Claude Agent SDK](https://docs.anthropic.com/en/docs/agents-and-tools/claude-agent-sdk) and OpenAI's Codex, with an Electron desktop app and cloud sandboxes managed through [Temporal](https://temporal.io) workflows. The default model is Claude Opus 4.7, with GPT-5.4 available as an alternative. The codebase uses InversifyJS for dependency injection, tRPC over Electron IPC, and Zustand for state management. Cloud sessions run in Docker containers on [Modal](https://modal.com), with Kafka routing messages between clients and sandboxes.
+
+One strong engineering detail: sessions can transfer between local and cloud mid-task through a handoff mechanism. The system captures git state as pack files and rebuilds conversation history from persisted session logs, so you can start a task on your laptop and hand it to a cloud sandbox without losing context. The `HandoffCheckpointTracker` captures git pack files and index state as artifacts, and a `ResumeSaga` walks log entries to reconstruct conversation turns.
+
+The agent also supports what PostHog calls a "Command Center," running multiple coding agents in parallel with split-screen presets. Each agent gets its own session, its own context, and its own tool permissions. For teams running several related tasks simultaneously, this is a practical workflow that most single-agent tools don't offer.
+
+But from a proactive agent perspective, the architecture is entirely reactive.
+
+Every session starts because a human created a task. There are no webhooks listening for GitHub events. No cron jobs scanning for production anomalies. No file watchers triggering analysis when code changes. The agent wakes up when you tell it to, does its work, and goes quiet when you stop talking to it. The Temporal workflow's 10-minute inactivity timeout is the closest thing to autonomous behavior, and all it does is shut down idle sessions.
+
+<Scene side="right" figure="PHSignalGapFigure" caption="Production signals exist but lack a trigger to reach the agent.">
+
+## The signal that's already there
+
+Here's what makes PostHog Code interesting from a proactive lens: the enricher already detects the conditions that a proactive agent would act on.
+
+It knows when a feature flag is stale, sitting at a fixed rollout percentage with no recent evaluations. It knows when a tracked event hasn't fired in 30 days, which usually means dead instrumentation that nobody is maintaining. It can correlate experiment results with the code that implements the variants. It has access to funnel data that could reveal conversion drops after recent deploys.
+
+All of this information exists inside the enricher's analysis pipeline. The gap is that the pipeline only runs when a human starts a session and the agent happens to read the relevant file. The enricher is a listener that only operates during active coding sessions.
+
+Making it always-on would close the gap. Imagine periodic scans for stale flags that open cleanup PRs, error rate spikes correlated with recent merges that alert the PR author in Slack, or weekly digests surfacing dead instrumentation that nobody is tracking anymore. The data is already being fetched and analyzed within the enricher's pipeline. It just needs a trigger mechanism that doesn't require a human typing a prompt to start the process.
+
+<Callout tone="warm" label="The enricher is a listener waiting to happen">
+The enricher already does the hard part: tree-sitter parsing to find SDK calls, import resolution to trace wrappers, and live API queries to get production state. Converting it from a session-scoped hook to an always-on scanner is an infrastructure problem, not an AI problem.
+</Callout>
+
+</Scene>
+
+## Where this sits
+
+PostHog Code is a coding tool first, and the production data integration gives it context that no competitor can match. The [open-source codebase](https://github.com/PostHog/code) shows real engineering depth: the session handoff system, the enricher's static analysis pipeline, the multi-agent Command Center.
+
+Through the [three-primitives framework](/posts/three-primitives), the mapping is straightforward. PostHog Code has no clock (no scheduled scans), no listener (no event detection outside of active sessions), and the inbox is the desktop app's UI. What it does have is the richest signal source of any coding agent on the market. Production analytics data, flowing through a well-engineered enrichment pipeline, available to any model the agent selects.
+
+Connecting that signal source to the primitives would let the enricher's analysis run continuously rather than on demand. Scheduled scans for stale flags, real-time correlation of deploys with metric changes, alerts delivered to Slack or GitHub rather than waiting for someone to open the desktop app. The enricher already does the analysis. The missing piece is the infrastructure to run it without a human in the loop.
+
+For teams already on PostHog, Code is worth trying for the enriched context alone. For anyone building proactive development agents, the enricher's approach to bridging static code analysis with live production data is worth studying. PostHog published the whole thing.
+
+<Callout tone="cool" label="Open source advantage">
+PostHog Code is [fully open source](https://github.com/PostHog/code). The enricher, the agent framework, the handoff system, the cloud architecture. If you're building tools that need to understand what code does in production, the enricher package is the most interesting place to start.
+</Callout>
