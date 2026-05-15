@@ -2247,9 +2247,9 @@ export function ComplexityGradientFigure() {
 
 /** Execution gap — acceptance vs success rate for small models. */
 export function ExecutionGapFigure() {
-  const barH = 18;
-  const maxW = 200;
-  const barX = 100;
+  const barH = 16;
+  const maxW = 180;
+  const barX = 14;
   const models = [
     { name: "Qwen 3 4B", accept: 63.7, success: 18.5 },
     { name: "Llama 3.2 3B", accept: 58.4, success: 10.0 },
@@ -2257,39 +2257,35 @@ export function ExecutionGapFigure() {
   ];
 
   return (
-    <svg viewBox="0 0 340 260" className="w-full">
-      <text x="14" y="30" fontFamily="var(--font-display)" fontSize="12" fill={C.faint}>
-        accepted goal
-      </text>
-      <rect x={barX - 8} y="18" width="14" height="14" rx="3" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
-      <text x="160" y="30" fontFamily="var(--font-display)" fontSize="12" fill={C.faint}>
-        executed correctly
-      </text>
-      <rect x={152} y="18" width="14" height="14" rx="3" fill={C.peach} fillOpacity="0.6" stroke={C.terracotta} strokeWidth="0.8" />
+    <svg viewBox="0 0 320 280" className="w-full">
+      {/* Legend */}
+      <rect x="14" y="16" width="12" height="12" rx="3" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
+      <text x="30" y="26" fontFamily="var(--font-display)" fontSize="11" fill={C.faint}>accepted goal</text>
+      <rect x="130" y="16" width="12" height="12" rx="3" fill={C.peach} fillOpacity="0.6" stroke={C.terracotta} strokeWidth="0.8" />
+      <text x="146" y="26" fontFamily="var(--font-display)" fontSize="11" fill={C.faint}>executed correctly</text>
+
+      <line x1="14" y1="38" x2="306" y2="38" stroke={C.rule} strokeWidth="1" />
 
       {models.map((m, i) => {
-        const groupY = 60 + i * 72;
-        const accW = Math.max((m.accept / 100) * maxW, 4);
-        const sucW = Math.max((m.success / 100) * maxW, 4);
+        const groupY = 54 + i * 78;
+        const accW = Math.max((m.accept / 100) * maxW, 6);
+        const sucW = Math.max((m.success / 100) * maxW, 6);
 
         return (
           <g key={i}>
-            <text x="14" y={groupY + 4} fontFamily="var(--font-display)" fontSize="13" fill={C.ink} fontWeight="600">{m.name}</text>
+            <text x={barX} y={groupY} fontFamily="var(--font-display)" fontSize="13" fill={C.ink} fontWeight="600">{m.name}</text>
 
-            <rect x={barX} y={groupY + 14} width={accW} height={barH} rx="4" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
-            <text x={barX + accW + 6} y={groupY + 14 + barH / 2 + 4} fontFamily="var(--font-mono)" fontSize="11" fill={C.moss} fontWeight="600">{m.accept}%</text>
+            <rect x={barX} y={groupY + 10} width={accW} height={barH} rx="4" fill={C.sage} fillOpacity="0.5" stroke={C.moss} strokeWidth="0.8" />
+            <text x={barX + accW + 6} y={groupY + 10 + barH / 2 + 4} fontFamily="var(--font-mono)" fontSize="11" fill={C.moss} fontWeight="600">{m.accept}%</text>
 
-            <rect x={barX} y={groupY + 14 + barH + 6} width={sucW} height={barH} rx="4" fill={C.peach} fillOpacity="0.6" stroke={C.terracotta} strokeWidth="0.8" />
-            <text x={barX + sucW + 6} y={groupY + 14 + barH + 6 + barH / 2 + 4} fontFamily="var(--font-mono)" fontSize="11" fill={C.terracotta} fontWeight="600">{m.success}%</text>
-
-            {m.accept > 25 && (
-              <line x1={barX + sucW} y1={groupY + 14 + barH + 3} x2={barX + accW} y2={groupY + 14 + barH + 3} stroke={C.terracotta} strokeWidth="1" strokeDasharray="3 2" />
-            )}
+            <rect x={barX} y={groupY + 10 + barH + 6} width={sucW} height={barH} rx="4" fill={C.peach} fillOpacity="0.6" stroke={C.terracotta} strokeWidth="0.8" />
+            <text x={barX + sucW + 6} y={groupY + 10 + barH + 6 + barH / 2 + 4} fontFamily="var(--font-mono)" fontSize="11" fill={C.terracotta} fontWeight="600">{m.success}%</text>
           </g>
         );
       })}
 
-      <text x="170" y="250" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
+      <line x1="14" y1="250" x2="306" y2="250" stroke={C.rule} strokeWidth="1" />
+      <text x="160" y="268" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint}>
         they know what to do — they can't do it
       </text>
     </svg>
