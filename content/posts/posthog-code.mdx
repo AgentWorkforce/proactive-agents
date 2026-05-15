@@ -6,7 +6,7 @@ accent: "sage"
 dropcap: true
 ---
 
-[PostHog](https://posthog.com) launched [Code](https://posthog.com/code) this spring, and the interesting thing about it isn't the coding agent itself. It's what the coding agent can see.
+[PostHog](https://posthog.com) launched [Code](https://posthog.com/code) this spring, and the most interesting thing about it is what the coding agent can see.
 
 Most AI coding tools share the same context surface: your source files, maybe your git history, sometimes your open tickets. PostHog Code adds something none of the others have: your production data. Feature flag rollout percentages, event volumes over the last 30 days, experiment results, stale flag detection, funnel dropoff rates. The agent doesn't just read your code. It reads what your code is doing in the real world.
 
@@ -52,7 +52,7 @@ It knows when a feature flag is stale, sitting at a fixed rollout percentage wit
 
 All of this information exists inside the enricher's analysis pipeline. The gap is that the pipeline only runs when a human starts a session and the agent happens to read the relevant file. The enricher is a listener that only operates during active coding sessions.
 
-Making it always-on would close the gap. A background process that periodically scans for stale flags across connected repos and opens cleanup PRs. A watcher that correlates error rate spikes with recent merges and alerts the PR author in Slack. A weekly digest of dead instrumentation that nobody is tracking anymore. The data is already being fetched and analyzed within the enricher's pipeline. It just needs a trigger mechanism that doesn't require a human typing a prompt to start the process.
+Making it always-on would close the gap. Imagine periodic scans for stale flags that open cleanup PRs, error rate spikes correlated with recent merges that alert the PR author in Slack, or weekly digests surfacing dead instrumentation that nobody is tracking anymore. The data is already being fetched and analyzed within the enricher's pipeline. It just needs a trigger mechanism that doesn't require a human typing a prompt to start the process.
 
 <Callout tone="warm" label="The enricher is a listener waiting to happen">
 The enricher already does the hard part: tree-sitter parsing to find SDK calls, import resolution to trace wrappers, and live API queries to get production state. Converting it from a session-scoped hook to an always-on scanner is an infrastructure problem, not an AI problem.
@@ -62,7 +62,7 @@ The enricher already does the hard part: tree-sitter parsing to find SDK calls, 
 
 ## Where this sits
 
-PostHog Code isn't trying to be a proactive agent. It's a coding tool, and the production data integration gives it context that no competitor can match. The [open-source codebase](https://github.com/PostHog/code) shows real engineering depth: the session handoff system, the enricher's static analysis pipeline, the multi-agent Command Center.
+PostHog Code is a coding tool first, and the production data integration gives it context that no competitor can match. The [open-source codebase](https://github.com/PostHog/code) shows real engineering depth: the session handoff system, the enricher's static analysis pipeline, the multi-agent Command Center.
 
 Through the [three-primitives framework](/posts/three-primitives), the mapping is straightforward. PostHog Code has no clock (no scheduled scans), no listener (no event detection outside of active sessions), and the inbox is the desktop app's UI. What it does have is the richest signal source of any coding agent on the market. Production analytics data, flowing through a well-engineered enrichment pipeline, available to any model the agent selects.
 
