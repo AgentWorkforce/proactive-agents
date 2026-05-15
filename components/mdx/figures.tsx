@@ -2699,3 +2699,318 @@ export function NotionOpenFigure() {
     </svg>
   );
 }
+
+/** Vendor silo problem — four tools, each seeing only its own data, engineer bridges them. */
+export function VendorSiloFigure() {
+  const tools = [
+    { label: "Sentry", color: C.rose, y: 70 },
+    { label: "GitHub", color: C.sage, y: 70 },
+    { label: "Datadog", color: C.butter, y: 70 },
+    { label: "Linear", color: C.lavender, y: 70 },
+  ];
+  const colW = 58;
+  const gap = 12;
+  const totalW = tools.length * colW + (tools.length - 1) * gap;
+  const startX = (320 - totalW) / 2;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="vendorsilo-title">
+      <title id="vendorsilo-title">Vendor chatbots as isolated silos: each sees only its own data</title>
+
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint} letterSpacing="0.06em">
+        the incident spans all four
+      </text>
+
+      {/* Incident line spanning all silos */}
+      <line x1={startX - 8} y1="42" x2={startX + totalW + 8} y2="42" stroke={C.terracotta} strokeWidth="1.4" strokeDasharray="6 4" />
+      <circle cx={startX - 8} cy="42" r="3" fill={C.terracotta} />
+      <circle cx={startX + totalW + 8} cy="42" r="3" fill={C.terracotta} />
+
+      {/* Silo columns */}
+      {tools.map((tool, i) => {
+        const x = startX + i * (colW + gap);
+        return (
+          <g key={tool.label}>
+            <rect x={x} y={54} width={colW} height={130} rx="6" fill={tool.color} opacity="0.35" stroke={C.ink} strokeWidth="1" />
+            <text x={x + colW / 2} y={72} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.ink} fontWeight="600">
+              {tool.label}
+            </text>
+            <line x1={x + 8} y1={84} x2={x + colW - 8} y2={84} stroke={C.faint} strokeWidth="0.8" />
+            <line x1={x + 8} y1={96} x2={x + colW - 12} y2={96} stroke={C.faint} strokeWidth="0.8" />
+            <line x1={x + 8} y1={108} x2={x + colW - 8} y2={108} stroke={C.faint} strokeWidth="0.8" />
+            {/* Chatbot icon */}
+            <circle cx={x + colW / 2} cy={148} r="12" fill={C.paper} stroke={C.ink} strokeWidth="1" />
+            <circle cx={x + colW / 2 - 4} cy={146} r="1.5" fill={C.ink} />
+            <circle cx={x + colW / 2 + 4} cy={146} r="1.5" fill={C.ink} />
+            <path d={`M${x + colW / 2 - 4} ${152} Q${x + colW / 2} ${155} ${x + colW / 2 + 4} ${152}`} stroke={C.ink} strokeWidth="0.8" fill="none" />
+            {/* Vertical wall lines */}
+            <line x1={x} y1={54} x2={x} y2={184} stroke={C.ink} strokeWidth="1" />
+            <line x1={x + colW} y1={54} x2={x + colW} y2={184} stroke={C.ink} strokeWidth="1" />
+          </g>
+        );
+      })}
+
+      {/* Engineer at bottom bridging silos */}
+      <circle cx="160" cy="230" r="14" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+      <circle cx="156" cy="228" r="1.5" fill={C.ink} />
+      <circle cx="164" cy="228" r="1.5" fill={C.ink} />
+      <line x1="155" y1="234" x2="165" y2="234" stroke={C.ink} strokeWidth="1" />
+
+      {/* Arrows from engineer to each silo */}
+      {tools.map((_, i) => {
+        const x = startX + i * (colW + gap) + colW / 2;
+        return (
+          <g key={i} stroke={C.faint} strokeWidth="1" fill="none" strokeLinecap="round">
+            <line x1="160" y1="216" x2={x} y2="188" />
+            <circle cx={x} cy="186" r="2" fill={C.faint} />
+          </g>
+        );
+      })}
+
+      <text x="160" y="264" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>
+        engineer = integration layer
+      </text>
+
+      <text x="160" y="280" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        each bot sees 1/4 of the picture
+      </text>
+    </svg>
+  );
+}
+
+/** Junior plugin architecture — hub-and-spoke with egress proxy ring. */
+export function JuniorPluginFigure() {
+  const plugins = [
+    { label: "GitHub", angle: -90, type: "app", color: C.sage },
+    { label: "Sentry", angle: -30, type: "oauth", color: C.rose },
+    { label: "Datadog", angle: 30, type: "api-key", color: C.butter },
+    { label: "Linear", angle: 90, type: "MCP", color: C.lavender },
+    { label: "Notion", angle: 150, type: "MCP", color: C.sky },
+    { label: "Hex", angle: 210, type: "MCP", color: C.peach },
+  ];
+  const cx = 160;
+  const cy = 150;
+  const innerR = 28;
+  const proxyR = 60;
+  const outerR = 110;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="juniorplugin-title">
+      <title id="juniorplugin-title">Junior architecture: one agent hub with plugins connected through an egress proxy</title>
+
+      <text x="160" y="20" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint} letterSpacing="0.06em">
+        one runtime, many plugins
+      </text>
+
+      {/* Egress proxy ring */}
+      <circle cx={cx} cy={cy} r={proxyR} fill="none" stroke={C.terracotta} strokeWidth="1.2" strokeDasharray="5 3" opacity="0.6" />
+      <text x={cx + proxyR - 12} y={cy - proxyR + 14} fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta} opacity="0.8">
+        egress proxy
+      </text>
+
+      {/* Center agent */}
+      <circle cx={cx} cy={cy} r={innerR} fill={C.sage} opacity="0.5" stroke={C.ink} strokeWidth="1.4" />
+      <text x={cx} y={cy - 4} textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={C.ink} fontWeight="600">jr</text>
+      <text x={cx} y={cy + 10} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>slack bot</text>
+
+      {/* Plugin nodes */}
+      {plugins.map((p) => {
+        const rad = (p.angle * Math.PI) / 180;
+        const px = cx + Math.cos(rad) * outerR;
+        const py = cy + Math.sin(rad) * outerR;
+        const proxyX = cx + Math.cos(rad) * proxyR;
+        const proxyY = cy + Math.sin(rad) * proxyR;
+        return (
+          <g key={p.label}>
+            {/* Connection line */}
+            <line x1={proxyX} y1={proxyY} x2={px} y2={py} stroke={C.faint} strokeWidth="1" />
+            {/* Proxy crossing dot */}
+            <circle cx={proxyX} cy={proxyY} r="2.5" fill={C.terracotta} opacity="0.7" />
+            {/* Plugin node */}
+            <circle cx={px} cy={py} r="20" fill={p.color} opacity="0.4" stroke={C.ink} strokeWidth="0.8" />
+            <text x={px} y={py - 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink} fontWeight="600">
+              {p.label}
+            </text>
+            <text x={px} y={py + 7} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>
+              {p.type}
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Sandbox label */}
+      <rect x="50" y="278" width="220" height="22" rx="4" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+      <text x="160" y="293" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+        sandbox: bash, readFile, editFile, grep, browser
+      </text>
+    </svg>
+  );
+}
+
+/** Agent scope spectrum — narrow to generalized, four vendors positioned. */
+export function AgentScopeFigure() {
+  const axisY = 160;
+  const axisX1 = 30;
+  const axisX2 = 290;
+
+  const vendors = [
+    { label: "PostHog", x: 62, desc: "in-app only", color: C.rose },
+    { label: "CodeRabbit", x: 138, desc: "expanding", color: C.butter },
+    { label: "Notion", x: 210, desc: "hub model", color: C.lavender },
+    { label: "Junior", x: 264, desc: "open runtime", color: C.sage },
+  ];
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="agentscope-title">
+      <title id="agentscope-title">Spectrum from narrow vendor chatbot to generalized agent runtime</title>
+
+      <text x="160" y="28" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint} letterSpacing="0.06em">
+        scope vs. depth
+      </text>
+
+      {/* Gradient background bar */}
+      <defs>
+        <linearGradient id="scope-grad" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stopColor={C.rose} stopOpacity="0.25" />
+          <stop offset="50%" stopColor={C.butter} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={C.sage} stopOpacity="0.3" />
+        </linearGradient>
+      </defs>
+      <rect x={axisX1} y={axisY - 40} width={axisX2 - axisX1} height="80" rx="8" fill="url(#scope-grad)" />
+
+      {/* Axis line */}
+      <line x1={axisX1} y1={axisY} x2={axisX2} y2={axisY} stroke={C.ink} strokeWidth="1.2" />
+      {/* Arrow */}
+      <path d={`M${axisX2 - 6} ${axisY - 4} L${axisX2} ${axisY} L${axisX2 - 6} ${axisY + 4}`} stroke={C.ink} strokeWidth="1.2" fill="none" />
+
+      {/* Axis labels */}
+      <text x={axisX1 + 4} y={axisY + 56} fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>narrow</text>
+      <text x={axisX2 - 4} y={axisY + 56} textAnchor="end" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>generalized</text>
+
+      {/* Vendor markers */}
+      {vendors.map((v) => (
+        <g key={v.label}>
+          {/* Vertical line */}
+          <line x1={v.x} y1={axisY - 32} x2={v.x} y2={axisY - 4} stroke={C.ink} strokeWidth="1" opacity="0.4" />
+          {/* Dot on axis */}
+          <circle cx={v.x} cy={axisY} r="6" fill={v.color} stroke={C.ink} strokeWidth="1.2" />
+          {/* Label above */}
+          <text x={v.x} y={axisY - 38} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink} fontWeight="600">
+            {v.label}
+          </text>
+          {/* Description below */}
+          <text x={v.x} y={axisY + 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>
+            {v.desc}
+          </text>
+        </g>
+      ))}
+
+      {/* Key insight */}
+      <text x="160" y="260" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        different bets on where the value lives
+      </text>
+
+      {/* MCP convergence note */}
+      <g>
+        <rect x="60" y="272" width="200" height="20" rx="4" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+        <text x="160" y="286" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.terracotta}>
+          MCP narrows the gap between all four
+        </text>
+      </g>
+    </svg>
+  );
+}
+
+/** Phase-specific agents — PDERO pipeline with cross-phase integrations. */
+export function PhaseAgentFigure() {
+  const phases = [
+    { label: "Plan", short: "P", color: C.lavender },
+    { label: "Delegate", short: "D", color: C.butter },
+    { label: "Execute", short: "E", color: C.sage },
+    { label: "Review", short: "R", color: C.rose },
+    { label: "Observe", short: "O", color: C.sky },
+  ];
+  const boxW = 46;
+  const gap = 8;
+  const totalW = phases.length * boxW + (phases.length - 1) * gap;
+  const startX = (320 - totalW) / 2;
+  const cy = 130;
+  const boxH = 64;
+
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="phaseagent-title">
+      <title id="phaseagent-title">Phase-specific agents: Plan, Delegate, Execute, Review, Observe with cross-phase integrations</title>
+
+      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint} letterSpacing="0.06em">
+        agents per phase, not per tool
+      </text>
+
+      {/* Phase boxes */}
+      {phases.map((phase, i) => {
+        const x = startX + i * (boxW + gap);
+        return (
+          <g key={phase.label}>
+            <rect
+              x={x} y={cy - boxH / 2} width={boxW} height={boxH}
+              rx="6" fill={phase.color} opacity="0.4"
+              stroke={C.ink} strokeWidth="1"
+            />
+            <text x={x + boxW / 2} y={cy - 10} textAnchor="middle" fontFamily="var(--font-display)" fontSize="16" fill={C.ink} fontWeight="600">
+              {phase.short}
+            </text>
+            <text x={x + boxW / 2} y={cy + 8} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>
+              {phase.label}
+            </text>
+            {/* Agent dot */}
+            <circle cx={x + boxW / 2} cy={cy + 22} r="5" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+            <circle cx={x + boxW / 2 - 2} cy={cy + 21} r="0.8" fill={C.ink} />
+            <circle cx={x + boxW / 2 + 2} cy={cy + 21} r="0.8" fill={C.ink} />
+            {/* Forward arrow to next phase */}
+            {i < phases.length - 1 && (
+              <g stroke={C.terracotta} strokeWidth="1.2" fill="none" strokeLinecap="round">
+                <line x1={x + boxW + 1} y1={cy} x2={x + boxW + gap - 1} y2={cy} />
+                <path d={`M${x + boxW + gap - 4} ${cy - 3} L${x + boxW + gap - 1} ${cy} L${x + boxW + gap - 4} ${cy + 3}`} />
+              </g>
+            )}
+          </g>
+        );
+      })}
+
+      {/* Cross-phase integration arcs */}
+      <g stroke={C.faint} strokeWidth="0.8" fill="none" strokeDasharray="3 3">
+        {/* Plan → Review arc */}
+        <path d={`M${startX + boxW / 2} ${cy - boxH / 2 - 2} Q160 ${cy - boxH / 2 - 30} ${startX + 3 * (boxW + gap) + boxW / 2} ${cy - boxH / 2 - 2}`} />
+        {/* Execute → Observe arc */}
+        <path d={`M${startX + 2 * (boxW + gap) + boxW / 2} ${cy + boxH / 2 + 2} Q${startX + 3.5 * (boxW + gap)} ${cy + boxH / 2 + 26} ${startX + 4 * (boxW + gap) + boxW / 2} ${cy + boxH / 2 + 2}`} />
+      </g>
+
+      {/* Arc labels */}
+      <text x="160" y={cy - boxH / 2 - 32} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>
+        traces back to intent
+      </text>
+      <text x={startX + 3.25 * (boxW + gap)} y={cy + boxH / 2 + 32} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>
+        closes the loop
+      </text>
+
+      {/* Tool integrations below */}
+      <text x="160" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>
+        tools cross phase boundaries
+      </text>
+      {["tickets", "code", "runtime", "metrics", "logs"].map((tool, i) => {
+        const x = startX + i * (boxW + gap) + boxW / 2;
+        return (
+          <g key={tool}>
+            <line x1={x} y1={cy + boxH / 2 + 4} x2={x} y2="238" stroke={C.faint} strokeWidth="0.6" strokeDasharray="2 2" />
+            <text x={x} y="250" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>
+              {tool}
+            </text>
+          </g>
+        );
+      })}
+
+      <text x="160" y="278" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.terracotta}>
+        narrow in purpose, broad in reach
+      </text>
+    </svg>
+  );
+}

@@ -30,6 +30,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "agent-moves-first": AgentMovesFirstArt,
   "posthog-code": PostHogCodeArt,
   "notion-ships-the-primitives": NotionPrimitivesArt,
+  "every-tool-ships-an-agent": EveryToolAgentArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -1025,6 +1026,42 @@ function PostHogCodeArt() {
           strokeWidth="1"
           strokeDasharray="3 4"
         />
+      </g>
+    </svg>
+  );
+}
+
+function EveryToolAgentArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.13"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {/* Center hub */}
+        <g transform="translate(250, 120)">
+          <circle r="22" strokeWidth="1.8" />
+          <circle r="3" fill={C.ink} stroke="none" />
+          {/* Radiating spokes to tool nodes */}
+          {[0, 60, 120, 180, 240, 300].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const x = Math.cos(rad) * 65;
+            const y = Math.sin(rad) * 55;
+            return (
+              <g key={i}>
+                <line x1={Math.cos(rad) * 22} y1={Math.sin(rad) * 22} x2={x} y2={y} strokeWidth="1.2" />
+                <rect x={x - 12} y={y - 10} width="24" height="20" rx="3" strokeWidth="1.3" />
+              </g>
+            );
+          })}
+        </g>
       </g>
     </svg>
   );

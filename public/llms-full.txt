@@ -185,6 +185,122 @@ I've been saying the products that score highest are the ones with all three wor
 
 ---
 
+## Essay: Every tool ships an agent now
+
+Published: 2026-05-15
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/every-tool-ships-an-agent/
+
+David Cramer, Sentry's co-founder, posted something that landed differently than most vendor announcements.
+
+<iframe src="https://platform.twitter.com/embed/Tweet.html?id=2055322853701267859" width="504" height="300" frameBorder="0" allowFullScreen title="David Cramer tweet on vendor agents" />
+
+"Vendor-specific chatbots are broken by design," he wrote. The Sentry agent, the Linear agent, any agent scoped to a single product. Fine for point queries. Nice to get started with. But agents with generalized access outperform them "in every single" use case that crosses tool boundaries.
+
+Then he open-sourced [Junior](https://github.com/getsentry/junior), an agent runtime Sentry's team built internally. Seven plugin packages, a sandboxed execution environment, and an egress proxy for credential isolation. It's not a Sentry chatbot. It's a framework for building a single agent that talks to all your tools at once.
+
+A vendor, publicly arguing that its own category of product is architecturally flawed, and then shipping the alternative as open source. Worth taking apart what they built and comparing it to what [Notion](https://notion.so), [PostHog](https://posthog.com), and [CodeRabbit](https://coderabbit.ai) are building in the same space.
+
+## What Cramer means by "broken by design"
+
+Consider what happens when production goes down. An engineer opens Sentry to find the error. Then Datadog for the latency spike. Then GitHub for the recent deploy diff. Then Linear for the ticket that requested the change. Four tools, four dashboards, four context windows. The engineer is the integration layer, holding the thread between them.
+
+Each of those tools could ship an AI chatbot that answers questions about its own data. Sentry's chatbot could explain the error. Datadog's could surface the anomalous metric. GitHub Copilot could summarize the PR. But none of them can answer the question that actually matters: what caused this, and which change introduced it?
+
+That question requires correlating an error group with a deploy timestamp with a code diff with a ticket decision. No single vendor sees all four inputs. The chatbot that could answer it doesn't live inside any one product.
+
+The individual APIs work fine. The problem isn't access to data. It's that no single agent holds enough context to reason across the boundaries. The engineer doing the alt-tabbing is performing the cross-system join that the chatbots cannot.
+
+This is the structural argument. A vendor chatbot is, by definition, scoped to one tool. The interesting questions almost never are.
+
+## Junior's answer: one runtime, many plugins
+
+Junior is a TypeScript monorepo with seven plugin packages that runs as a Slack bot. You @-mention it in a thread, and it has access to whatever tools you've configured through a plugin system. The agent provides 25+ tools across sandbox execution, Slack operations, web access, and MCP integration. The architecture has a few ideas worth examining.
+
+### Plugin manifests instead of hardcoded integrations
+
+Each tool connects through a `plugin.yaml` file that declares capabilities, credentials, and MCP servers. The GitHub plugin uses a GitHub App for authentication and installs the `gh` CLI in the sandbox. The Datadog plugin injects API keys as HTTP headers and includes a custom CLI binary. The Linear plugin is three lines long: an MCP URL pointing to `mcp.linear.app`. Notion is similar. Adding a new tool is a manifest file, not a code change.
+
+### Credential isolation through an egress proxy
+
+This is the detail that separates Junior from a wrapper script. When the agent runs code in a sandboxed environment, that code never sees raw API tokens. Outbound HTTP requests route through an egress proxy that checks the destination domain against registered plugins, fetches a user-scoped credential lease, and injects the auth headers before forwarding. If the user hasn't authenticated with a provider, Junior DMs them an OAuth link, pauses the turn, and resumes after the callback completes.
+
+The sandbox is genuinely sandboxed. The credentials flow through a side channel that the agent's code can't inspect.
+
+### MCP as the universal connector
+
+Three of Junior's seven plugins (Linear, Notion, Hex) integrate entirely through hosted MCP servers. The agent discovers available tools via `searchMcpTools`, calls them via `callMcpTool`, and the plugin system handles the OAuth flow. As more services publish MCP endpoints, Junior's reach grows without code changes on Sentry's side.
+
+## Four bets on scope
+
+Not everyone agrees with Cramer. The four approaches line up on a spectrum from narrow and deep to broad and composable, and each reflects a different theory about where the value lives.
+
+### PostHog: narrow wins if the domain is right
+
+[PostHog](https://posthog.com) had an AI assistant called Max. They killed it. Not because AI was wrong, but because the product surface was. Their [retrospective](https://posthog.com/blog/8-learnings-from-1-year-of-agents-posthog-ai) was direct: "AI really can make your product worse if you choose to build the wrong thing." They relaunched as PostHog AI, an in-app assistant scoped entirely to their analytics platform. It writes SQL queries, generates insights, creates feature flags, summarizes experiments. No Slack bot, no cross-tool access.
+
+Their technical learning: "A single loop beats subagents, with context being everything." Their product learning: narrow scope forces better answers because there's no ambiguity about what the agent should do.
+
+### CodeRabbit: the review gate as expansion point
+
+[CodeRabbit](https://coderabbit.ai) started as a PR review bot and expanded outward. With over 2 million connected repositories and 13 million PRs reviewed, they have the largest installed base of any AI code review tool on GitHub and GitLab. Their [Agent for Slack](https://www.coderabbit.ai/agent) now connects to a dozen tools: GitHub, Jira, Linear, Datadog, Sentry, Notion, PagerDuty, and AWS. We covered their architecture in [CodeRabbit's agent and the thirty-minute gap](/posts/agent-moves-first). The thesis is that code review is the highest-leverage chokepoint in the development lifecycle. If you control the quality gate, you can expand naturally into planning, monitoring, and incident response.
+
+Harjot Gill, CodeRabbit's CEO, frames the requirement as four pillars: context, knowledge, multi-player collaboration, and governance. "Without all four, you don't have an agentic SDLC. You have a faster autocomplete with more steps."
+
+### Notion: the workspace as coordination layer
+
+[Notion](https://notion.so)'s approach is the most structurally different. Rather than building one agent that talks to many tools, they're making Notion the place where many agents converge. Over one million custom agents have been built by Notion customers since the September 2025 launch. Their internal agents operate on workspace data: summarizing, routing, writing reports, updating hundreds of database pages at once. But the Developer Platform, [launched this month](https://www.notion.com/releases/2026-05-13), lets external agents — Claude Code, Cursor, Codex — plug into Notion as a coordination layer.
+
+Ivan Zhao's framing is "infinite minds." AI agents as a new material for organizational design, the way steel changed what buildings could look like. The bet is that whoever controls the workspace where people and agents collaborate controls the distribution point. The agents themselves can come from anywhere.
+
+### Junior: the open runtime
+
+Sentry's bet is the most explicit about composability. Junior is open-source, self-hostable, and designed to be forked. The plugin system, the credential proxy, the MCP integration, the sandboxed execution — all architecture choices that assume you'll wire in tools Sentry never anticipated. The default model is GPT-5.4 through Vercel AI Gateway, making it model-provider agnostic. The skills system uses markdown files, not code, so changing the agent's behavior doesn't require a deploy.
+
+Publishing Junior as open source makes the argument better than the tweet does. If vendor chatbots are broken by design, the fix has to be something any team can self-host and extend. An open runtime is the structural argument that a hosted product can't make.
+
+## A different axis: agents per phase, not per tool
+
+The vendor-vs-generalized debate assumes the organizing principle is *tools*. One agent per tool (vendor chatbot) or one agent across many tools (Junior). But there's a third framing that slices differently: one agent per lifecycle phase, with integrations crossing the phase boundaries rather than living inside tool silos.
+
+The phases of any engineering task follow a recognizable sequence: plan what to build, delegate subtasks to the right specialists, execute the work, review the output against the original intent, and observe what happens after it ships. Call it PDERO: Plan, Delegate, Execute, Review, Observe. Each phase has distinct requirements, distinct failure modes, and distinct tool needs.
+
+A planning agent needs access to tickets, conversations, and prior decisions. It asks clarifying questions before code exists. A delegation agent needs a capability registry, knowing which specialized agents handle frontend vs. infrastructure vs. data migrations, and scoping permissions for each. An execution agent needs sandboxed tool access and inter-agent coordination. A review agent needs diffs, traces back to original goals, and approval gates for critical actions. An observation agent needs logs, metrics, and the ability to correlate runtime behavior with the plan that produced it.
+
+No single generalized agent handles all five phases well. The context window that makes a planning agent effective (long, deliberative, full of requirements) is different from the one that makes an execution agent effective (tight, tool-heavy, sandboxed). And a vendor chatbot that only covers one tool misses the cross-phase integration entirely. The Sentry error in the Observe phase needs to trace back to the plan that produced the code that caused it.
+
+Vendor chatbots draw boundaries around tools. Generalized agents erase boundaries entirely. Phase-specific agents draw boundaries around lifecycle stages, which is closer to how engineering teams actually organize their work. The integrations still cross tools, but they follow the flow of a task from intention to production rather than the shape of a vendor's API.
+
+This is the architectural bet that interests us. Not one agent that sees everything, and not one chatbot per product, but a coordinated team of agents where each owns a phase and the integrations connect them end to end. The planner hands a structured task to the delegator, the delegator routes to specialized executors, the reviewer traces every change back to the goal, and the observer closes the loop. Each agent is narrow in purpose but broad in the tools it can reach within its phase.
+
+## Where the approaches converge
+
+Five patterns, one shared realization: the model matters less than the plumbing.
+
+<table>
+<thead><tr><th></th><th>PostHog</th><th>CodeRabbit</th><th>Notion</th><th>Junior</th><th>Phase agents</th></tr></thead>
+<tbody>
+<tr><td>Where the agent lives</td><td>In-app</td><td>Slack + GitHub</td><td>In-app + external agents</td><td>Slack</td><td>Across the lifecycle</td></tr>
+<tr><td>What differentiates it</td><td>Analytics events</td><td>Code + issues + monitoring</td><td>Workspace knowledge</td><td>All connected plugins</td><td>Phase-scoped context</td></tr>
+<tr><td>Credential model</td><td>Platform auth</td><td>OAuth per service</td><td>Workspace permissions</td><td>Egress proxy + leases</td><td>Scoped per phase + agent</td></tr>
+<tr><td>MCP support</td><td>Wished they'd adopted it</td><td>Yes</td><td>Yes (as host)</td><td>Core architecture</td><td>Cross-phase connective tissue</td></tr>
+</tbody>
+</table>
+
+Three of the first four chose Slack as a surface. Notion chose itself. None built a new dashboard. The consistent signal: the agent goes where attention already is.
+
+The disagreement about scope might resolve itself. PostHog's retrospective suggests that starting narrow and expanding deliberately produces better results than starting broad. CodeRabbit's trajectory shows exactly that pattern: start with reviews, expand into planning and monitoring once the quality is proven. Junior ships broad from day one, but the plugin system means teams can start with one integration and add more incrementally. Phase agents start narrow in purpose but broad in reach, and expand by adding phases rather than adding tools.
+
+The more interesting convergence is around MCP. PostHog wishes they'd used it. CodeRabbit does use it. Notion hosts MCP endpoints. Junior treats MCP as the default integration pattern. For phase-specific agents, MCP becomes the connective tissue between phases: the planning agent's output flows through the same protocol to the executor, the reviewer, and the observer. When the protocol becomes the integration point rather than custom API wrappers, all five patterns start to look more alike than different.
+
+PostHog's ["8 learnings from 1 year of agents"](https://posthog.com/blog/8-learnings-from-1-year-of-agents-posthog-ai) is one of the more honest accounts of building AI features into an existing product. Junior's [PLUGIN.md](https://github.com/getsentry/junior/blob/main/PLUGIN.md) is worth reading for plugin system design. CodeRabbit's [agentic SDLC guide](https://www.coderabbit.ai/guides/agentic-sdlc) lays out their four-pillars framework.
+
+Cramer's tweet frames this as a binary: vendor chatbots are broken, generalized agents win. The implementations tell a more nuanced story. PostHog found that narrow scope produces better answers. Notion found that being the coordination layer matters more than being the agent itself. CodeRabbit found that one strong integration point can expand into many. Junior found that the runtime should be open and composable. And phase-specific agents suggest the organizing principle might not be tools at all, but the lifecycle stages that every engineering task passes through.
+
+What every approach found is that credential isolation, plugin systems, MCP interop, and execution sandboxes consume more engineering effort than prompting. The hard work isn't making the LLM smarter. It's giving the right agent the right access, to the right data, with the right permissions, at the right moment in the lifecycle.
+
+---
+
 ## Essay: CodeRabbit's agent and the thirty-minute gap
 
 Published: 2026-05-15

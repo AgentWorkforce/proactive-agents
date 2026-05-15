@@ -35,6 +35,7 @@ This site is a working manual on proactive agents: AI agents that act without be
 - [PostHog Code and the production signal](/posts/posthog-code/): PostHog Code injects production data into the coding agent's context. The enricher pattern points toward proactivity.
 - [Notion ships the proactive primitives](/posts/notion-ships-the-primitives/): Notion shipped building blocks, not just an agent — Workers, Custom Agents, and an open API for external agents.
 - [CodeRabbit's agent and the thirty-minute gap](/posts/agent-moves-first/): CodeRabbit's Slack agent connects a dozen dev tools. But real-time event detection is still a thirty-minute cron job.
+- [Every tool ships an agent now](/posts/every-tool-ships-an-agent/): Sentry, Notion, PostHog, and CodeRabbit each shipped AI agents. Comparing five architectural patterns from vendor chatbot to phase-specific agent orchestration (PDERO).
 
 ### Market Intelligence
 - [Proactive Agent Landscape](/market/): Who's building proactive agents — landscape analysis, news tracking, and a startup directory across enterprise vendors and early-stage companies.
