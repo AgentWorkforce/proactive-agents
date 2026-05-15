@@ -33,6 +33,7 @@ This page maps the landscape through the [three-primitives framework](/posts/thr
 <tr><td>AI Workers</td><td>MindStudio</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Agency</td><td>Browser Use</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Workers + Custom Agents</td><td>Notion</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
+<tr><td>Proton / Offsite</td><td>Mercury</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
 <tr><td>Agent Relay</td><td>Agent Relay</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipping</td></tr>
 </tbody>
 </table>
@@ -84,6 +85,8 @@ The target audience is non-technical operators, which is a different market segm
 **[MindStudio](https://www.mindstudio.ai/)** is a no-code platform for building and deploying AI agents, with access to 200+ models and 1,000+ integrations. Agents can run on custom schedules (daily, weekly, or interval-based), trigger from webhooks and inbound emails, and deliver results via email, Slack, and SMS. The platform sits at the builder layer rather than the application layer: you construct the proactive behavior yourself rather than getting it out of the box. MindStudio also publishes [consistently good content](https://www.mindstudio.ai/blog) on agent design patterns and workflows, which makes their blog worth following for anyone building in this space.
 
 **[Agency](https://browser-use.com/) (Browser Use)** flips the interaction model: instead of you prompting the AI, the AI prompts you. Agency watches your connected tools, identifies useful work, drafts the action, and sends it to you for one-click approval. It runs 24/7 through Telegram with thousands of integrations including Gmail, Slack, DataDog, and Linear. It works with Claude Code and Codex subscriptions, which means the agent and the app share a machine and the agent can edit and improve itself based on your decisions. All three primitives are present: scheduled monitoring, real-time change detection across integrations, and delivery through Telegram. The self-improvement loop is the interesting differentiator here.
+
+**[Mercury](https://www.mercury.build/)** is a multi-agent orchestration platform built around two products: Proton, a runtime for coordinated agent systems, and Offsite, a no-code interface for deploying and monitoring agent workflows via Slack and iMessage. The proactive infrastructure runs deep. Scheduled jobs fire messages to agents on a cron schedule. Heartbeats wake agents periodically with a configurable wake message. And a trigger system covers 26+ event types across Gmail, Slack, and other services, each with per-trigger instructions that tell the agent when to act versus ignore. All three primitives are present, with delivery through Slack and iMessage rather than a proprietary UI. The focus on multi-agent coordination rather than single-agent automation sets Mercury apart from the other startups on this list.
 
 <Callout tone="cool" label="Disclosure">
 We build [Agent Relay](https://agentrelay.com), a developer SDK that provides the clock, listener, and inbox as composable primitives. It sits at the infrastructure layer, not the application layer. This analysis applies the same framework to everyone on the list, including us.

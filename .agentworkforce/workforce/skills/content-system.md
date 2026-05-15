@@ -99,6 +99,7 @@ These patterns mark content as AI-generated. Run every draft against this list. 
 - Staccato fragmentation: "No X. No Y. No Z." (tricolon declarations)
 - Em dash overuse: more than 1-2 per section
 - Filler adverbs: "actually", "literally", "quietly", "fundamentally", "essentially"
+- "Why does X matter?" headings or sentences — pure AI tell, no human frames their own writing this way
 
 ### Tier 2: Rewrite if possible
 

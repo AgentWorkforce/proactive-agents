@@ -3,8 +3,8 @@
 
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
-  --font-display: var(--font-instrument), ui-serif, Georgia, serif;
+  --font-serif: var(--font-literata), ui-serif, georgia, serif;
+  --font-display: var(--font-literata), ui-serif, georgia, serif;
   --font-mono: var(--font-jetbrains), ui-monospace, monospace;
 
   --color-paper: #fbf6ec;

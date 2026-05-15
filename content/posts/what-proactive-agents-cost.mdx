@@ -2,6 +2,7 @@
 title: "What proactive agents actually cost"
 summary: "Every team building proactive agents hits the same wall — always-on means always spending. The ones shipping anyway found patterns worth stealing."
 date: "2026-05-13"
+lastModified: "2026-05-15"
 accent: "butter"
 dropcap: true
 ---
@@ -16,16 +17,16 @@ The question has weight to it. Not because these teams can't afford tokens. Most
 
 ## The anatomy of a proactive token bill
 
-Every proactive agent wake-up has four phases. First, context loading: the agent reads its environment. What changed since last time? What's the current state of the things it watches? This alone can be substantial if the agent tracks a lot of surface area. Second, triage: the agent reasons about whether the changes matter. This is the LLM call that burns the most tokens relative to value, because most of the time the answer is "no, nothing actionable." Third, action: if the agent decides to act, it does the work. Fourth, reporting: it delivers results to wherever they need to go.
+Every proactive agent wake-up — built on the [three primitives](/posts/three-primitives) — has four phases. First, context loading: the agent reads its environment. What changed since last time? What's the current state of the things it watches? This alone can be substantial if the agent tracks a lot of surface area. Second, triage: the agent reasons about whether the changes matter. This is the LLM call that burns the most tokens relative to value, because most of the time the answer is "no, nothing actionable." Third, action: if the agent decides to act, it does the work. Fourth, reporting: it delivers results to wherever they need to go.
 
-Reactive agents skip phases one and two entirely. A human already decided something matters by invoking the agent, so it goes straight to work. Proactive agents run the full cycle every time they wake up, and most wake-ups produce no action. You're paying for judgment, not just execution.
+[Reactive agents](/posts/reactive-vs-proactive) skip phases one and two entirely. A human already decided something matters by invoking the agent, so it goes straight to work. Proactive agents run the full cycle every time they wake up, and most wake-ups produce no action. You're paying for judgment, not just execution.
 
 One integration platform I spoke with measured this precisely. Their average cost was about $0.20 per sync with a lightweight model. Then they ran the same workload through a frontier model to compare. They put $40 in the API wallet. The frontier model ate through $37 and only got halfway. Over 10x the cost, and the team concluded the cheaper model was good enough for the routine work. They stopped worrying about token usage after that.
 
 A different team told me they'd burned through a competitor's credits in three days using an always-on Slack agent. Their own system, built around file-based context and specialized agents per domain, had used about $20 over two months for similar coverage. The difference wasn't the model. It was how the system loaded context and decided when to engage.
 
 <Callout tone="thought" label="The empty wake-up problem">
-A proactive agent that checks every fifteen minutes and acts twice a day runs 96 wake-ups for 2 actions. The other 94 are pure triage cost. Teams that don't account for this discover it on the invoice.
+A proactive agent that checks every fifteen minutes and acts twice a day runs 96 wake-ups for 2 actions. The other 94 are pure triage cost. The [PARE benchmark](/posts/forty-two-percent) measured this dynamic: even frontier models only succeed 42% of the time. Teams that don't account for empty wake-ups discover them on the invoice.
 </Callout>
 
 </Scene>
@@ -50,7 +51,7 @@ Beyond model cascading, a handful of strategies keep showing up independently ac
 
 **Burn tracking.** The teams with the best cost control all built some form of token analytics. One team built a "burn" dashboard showing token waste versus tokens used over the last 24 hours. Another tracked cost per action across their pipeline to identify which integration steps were disproportionately expensive. Most agent frameworks don't ship with spend visibility, so teams build their own. The pattern is consistent enough that it should be a default feature, which is why we're building [Burn](https://github.com/AgentWorkforce/burn), an open-source tool for tracking where your agent tokens go.
 
-**Scheduled over real-time.** Not every proactive behavior needs instant detection. A daily digest doesn't need to poll every fifteen minutes. A weekly report doesn't need webhooks. One enterprise team described routing agent workloads across cloud providers by hour to capture pricing differences during off-peak windows. The proactivity was in the intelligent routing, not in constant vigilance.
+**Scheduled over real-time.** Not every proactive behavior needs instant detection. A daily digest doesn't need to poll every fifteen minutes. A weekly report doesn't need webhooks. Our [weekly-digest agent](/posts/building-weekly-digest) runs once a week and costs effectively nothing. One enterprise team described routing agent workloads across cloud providers by hour to capture pricing differences during off-peak windows. The proactivity was in the intelligent routing, not in constant vigilance.
 
 <Callout tone="warm" label="The invisible ledger">
 Token spend is a line item you can see. The cost of a PR sitting open for three days, a failing check nobody re-runs, an alert nobody triages until Monday morning: those costs are real but they never show up on a dashboard. Teams that frame proactivity purely as a cost question are reading half the ledger.
@@ -62,7 +63,7 @@ Token spend is a line item you can see. The cost of a PR sitting open for three 
 
 ## The context tax
 
-There's a subtler cost that teams discover later. Long-running agents accumulate context, and context degrades.
+There's a subtler cost that teams discover later, and it connects to [what makes proactive agents hard](/posts/why-proactive-is-hard) in the first place. Long-running agents accumulate context, and context degrades.
 
 One team building feature-scoping workflows described the problem clearly: after a hundred messages in a Slack conversation, the agent's output became unreliable. Not wrong exactly, just noisy. The context contained too much irrelevant history, and the agent couldn't separate what mattered from what didn't. They solved it by adding explicit gating stages where an agent consolidates and summarizes before the next phase begins. Each summary step carries its own token cost, but the alternative was an agent producing output nobody trusted.
 

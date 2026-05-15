@@ -1,7 +1,8 @@
 ---
 title: "CodeRabbit's agent and the thirty-minute gap"
-summary: "CodeRabbit's Slack agent is one of the strongest AI development tools on the market. Its automations are well-designed and genuinely useful. But when you ask for real-time event-driven behavior, you get a thirty-minute cron job."
+summary: "CodeRabbit's Slack agent connects a dozen dev tools with strong automations. But real-time event detection? That's still a thirty-minute cron job."
 date: "2026-05-15"
+lastModified: "2026-05-15"
 accent: "lavender"
 dropcap: true
 ---
@@ -14,9 +15,13 @@ Their [Agent for Slack](https://www.coderabbit.ai/agent) is one of the more ambi
 
 ## What they built
 
+### How does the Slack-native approach compare?
+
 The Slack-native approach is the right call. Engineers don't want another dashboard. They already live in Slack, and putting the agent there means feedback appears in the same thread where the team is discussing the deploy or the incident. We reached the same conclusion building [My Senior Dev](https://myseniordev.com): the review agent's move into Slack ([Act 2](/posts/review-agent-three-acts)) generated more engagement than any UI polish on the web dashboard.
 
 [Devin](https://devin.ai) is probably the strongest existing example of this pattern. Its Slack bot can review PRs, write fixes, and execute multi-step engineering tasks directly from a thread. It's been around long enough to prove that Slack-native is a durable product shape, not just a demo. Devin ships 7 native integrations (GitHub, GitLab, Bitbucket for git; Slack and Microsoft Teams for communication; Linear and Jira for task management) plus a marketplace of 76 MCP tools for extending its reach. Where CodeRabbit differentiates is observability context: native connections to Datadog, Sentry, PagerDuty, PostHog, and cloud infrastructure give it cross-system reasoning about incidents and deploys that a code-focused agent doesn't attempt. Where Devin differentiates is execution depth, going from conversation to committed code in the same thread.
+
+### How do automations and triggers work?
 
 The automations feature is where CodeRabbit starts to separate from both. You describe what you want in natural language, the agent drafts a spec with schedule, scope, and destination, and you review before activating. "Every weekday at 9am, summarize new PR blockers in this channel." The setup is conversational and transparent. You see exactly what the agent plans to do, when it will run, and where it will post. That transparency matters when you're giving an AI recurring access to your codebase.
 

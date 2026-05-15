@@ -20,17 +20,21 @@ This site is a working manual on proactive agents: AI agents that act without be
 ### Essays
 - [Proactive agents need three primitives](/posts/three-primitives/): Why agents need a clock, a watcher, and an inbox wired together with durable state.
 - [Reactive vs proactive, with examples](/posts/reactive-vs-proactive/): Side-by-side code comparison of the same agent built both ways.
-- [The eight-week webhook tax](/posts/the-webhook-tax/): The real engineering cost of making an agent proactive against multiple providers.
+- [The eight-week webhook tax per provider](/posts/the-webhook-tax/): The real engineering cost of making an agent proactive against multiple providers.
 - [What makes proactive agents hard to build](/posts/why-proactive-is-hard/): Three problems compound in production: knowing when to wake up, remembering across runs, and knowing when to stay quiet.
 - [The proactive agent wish list](/posts/the-wish-list/): A personal list of agents I want but don't have yet, across music, news, money, and work.
 - [ChatGPT Pulse and the missing primitives](/posts/chatgpt-pulse/): ChatGPT Pulse has one of the three primitives. Here's what's missing.
 - [Building the weekly-digest agent](/posts/building-weekly-digest/): Production postmortem of a weekly-digest agent that scans sources, clusters mentions, and files GitHub issues.
 - [What would a magical agent actually do?](/posts/magical-agents/): The best agents feel like an intern who already handled the thing you were about to ask about.
 - [Where push architectures break](/posts/push-breaks-too/): Where webhooks fail and what production mitigation looks like.
-- [The prompt can't save you](/posts/the-prompt-cant-save-you/): Why proactive agents need a runtime, not a better system prompt.
-- [A review agent in three acts](/posts/review-agent-three-acts/): From webhook-triggered PR reviewer to multi-surface proactive agent. Each phase taught something about what proactive agents need.
+- [The prompt can't save your agent](/posts/the-prompt-cant-save-you/): Why proactive agents need a runtime, not a better system prompt.
+- [A code review agent in three acts](/posts/review-agent-three-acts/): From webhook-triggered PR reviewer to multi-surface proactive agent. Each phase taught something about what proactive agents need.
 - [What proactive agents actually cost](/posts/what-proactive-agents-cost/): The token economics of always-on agents — where the spend goes, model cascading patterns, and how teams architect around the cost of proactivity.
-- [The genesis](/posts/the-genesis/): How it started: three terminal windows and too much copy-pasting.
+- [The genesis of proactive agents](/posts/the-genesis/): How it started: three terminal windows and too much copy-pasting.
+- [What forty-two percent tells us](/posts/forty-two-percent/): The first realistic benchmark for proactive agents shows a 42% success ceiling. The models that win speak up least.
+- [PostHog Code and the production signal](/posts/posthog-code/): PostHog Code injects production data into the coding agent's context. The enricher pattern points toward proactivity.
+- [Notion ships the proactive primitives](/posts/notion-ships-the-primitives/): Notion shipped building blocks, not just an agent — Workers, Custom Agents, and an open API for external agents.
+- [CodeRabbit's agent and the thirty-minute gap](/posts/agent-moves-first/): CodeRabbit's Slack agent connects a dozen dev tools. But real-time event detection is still a thirty-minute cron job.
 
 ### Market Intelligence
 - [Proactive Agent Landscape](/market/): Who's building proactive agents — landscape analysis, news tracking, and a startup directory across enterprise vendors and early-stage companies.

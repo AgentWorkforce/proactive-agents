@@ -2,6 +2,7 @@
 title: "Building the weekly-digest agent: a production postmortem"
 summary: "Our weekly-digest agent scans four sources, clusters mentions, and files a GitHub issue. Here's what worked and what broke."
 date: "2026-05-11"
+lastModified: "2026-05-15"
 accent: "sage"
 dropcap: true
 ---
@@ -30,7 +31,7 @@ If no fresh mentions survive dedup, the agent logs "skipped — quiet week" and 
 
 Here's what the output actually looks like in the GitHub issue:
 
-```
+```markdown
 Weekly digest — week of 2026-05-03
 
 ### Proactive agent architectures (3)
@@ -70,9 +71,13 @@ Some parts of this agent were surprisingly painless. Worth calling out, because 
 
 The first week the agent ran, it produced nothing. The second week, it produced garbage. The third week, it worked. Here's what happened in between.
 
+### Why did the first deploy produce zero results?
+
 **`env()` vs `process.env`.** The first production bug was the dumbest one. The agent code used `process.env.BRAVE_API_KEY`, which works fine in Node.js. It does not work on [Cloudflare Workers](https://developers.cloudflare.com/workers/), where secrets are accessed via the `env()` binding passed to the handler function. The fix was a one-line change. The debugging took an hour because the error wasn't "key not found," it was a silent empty string that made Brave return zero results with a 200 status.
 
 **Reddit's JSON API is unreliable.** Our primary source for Reddit data is appending `.json` to subreddit URLs. Simple, no auth required, and it works most of the time. The problem is "most of the time." Reddit returns 429s during traffic spikes and occasionally serves HTML error pages when you ask for JSON. We added a fallback: if the Reddit endpoint returns a 4xx or 5xx, the agent re-queries via Brave using `site:reddit.com/r/LocalLLaMA` as the search term. The fallback finds fewer results but never fails silently.
+
+### How reliable is Reddit as a data source?
 
 **Search recall was too narrow.** The original queries were too specific. "Proactive agent runtime" returned almost nothing because nobody outside our site uses that phrase. We widened to "proactive agents" and "proactive AI agent," which brought in more noise but also more signal. The clustering step handles the noise; the gather step's job is not to be clever about filtering.
 
