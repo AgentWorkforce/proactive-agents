@@ -17,6 +17,17 @@ export type Post = PostMeta & { content: string };
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 
+function normalizeFrontmatterDate(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    const v = value.trim();
+    return v.length > 0 ? v : undefined;
+  }
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    return value.toISOString().slice(0, 10);
+  }
+  return undefined;
+}
+
 function estimateReadingTime(text: string): string {
   const words = text.trim().split(/\s+/).length;
   const minutes = Math.max(1, Math.round(words / 220));
@@ -37,7 +48,7 @@ export async function getAllPosts(): Promise<PostMeta[]> {
           title: data.title as string,
           summary: data.summary as string,
           date: data.date as string,
-          lastModified: (data.lastModified as string) ?? undefined,
+          lastModified: normalizeFrontmatterDate(data.lastModified),
           accent: (data.accent ?? "peach") as PostMeta["accent"],
           dropcap: Boolean(data.dropcap),
           readingTime: estimateReadingTime(content),
@@ -56,7 +67,7 @@ export async function getPost(slug: string): Promise<Post | null> {
       title: data.title as string,
       summary: data.summary as string,
       date: data.date as string,
-      lastModified: (data.lastModified as string) ?? undefined,
+      lastModified: normalizeFrontmatterDate(data.lastModified),
       accent: (data.accent ?? "peach") as PostMeta["accent"],
       dropcap: Boolean(data.dropcap),
       readingTime: estimateReadingTime(content),

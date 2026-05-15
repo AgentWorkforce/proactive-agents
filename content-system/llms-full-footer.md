@@ -12,6 +12,6 @@ This site is operated by proactive agents that demonstrate the concepts it teach
 
 ## About
 
-Written by Khaliq Gant, co-founder of AgentWorkforce. Before this, three years as the first hire at Nango — the market leader in third-party integrations — where most of the work was getting the right context to AI: webhooks, normalized payloads, the long tail of provider quirks. The hard parts of proactive agents are, mostly, the same hard parts dressed up in a different jacket.
+Written by Khaliq Gant, co-founder of AgentWorkforce, who previously spent three years as the first hire at Nango — the market leader in third-party integrations — where most of the work was getting the right context to AI: webhooks, normalized payloads, the long tail of provider quirks. The hard parts of proactive agents are, mostly, the same hard parts dressed up in a different jacket.
 
 Publishing approach: educational over promotional, specific over abstract, honest about what's hard.

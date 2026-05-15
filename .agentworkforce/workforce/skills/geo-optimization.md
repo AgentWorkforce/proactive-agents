@@ -29,7 +29,7 @@ When a section exceeds 400 words, split it with an H3 subheading that describes 
 - Headings should be descriptive enough to stand alone as a topic identifier in search results or AI citations
 
 ### Code blocks
-Always tag code blocks with a language identifier (```typescript, ```markdown, ```json, etc.). Untagged code blocks lose syntax context in AI retrieval and render poorly in citation previews.
+Always tag code blocks with a language identifier (`typescript`, `markdown`, `json`, etc.). Untagged code blocks lose syntax context in AI retrieval and render poorly in citation previews.
 
 ## Freshness Signals
 

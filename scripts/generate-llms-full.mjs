@@ -14,20 +14,40 @@ const SITE_URL = "https://proactiveagents.dev";
 
 function stripMdxComponents(content) {
   let md = content;
+
+  // Preserve fenced code blocks by replacing them with placeholders
+  const codeBlocks = [];
+  md = md.replace(/^```[\s\S]*?^```/gm, (match) => {
+    codeBlocks.push(match);
+    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  // Strip self-closing JSX components
   let prev;
   do {
     prev = md;
     md = md.replace(/<[A-Z]\w*(?:\s+[^<>]*)?\s*\/>/g, "");
   } while (md !== prev);
+  // Strip opening and closing JSX tags
   md = md.replace(/<[A-Z]\w*(?:\s+[^<>]*)?\s*>/g, "");
   md = md.replace(/<\/[A-Z]\w*\s*>/g, "");
+  // Strip MDX-level import/export statements
   md = md.replace(/^import\s+.*$/gm, "");
   md = md.replace(/^export\s+.*$/gm, "");
+
+  // Restore code blocks
+  md = md.replace(/__CODE_BLOCK_(\d+)__/g, (_, i) => codeBlocks[Number(i)]);
+
   md = md.replace(/\n{3,}/g, "\n\n");
   return md.trim();
 }
 
 const files = fs.readdirSync(POSTS_DIR).filter((f) => f.endsWith(".mdx"));
+if (files.length === 0) {
+  console.error("Error: No .mdx files found in content/posts");
+  process.exit(1);
+}
+
 const posts = files
   .map((file) => {
     const slug = file.replace(/\.mdx$/, "");
@@ -69,7 +89,12 @@ const output = [
   "",
 ].join("\n");
 
-fs.writeFileSync(OUT, output);
-console.log(
-  `Generated llms-full.txt (${posts.length} essays, ${output.length} chars)`
-);
+try {
+  fs.writeFileSync(OUT, output);
+  console.log(
+    `Generated llms-full.txt (${posts.length} essays, ${output.length} chars)`
+  );
+} catch (err) {
+  console.error(`Failed to write llms-full.txt: ${err.message}`);
+  process.exit(1);
+}
