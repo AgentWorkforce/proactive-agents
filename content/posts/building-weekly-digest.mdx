@@ -12,7 +12,7 @@ I wanted to write about it because every other post on this site is kind of theo
 
 So here are the receipts.
 
-<Scene figure={<DigestPipelineFigure />} caption="The full pipeline — sources to GitHub issue.">
+<Scene figure="DigestPipelineFigure" caption="The full pipeline — sources to GitHub issue.">
 
 ## How it works
 
@@ -64,7 +64,7 @@ Some parts of this agent were surprisingly painless. Worth calling out, because 
 
 **Dedup via a flat JSON file is laughably simple and works fine.** At our scale (roughly 30 mentions per week, maybe 1,500 per year), a flat file of URLs is perfectly adequate. There's no bloom filter, no Redis set, no expiry policy. The file grows by a few kilobytes per week and we can read the whole thing in a glance. Sometimes the right data structure is a list.
 
-<Scene side="right" figure={<DigestTimelineFigure />} caption="A timeline of things that broke — in order of discovery.">
+<Scene side="right" figure="DigestTimelineFigure" caption="A timeline of things that broke — in order of discovery.">
 
 ## What broke
 
@@ -83,6 +83,8 @@ For two weeks in April, the agent found zero new mentions after dedup. The log s
 **Gemini Flash hallucinated a cluster once.** In week three, the clustering step returned a topic called "Enterprise adoption trends" containing two links. One was a Reddit comment about LLaMA quantization that mentioned "proactive" in an unrelated sentence. The other was a Brave result about proactive customer service bots, which has nothing to do with proactive agents in our sense. The temperature was already 0.2. We tightened the system prompt to emphasize that fewer clusters with high confidence beats more clusters with mixed relevance. The hallucinated cluster hasn't reappeared, but I wouldn't call the problem solved.
 
 </Scene>
+
+<Scene figure="DeliveryChoiceFigure" caption="The channel shapes the behavior more than the content.">
 
 ## The delivery choice
 
@@ -136,3 +138,5 @@ If you want to know whether your agent architecture holds up, build something th
 </Callout>
 
 The weekly-digest agent is not sophisticated. A cron job, four API calls, a dedup file, one LLM call, and a GitHub issue. Some weeks it finds a ton, some weeks it finds nothing. Both are fine. It looks so we don't have to, and stays quiet when there's nothing to report.
+
+</Scene>

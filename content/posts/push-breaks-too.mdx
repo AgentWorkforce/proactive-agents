@@ -12,7 +12,7 @@ But I'd be lying if I said push doesn't break too. So here's the other side.
 
 Push architectures break. Sometimes in small annoying ways, sometimes spectacularly. Some of these I've seen firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax). Others I know from my time at [Nango](https://nango.dev) and from talking to teams who run webhook-heavy systems in production.
 
-<Scene figure={<PushFailureFigure />} caption="The failure modes nobody warns you about.">
+<Scene figure="PushFailureFigure" caption="The failure modes nobody warns you about.">
 
 ## Provider reliability is not your reliability
 
@@ -32,7 +32,7 @@ Push is faster but it breaks when your provider has a bad day. Polling is slower
 
 </Scene>
 
-<Scene side="right" figure={<OrderingFigure />} caption="Events arrive when the provider feels like sending them.">
+<Scene side="right" figure="OrderingFigure" caption="Events arrive when the provider feels like sending them.">
 
 ## Ordering, replays, and thundering herds
 
@@ -72,7 +72,7 @@ This means you need replay infrastructure: the ability to take a raw webhook pay
 Push-based systems need investment in tracing and payload storage that poll-based systems mostly avoid. If you are not logging raw webhook bodies with timestamps, event IDs, and processing outcomes, you will eventually face an incident you cannot diagnose. Budget for it up front.
 </Callout>
 
-<Scene figure={<PushFailureFigure />} caption="Silent schema changes break parsers you forgot you had.">
+<Scene figure="PushFailureFigure" caption="Silent schema changes break parsers you forgot you had.">
 
 ## Schema drift
 
@@ -86,7 +86,7 @@ The mitigation is a schema regression test per provider: store a sample payload,
 
 </Scene>
 
-<Scene side="right" figure={<OrderingFigure />} caption="Sometimes the right answer is a cron job.">
+<Scene side="right" figure="OrderingFigure" caption="Sometimes the right answer is a cron job.">
 
 ## When polling is genuinely better
 

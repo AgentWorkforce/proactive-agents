@@ -10,7 +10,7 @@ Prompt engineering isn't going to save you. You need the right infrastructure un
 
 Two recent pieces from the OpenClaw ecosystem show what I mean. One is a tutorial from xCloud — [*7 Proactive OpenClaw Agent Workflows*](https://xcloud.host/proactive-openclaw-agent-workflows/) — mapping seven patterns for making agents do things without being asked. The other is Hal the Lobster's [*Proactive Agent Skill*](https://clawhub.ai/halthelobster/proactive-agent), a system prompt that tries to turn any OpenClaw agent into a proactive, persistent, self-improving partner. Both are worth reading. Both correctly identify the same problems we've been writing about. And both solve them at the wrong layer.
 
-<Scene figure={<PromptLayerFigure />} caption="The fundamental split: what the prompt advises vs what the runtime enforces.">
+<Scene figure="PromptLayerFigure" caption="The fundamental split: what the prompt advises vs what the runtime enforces.">
 
 ## Seven workflows, one primitive
 
@@ -62,7 +62,7 @@ The same gap shows up everywhere:
 
 - **"Nothing goes external without approval"** is a guardrail against runaway action. But "internal" actions (reorganizing files, modifying configs, installing packages) can be just as destructive. The prompt cannot scope what tools the agent has access to. Auth boundaries live in infrastructure, not in prompt text.
 
-<Scene side="right" figure={<GapMapFigure />} caption="Five primitives. Two ecosystems. The pattern is consistent.">
+<Scene side="right" figure="GapMapFigure" caption="Five primitives. Two ecosystems. The pattern is consistent.">
 
 ## The gap map
 
@@ -79,6 +79,8 @@ Here is where both sources land against the primitives a proactive agent actuall
 **Durability** — xCloud has vague retry logic. Hal's skill has a prompt-enforced WAL that the model can skip. Neither has checkpointing, idempotency guarantees, spend control, or scoped auth.
 
 </Scene>
+
+<Scene figure="TwoLayerFigure" caption="The prompt advises. The runtime enforces.">
 
 ## What belongs where
 
@@ -106,6 +108,8 @@ The model should own the first list. It really shouldn't own the second. I've se
 We want to be direct: both pieces are genuine contributions. The xCloud article maps seven real workflow patterns that real teams use. Hal's skill is the most rigorous treatment of agent state we've seen outside of academic papers — the WAL metaphor, the danger zone protocol, the anti-drift limits, the priority ordering. Some of these ideas are better-named than our own.
 
 The thinking is super solid. It's just aimed at the wrong layer. Once you push scheduling, change detection, delivery, state, and durability into the runtime, the prompt can finally just focus on deciding what to do next. Which is what it's actually good at.
+
+</Scene>
 
 <Callout tone="cool" label="Further reading">
 The xCloud article is at [xcloud.host/proactive-openclaw-agent-workflows](https://xcloud.host/proactive-openclaw-agent-workflows/). Hal's skill lives at [clawhub.ai/halthelobster/proactive-agent](https://clawhub.ai/halthelobster/proactive-agent). Our earlier essay, [*Proactive agents need three primitives*](/posts/three-primitives), lays out the clock/listener/inbox framework in full.

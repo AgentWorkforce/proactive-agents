@@ -10,7 +10,7 @@ It started because I kept prompting different terminal windows with different co
 
 That's where Agent Relay started. Get two terminal windows a way to talk to each other.
 
-<Scene figure={<TerminalsFigure />} caption="The bottleneck was me — copy-pasting between agents.">
+<Scene figure="TerminalsFigure" caption="The bottleneck was me — copy-pasting between agents.">
 
 ## Push, not poll
 
@@ -25,6 +25,8 @@ Without a push mechanism, agents would poll — and polling agents inevitably fo
 We set out to build "Slack for agents" so they could communicate by sending messages, DMs, and threads. Agents were proactive by having an inbox. That was the first primitive, though we didn't call it that yet.
 
 </Scene>
+
+<Scene side="right" figure="PrimitiveDiscoveryFigure" caption="Each primitive revealed the next.">
 
 ## The heartbeat wasn't enough
 
@@ -46,7 +48,9 @@ Our recommendation was often: just sync the data. Because honestly, [webhooks ar
 
 That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *listener* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters. I wrote up the full framework in [Proactive agents need three primitives](/posts/three-primitives).
 
-<Scene side="right" figure={<NamingFigure />} caption="Three names, one thing.">
+</Scene>
+
+<Scene figure="NamingFigure" caption="Three names, one thing.">
 
 ## Naming the elephant
 

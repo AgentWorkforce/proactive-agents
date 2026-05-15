@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Squiggle, Asterism } from "@/components/decorations";
+import { FigureExpand } from "@/components/figure-expand";
 import {
   jsonLd,
   breadcrumbSchema,
@@ -10,6 +11,223 @@ import {
   SITE_URL,
   SITE_NAME,
 } from "@/lib/seo";
+
+const D = {
+  paper: "#fbf6ec",
+  ink: "#2a2521",
+  inkSoft: "#4d4640",
+  faint: "#8a7f74",
+  rule: "#e8ddc8",
+  peach: "#ffd6bf",
+  butter: "#fbe7a6",
+  sage: "#c8dcbf",
+  lavender: "#dccaee",
+  rose: "#f2c4cd",
+  sky: "#bedcef",
+  terracotta: "#d98a6b",
+};
+
+function ReactiveProactiveDiagram() {
+  const cy1 = 60;
+  const cy2 = 150;
+  return (
+    <figure className="my-10" aria-label="Reactive vs proactive agent activation flow">
+      <svg viewBox="0 0 420 200" className="mx-auto w-full max-w-md" role="img">
+        <title>Reactive agent waits for human input; proactive agent wakes itself from world events</title>
+        <defs>
+          <marker id="gArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill={D.ink} />
+          </marker>
+          <marker id="gArrowT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill={D.terracotta} />
+          </marker>
+        </defs>
+
+        {/* Row 1: Reactive */}
+        <text x="14" y={cy1 - 28} fontFamily="var(--font-display)" fontSize="12" fill={D.faint}>reactive</text>
+        {/* human */}
+        <circle cx="60" cy={cy1} r="26" fill={D.rose} fillOpacity="0.5" stroke={D.ink} strokeWidth="1.5" />
+        <text x="60" y={cy1 + 5} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={D.ink}>human</text>
+        {/* arrow */}
+        <line x1="90" y1={cy1} x2="148" y2={cy1} stroke={D.ink} strokeWidth="1.5" markerEnd="url(#gArrow)" />
+        {/* agent */}
+        <rect x="154" y={cy1 - 22} width="72" height="44" rx="8" fill={D.paper} stroke={D.ink} strokeWidth="1.5" />
+        <text x="190" y={cy1 + 5} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={D.ink}>agent</text>
+        {/* arrow */}
+        <line x1="230" y1={cy1} x2="288" y2={cy1} stroke={D.ink} strokeWidth="1.5" markerEnd="url(#gArrow)" />
+        {/* response */}
+        <rect x="294" y={cy1 - 18} width="80" height="36" rx="6" fill="none" stroke={D.faint} strokeWidth="1.3" strokeDasharray="5 3" />
+        <text x="334" y={cy1 + 5} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={D.faint}>response</text>
+
+        {/* Divider */}
+        <line x1="30" y1="105" x2="390" y2="105" stroke={D.rule} strokeWidth="1" />
+
+        {/* Row 2: Proactive */}
+        <text x="14" y={cy2 - 28} fontFamily="var(--font-display)" fontSize="12" fill={D.terracotta}>proactive</text>
+        {/* world */}
+        <circle cx="60" cy={cy2} r="26" fill={D.sage} fillOpacity="0.5" stroke={D.ink} strokeWidth="1.5" />
+        <text x="60" y={cy2 + 5} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={D.ink}>world</text>
+        {/* arrow */}
+        <line x1="90" y1={cy2} x2="148" y2={cy2} stroke={D.terracotta} strokeWidth="1.5" markerEnd="url(#gArrowT)" />
+        {/* agent */}
+        <rect x="154" y={cy2 - 22} width="72" height="44" rx="8" fill={D.paper} stroke={D.terracotta} strokeWidth="1.8" />
+        <text x="190" y={cy2 + 5} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={D.ink}>agent</text>
+        {/* arrow */}
+        <line x1="230" y1={cy2} x2="288" y2={cy2} stroke={D.terracotta} strokeWidth="1.5" markerEnd="url(#gArrowT)" />
+        {/* action */}
+        <rect x="294" y={cy2 - 18} width="80" height="36" rx="6" fill={D.peach} fillOpacity="0.4" stroke={D.terracotta} strokeWidth="1.3" />
+        <text x="334" y={cy2 + 5} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={D.ink}>action</text>
+      </svg>
+    </figure>
+  );
+}
+
+function ThreeTriggersDiagram() {
+  return (
+    <figure className="my-10" aria-label="Three triggers that wake a proactive agent">
+      <svg viewBox="0 0 440 260" className="mx-auto w-full max-w-lg" role="img">
+        <title>Time, change, and message triggers converging on a central agent</title>
+        {/* Time trigger */}
+        <g>
+          <circle cx="80" cy="60" r="36" fill={D.butter} fillOpacity="0.6" stroke={D.ink} strokeWidth="1.5" />
+          <circle cx="80" cy="60" r="18" fill={D.paper} stroke={D.ink} strokeWidth="1.2" />
+          {[0, 3, 6, 9].map((h) => {
+            const a = (h / 12) * Math.PI * 2 - Math.PI / 2;
+            return <line key={h} x1={80 + Math.cos(a) * 14} y1={60 + Math.sin(a) * 14} x2={80 + Math.cos(a) * 17} y2={60 + Math.sin(a) * 17} stroke={D.ink} strokeWidth="1" />;
+          })}
+          <line x1="80" y1="60" x2="80" y2="49" stroke={D.ink} strokeWidth="1.4" strokeLinecap="round" />
+          <line x1="80" y1="60" x2="88" y2="60" stroke={D.ink} strokeWidth="1" strokeLinecap="round" />
+          <text x="80" y="112" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={D.ink}>time</text>
+          <text x="80" y="126" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={D.faint}>schedules, intervals</text>
+        </g>
+
+        {/* Change trigger */}
+        <g>
+          <circle cx="220" cy="60" r="36" fill={D.sage} fillOpacity="0.6" stroke={D.ink} strokeWidth="1.5" />
+          <path d="M206 52 L220 44 L234 52 L234 68 L220 76 L206 68 Z" fill="none" stroke={D.ink} strokeWidth="1.3" />
+          <path d="M212 55 L220 50 L228 55" fill="none" stroke={D.terracotta} strokeWidth="1.2" />
+          <circle cx="220" cy="62" r="3" fill={D.terracotta} />
+          <text x="220" y="112" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={D.ink}>change</text>
+          <text x="220" y="126" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={D.faint}>webhooks, data events</text>
+        </g>
+
+        {/* Message trigger */}
+        <g>
+          <circle cx="360" cy="60" r="36" fill={D.lavender} fillOpacity="0.6" stroke={D.ink} strokeWidth="1.5" />
+          <rect x="344" y="46" width="32" height="24" rx="2" fill="none" stroke={D.ink} strokeWidth="1.3" />
+          <path d="M344 46 L360 60 L376 46" fill="none" stroke={D.ink} strokeWidth="1.3" />
+          <text x="360" y="112" textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={D.ink}>message</text>
+          <text x="360" y="126" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={D.faint}>humans, other agents</text>
+        </g>
+
+        {/* Converging arrows */}
+        <line x1="100" y1="136" x2="190" y2="184" stroke={D.ink} strokeWidth="1.4" markerEnd="url(#tArrow)" />
+        <line x1="220" y1="136" x2="220" y2="180" stroke={D.ink} strokeWidth="1.4" markerEnd="url(#tArrow)" />
+        <line x1="340" y1="136" x2="250" y2="184" stroke={D.ink} strokeWidth="1.4" markerEnd="url(#tArrow)" />
+
+        {/* Agent node */}
+        <rect x="180" y="184" width="80" height="44" rx="10" fill={D.paper} stroke={D.terracotta} strokeWidth="2" />
+        <text x="220" y="210" textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={D.ink}>agent</text>
+
+        <defs>
+          <marker id="tArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill={D.ink} />
+          </marker>
+        </defs>
+      </svg>
+    </figure>
+  );
+}
+
+function PrimitivesStackDiagram() {
+  return (
+    <figure className="my-10" aria-label="Three primitives architecture: wake-up, state, durability">
+      <svg viewBox="0 0 400 280" className="mx-auto w-full max-w-md" role="img">
+        <title>Three stacked layers: wake-up mechanism, persistent state, and durability</title>
+
+        {/* Top layer: wake-up */}
+        <rect x="60" y="20" width="280" height="64" rx="10" fill={D.peach} fillOpacity="0.4" stroke={D.ink} strokeWidth="1.5" />
+        <text x="200" y="46" textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={D.ink}>wake-up mechanism</text>
+        <g fontFamily="var(--font-mono)" fontSize="9" fill={D.inkSoft}>
+          <text x="120" y="66" textAnchor="middle">clock</text>
+          <text x="200" y="66" textAnchor="middle">listener</text>
+          <text x="280" y="66" textAnchor="middle">inbox</text>
+        </g>
+        {/* small icons */}
+        <circle cx="92" cy="62" r="3" fill={D.butter} stroke={D.ink} strokeWidth="0.8" />
+        <circle cx="172" cy="62" r="3" fill={D.sage} stroke={D.ink} strokeWidth="0.8" />
+        <circle cx="252" cy="62" r="3" fill={D.lavender} stroke={D.ink} strokeWidth="0.8" />
+
+        {/* connector */}
+        <line x1="200" y1="84" x2="200" y2="106" stroke={D.faint} strokeWidth="1.2" strokeDasharray="3 3" />
+
+        {/* Middle layer: state */}
+        <rect x="60" y="108" width="280" height="64" rx="10" fill={D.sage} fillOpacity="0.3" stroke={D.ink} strokeWidth="1.5" />
+        <text x="200" y="134" textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={D.ink}>persistent state</text>
+        <g fontFamily="var(--font-mono)" fontSize="9" fill={D.inkSoft}>
+          <text x="130" y="156" textAnchor="middle">read/write</text>
+          <text x="200" y="156" textAnchor="middle">·</text>
+          <text x="270" y="156" textAnchor="middle">change feeds</text>
+        </g>
+
+        {/* connector */}
+        <line x1="200" y1="172" x2="200" y2="194" stroke={D.faint} strokeWidth="1.2" strokeDasharray="3 3" />
+
+        {/* Bottom layer: durability */}
+        <rect x="60" y="196" width="280" height="64" rx="10" fill={D.lavender} fillOpacity="0.3" stroke={D.ink} strokeWidth="1.5" />
+        <text x="200" y="222" textAnchor="middle" fontFamily="var(--font-display)" fontSize="14" fill={D.ink}>durability</text>
+        <g fontFamily="var(--font-mono)" fontSize="9" fill={D.inkSoft}>
+          <text x="110" y="244" textAnchor="middle">checkpoint</text>
+          <text x="175" y="244" textAnchor="middle">idempotent</text>
+          <text x="245" y="244" textAnchor="middle">spend limits</text>
+          <text x="305" y="244" textAnchor="middle">auth scope</text>
+        </g>
+      </svg>
+    </figure>
+  );
+}
+
+function BuildStepsDiagram() {
+  const steps = [
+    { label: "triggers", color: D.butter },
+    { label: "wake-ups", color: D.peach },
+    { label: "state", color: D.sage },
+    { label: "durability", color: D.lavender },
+    { label: "logic", color: D.sky },
+  ];
+  return (
+    <figure className="my-10" aria-label="Five steps to build a proactive agent">
+      <svg viewBox="0 0 520 90" className="mx-auto w-full max-w-xl" role="img">
+        <title>Build flow: define triggers, set up wake-ups, implement state, add durability, write logic</title>
+        {steps.map((s, i) => {
+          const x = 16 + i * 100;
+          return (
+            <g key={s.label}>
+              <rect x={x} y="14" width="84" height="40" rx="8" fill={s.color} fillOpacity="0.5" stroke={D.ink} strokeWidth="1.3" />
+              <text x={x + 42} y="30" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={D.faint}>
+                {i + 1}
+              </text>
+              <text x={x + 42} y="44" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={D.ink}>
+                {s.label}
+              </text>
+              {i < steps.length - 1 && (
+                <line x1={x + 88} y1="34" x2={x + 112} y2="34" stroke={D.faint} strokeWidth="1.2" markerEnd="url(#bArrow)" />
+              )}
+            </g>
+          );
+        })}
+        <text x="260" y="78" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={D.faint}>
+          infrastructure first, agent logic last
+        </text>
+        <defs>
+          <marker id="bArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill={D.faint} />
+          </marker>
+        </defs>
+      </svg>
+    </figure>
+  );
+}
 
 export const metadata = {
   title: "What Are Proactive Agents? The Definitive Guide",
@@ -228,6 +446,11 @@ export default function GuidePage() {
             this relationship. It is always running in the background &mdash;
             watching the world and acting when the moment is right.
           </p>
+
+          <FigureExpand caption="Reactive vs proactive agent activation flow.">
+            <ReactiveProactiveDiagram />
+          </FigureExpand>
+
           <p>
             The term appears in a{" "}
             <a href="https://arxiv.org/abs/2410.12361" rel="noopener noreferrer">
@@ -267,6 +490,11 @@ export default function GuidePage() {
               time, not on a polling cycle.
             </li>
           </ol>
+
+          <FigureExpand caption="Three triggers that wake a proactive agent.">
+            <ThreeTriggersDiagram />
+          </FigureExpand>
+
           <p>
             A truly proactive agent listens for all three. Pick one and you have
             made a smarter cron job. Pick two and you have made a chatbot that polls.
@@ -370,6 +598,11 @@ export default function GuidePage() {
             <li>Spend observability &mdash; catch runaway loops</li>
             <li>Scoped authentication &mdash; limit blast radius per agent</li>
           </ul>
+
+          <FigureExpand caption="Three primitives: wake-up, state, and durability.">
+            <PrimitivesStackDiagram />
+          </FigureExpand>
+
           <p>
             Together these three primitives form the infrastructure layer that
             sits underneath a proactive agent. You can build it yourself, adopt
@@ -392,6 +625,11 @@ export default function GuidePage() {
             Building a proactive agent is primarily an infrastructure problem, not a
             model problem. Here are the five steps:
           </p>
+
+          <FigureExpand caption="Five steps to build a proactive agent.">
+            <BuildStepsDiagram />
+          </FigureExpand>
+
           <ol>
             {HOW_TO_STEPS.map((step) => (
               <li key={step.name}>

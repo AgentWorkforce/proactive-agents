@@ -16,7 +16,7 @@ Their answer is a paper called [PARE](https://arxiv.org/abs/2604.00842) (Proacti
 
 The headline result: the best model succeeds 42% of the time. That number will climb as models improve. The patterns underneath it are what matter.
 
-<Scene figure={<PareAsymmetryFigure />} caption="Same operation, different interfaces: the core design asymmetry in PARE.">
+<Scene figure="PareAsymmetryFigure" caption="Same operation, different interfaces: the core design asymmetry in PARE.">
 
 ## Why nobody had tested this before
 
@@ -44,7 +44,7 @@ Forty-two percent from a frontier model is a useful calibration point. In a cont
 
 The consistency data is equally telling. When the researchers ran each model four times, they measured "Success@4" (succeeds at least once) and "Success^4" (succeeds every time). Claude drops from 60.8% to 18.2%, a 3.3x reduction. Llama drops from 23.8% to 1.4%, a 17x reduction. For smaller models, the successful runs look more like lucky breaks than reliable capability.
 
-<Scene side="right" figure={<PatienceFigure />} caption="Fewer proposals, higher acceptance: patience as strategy.">
+<Scene side="right" figure="PatienceFigure" caption="Fewer proposals, higher acceptance: patience as strategy.">
 
 ## The patient agent wins
 
@@ -64,7 +64,7 @@ The paper's prompt for the observer agent frames timing as "an optimization prob
 
 </Scene>
 
-<Scene figure={<ExecutionGapFigure />} caption="Small models can identify goals but struggle to act on them.">
+<Scene figure="ExecutionGapFigure" caption="Small models can identify goals but struggle to act on them.">
 
 ## Observation works, execution doesn't
 

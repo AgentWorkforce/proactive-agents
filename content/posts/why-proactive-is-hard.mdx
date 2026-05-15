@@ -10,7 +10,7 @@ I've been building proactive agents for a while now, and I can tell you the demo
 
 Then you try to make it actually reliable and, well, let's just say it gets humbling fast. The pattern I keep seeing, both in our own work and talking to other teams, is the same: the agent logic is the simple part. It's everything around it that eats your time. State management, deduplication, knowing when to stay quiet. Looking back, we were spending all our time on infrastructure that had nothing to do with the model.
 
-<Scene figure={<DemoVsProdFigure />} caption="The gap between the afternoon demo and what production actually requires.">
+<Scene figure="DemoVsProdFigure" caption="The gap between the afternoon demo and what production actually requires.">
 
 ## The afternoon demo versus production
 
@@ -38,7 +38,7 @@ You've got three options and honestly none of them are great.
 Something I didn't appreciate early on: the hard part isn't detecting changes. A busy Slack workspace fires hundreds of events per hour. A GitHub org sends thousands per day. The hard part is figuring out which of those actually deserve a response. If you don't filter aggressively at the detection layer, your agent drowns in noise before it reasons about anything.
 </Callout>
 
-<Scene side="right" figure={<MemoryDriftFigure />} caption="Without persistent state, every run starts from zero.">
+<Scene side="right" figure="MemoryDriftFigure" caption="Without persistent state, every run starts from zero.">
 
 ## Remembering across runs
 
@@ -54,7 +54,7 @@ What we found actually works is structured persistent state with a real API for 
 
 </Scene>
 
-<Scene figure={<JudgmentGateFigure />} caption="The gate between detecting a change and acting on it.">
+<Scene figure="JudgmentGateFigure" caption="The gate between detecting a change and acting on it.">
 
 ## Knowing when not to act
 
@@ -71,6 +71,8 @@ Something I've learned: you really can't skip steps with trust. The pattern that
 </Callout>
 
 </Scene>
+
+<Scene side="right" figure="ProviderMultiplierFigure" caption="Each provider multiplies all three problems.">
 
 ## Every provider multiplies the problem
 
@@ -89,3 +91,5 @@ Most teams honestly just sidestep all of this by putting a reactive agent on a c
 But for agents where being responsive is the whole point (monitoring, triage, customer health), you've got to actually solve these problems. You can build the infrastructure yourself, but what I keep running into is that the result works for one agent and doesn't really transfer to the next. That's actually why we started thinking about a runtime that handles wakeup, state, and delivery as shared primitives, so the agent code can just focus on behavior.
 
 Anyway, the rest of this series goes deeper on each piece: [the three primitives](/posts/three-primitives) that define the interface, [the webhook tax](/posts/the-webhook-tax) that motivated building a shared runtime, and [why the prompt layer can't do the job alone](/posts/the-prompt-cant-save-you). More soon.
+
+</Scene>

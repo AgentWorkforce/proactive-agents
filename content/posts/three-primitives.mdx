@@ -12,7 +12,7 @@ That works for a chat box, but it falls apart for an agent that's supposed to *d
 
 A proactive agent is different. It wakes itself up.
 
-<Scene figure={<PollingFigure />} caption="The reactive loop most teams ship.">
+<Scene figure="PollingFigure" caption="The reactive loop most teams ship.">
 
 ## What "proactive" doesn't mean
 
@@ -24,7 +24,7 @@ Polling is really just a symptom. What's actually missing is the primitives unde
 
 </Scene>
 
-<Scene side="right" figure={<ProactiveFigure />} caption="Push beats poll — most of the time.">
+<Scene side="right" figure="ProactiveFigure" caption="Push beats poll — most of the time.">
 
 ## The first primitive: a way to wake up
 
@@ -56,7 +56,7 @@ Push is an engineering problem. Persistence is an architectural one. Most teams 
 
 The shape of state that actually works is closer to a *filesystem* than a database. Real-time read, real-time write, conflict detection on concurrent writes, change events when anything moves. Treat it as a place agents *live in*, not a thing they query.
 
-<Scene figure={<TripleFigure />} caption="Three triggers, one shared substrate.">
+<Scene figure="TripleFigure" caption="Three triggers, one shared substrate.">
 
 ## The third primitive: durability
 
@@ -79,7 +79,7 @@ None of this is exotic security engineering. It's the same principle behind IAM 
 
 </Scene>
 
-<Scene side="right" figure={<RuntimeFigure />} caption="The runtime: clock, listener, inbox, plus the durability ring.">
+<Scene side="right" figure="RuntimeFigure" caption="The runtime: clock, listener, inbox, plus the durability ring.">
 
 ## Wired together: the runtime
 
