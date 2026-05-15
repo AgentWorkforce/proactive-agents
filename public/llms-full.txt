@@ -4,7 +4,6 @@
 
 Site: https://proactiveagents.dev
 Author: Khaliq Gant, co-founder of AgentWorkforce
-Last updated: 2026-05-13
 
 ---
 
@@ -60,60 +59,443 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
----
-
-## Essay: Proactive agents need three primitives
-
-Published: 2026-05-04
-Author: Khaliq Gant
-
-Most agents shipped today are reactive. They sit in a loop, waiting for a prompt. When the prompt arrives, they tool-call their way to an answer and go back to sleep. The whole cycle starts when you push a button.
-
-That model is fine for a chat box. It is wrong for an agent that is supposed to do something for you while you are doing something else. And it is the model nearly every agent SDK still ships by default.
-
-A proactive agent is a different thing entirely. It wakes itself up.
-
-What "proactive" doesn't mean: It doesn't mean runs on a schedule — that is just cron with extra steps. It doesn't mean watches a webhook — that is just push without persistence. It doesn't mean can be messaged — that is just a chatbot. Each of those is a primitive. None of them, on its own, is a proactive agent.
-
-The first primitive is a way to wake up. A proactive agent needs to know when to run — not "every five minutes" but when the moment is right. That moment is one of three things: time passed, data changed, or a message arrived. Reactive agents only honor the third one, and they don't even honor it well — they wait to be invoked, not to be spoken to.
-
-The second primitive is state that survives. A reactive agent wakes up from nothing every time. A proactive agent wakes up into a world. It has to know what it saw last time, what it acted on, what it's in the middle of. Otherwise every wakeup is a cold start, and a cold-start agent does the same useless thing over and over.
-
-The third primitive is durability. A proactive agent is long-lived. It will be running while you sleep, while a deploy ships, while a provider rate-limits for three hours. The runtime has to assume failure is the steady state. This means checkpointing, idempotency on every external call, spend observability, and auth scoped per agent per workspace.
-
-Wired together — clock, watcher, inbox, shared workspace, durability ring — these form the proactive runtime. The agent code that sits in the middle is shockingly small: a handler, a workspace name. The runtime brings the rest.
-
-A 2024 paper from Tsinghua and Huawei — "Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance" (arXiv:2410.12361) — formalizes the same claims: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals.
+Last updated: 2026-05-15
 
 ---
 
-## Essay: Reactive vs proactive, with examples
+## Essay: PostHog Code and the production signal
 
-Published: 2026-04-20
+Published: 2026-05-15
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/posthog-code/
 
-A reactive version of a ticket-closing agent runs every five minutes via cron, queries for open tickets updated since the last run, and closes ones where the customer approved. This works but has problems: the lastRun global resets on deploy, the five-minute interval is arbitrary, burst handling is poor, false positives close real tickets, and two instances racing cause double-closes.
+[PostHog](https://posthog.com) launched [Code](https://posthog.com/code) this spring, and the most interesting thing about it is what the coding agent can see.
 
-The proactive version is a handler that receives change events. It fires the moment Zendesk publishes an update. There is no lastRun global (no batch), no arbitrary interval, no deduplication burden — the runtime handles all of that. Each event is its own unit of work.
+Most AI coding tools share the same context surface: your source files, maybe your git history, sometimes your open tickets. PostHog Code adds something none of the others have: your production data. Feature flag rollout percentages, event volumes over the last 30 days, experiment results, stale flag detection, funnel dropoff rates. The agent doesn't just read your code. It reads what your code is doing in the real world.
 
-Three things compound from this shift: (1) Latency drops to provider speed (~1 second of webhook delivery vs 5-minute polling cycles). (2) Edge cases collapse because the runtime gives you the diff instead of making you detect changes. (3) State surface shrinks because each event is self-contained.
+I dug through PostHog's [open-source repository](https://github.com/PostHog/code) to understand how the system works under the hood, and the architecture reveals both genuine innovation and a clear gap when viewed through the lens of proactive agents.
 
-When reactive is still the right answer: batch-shaped jobs (weekly digests), long compute that doesn't care about freshness (nightly backfills), and one-shot prompts (user asks, agent answers, done).
+## What the enricher does
 
-What reactive is NOT appropriate for is anything where the value of the agent is its responsiveness to the world.
+The core of PostHog Code's differentiation lives in a package called the enricher. When the agent reads a file during a coding session, the enricher runs tree-sitter-based static analysis to find PostHog SDK calls: `posthog.capture`, `posthog.isFeatureEnabled`, feature flag checks, experiment hooks. It doesn't just match direct calls. It resolves imports to trace wrapper functions, so if your codebase has a `track()` helper that internally calls `posthog.capture`, the enricher finds it through the import chain.
+
+For each detected call, it fetches live data from the PostHog API: the feature flag's current rollout percentage, whether the flag has been evaluated recently or is classified as stale, the linked experiment's status and results, and whether the tracked event has actually fired in the last 30 days with volume counts. Then it injects this data as inline comments in the file content that the LLM receives.
+
+The result: when the agent reads a file containing `if (posthog.isFeatureEnabled('new-checkout'))`, it also sees that the flag is at 23% rollout, was last modified six weeks ago, and the linked experiment concluded with a 4% lift in conversion. The code and its production reality arrive in the same context window.
+
+This changes the quality of the agent's suggestions in ways that matter. When it recommends removing a feature flag, it knows whether the flag is actively gating traffic for 40% of users or sitting dormant at 0%. That distinction is the difference between "clean up dead code" and "careful, this is live."
+
+[CodeRabbit](/posts/agent-moves-first) connects to Datadog and Sentry for observability context. [Devin](https://devin.ai) goes deep on code execution. PostHog Code occupies a different niche entirely: it sees the product analytics layer. Feature flags, experiments, funnels, event volumes. For teams that run on PostHog, no other coding agent has this view.
+
+## The architecture underneath
+
+PostHog Code is a monorepo built on the [Claude Agent SDK](https://docs.anthropic.com/en/docs/agents-and-tools/claude-agent-sdk) and OpenAI's Codex, with an Electron desktop app and cloud sandboxes managed through [Temporal](https://temporal.io) workflows. The default model is Claude Opus 4.7, with GPT-5.4 available as an alternative. The codebase uses InversifyJS for dependency injection, tRPC over Electron IPC, and Zustand for state management. Cloud sessions run in Docker containers on [Modal](https://modal.com), with Kafka routing messages between clients and sandboxes.
+
+One strong engineering detail: sessions can transfer between local and cloud mid-task through a handoff mechanism. The system captures git state as pack files and rebuilds conversation history from persisted session logs, so you can start a task on your laptop and hand it to a cloud sandbox without losing context. The `HandoffCheckpointTracker` captures git pack files and index state as artifacts, and a `ResumeSaga` walks log entries to reconstruct conversation turns.
+
+The agent also supports what PostHog calls a "Command Center," running multiple coding agents in parallel with split-screen presets. Each agent gets its own session, its own context, and its own tool permissions. For teams running several related tasks simultaneously, this is a practical workflow that most single-agent tools don't offer.
+
+But from a proactive agent perspective, the architecture is entirely reactive.
+
+Every session starts because a human created a task. There are no webhooks listening for GitHub events. No cron jobs scanning for production anomalies. No file watchers triggering analysis when code changes. The agent wakes up when you tell it to, does its work, and goes quiet when you stop talking to it. The Temporal workflow's 10-minute inactivity timeout is the closest thing to autonomous behavior, and all it does is shut down idle sessions.
+
+## The signal that's already there
+
+Here's what makes PostHog Code interesting from a proactive lens: the enricher already detects the conditions that a proactive agent would act on.
+
+It knows when a feature flag is stale, sitting at a fixed rollout percentage with no recent evaluations. It knows when a tracked event hasn't fired in 30 days, which usually means dead instrumentation that nobody is maintaining. It can correlate experiment results with the code that implements the variants. It has access to funnel data that could reveal conversion drops after recent deploys.
+
+All of this information exists inside the enricher's analysis pipeline. The gap is that the pipeline only runs when a human starts a session and the agent happens to read the relevant file. The enricher is a listener that only operates during active coding sessions.
+
+Making it always-on would close the gap. Imagine periodic scans for stale flags that open cleanup PRs, error rate spikes correlated with recent merges that alert the PR author in Slack, or weekly digests surfacing dead instrumentation that nobody is tracking anymore. The data is already being fetched and analyzed within the enricher's pipeline. It just needs a trigger mechanism that doesn't require a human typing a prompt to start the process.
+
+The enricher already does the hard part: tree-sitter parsing to find SDK calls, import resolution to trace wrappers, and live API queries to get production state. Converting it from a session-scoped hook to an always-on scanner is an infrastructure problem, not an AI problem.
+
+## Where this sits
+
+PostHog Code is a coding tool first, and the production data integration gives it context that no competitor can match. The [open-source codebase](https://github.com/PostHog/code) shows real engineering depth: the session handoff system, the enricher's static analysis pipeline, the multi-agent Command Center.
+
+Through the [three-primitives framework](/posts/three-primitives), the mapping is straightforward. PostHog Code has no clock (no scheduled scans), no listener (no event detection outside of active sessions), and the inbox is the desktop app's UI. What it does have is the richest signal source of any coding agent on the market. Production analytics data, flowing through a well-engineered enrichment pipeline, available to any model the agent selects.
+
+Connecting that signal source to the primitives would let the enricher's analysis run continuously rather than on demand. Scheduled scans for stale flags, real-time correlation of deploys with metric changes, alerts delivered to Slack or GitHub rather than waiting for someone to open the desktop app. The enricher already does the analysis. The missing piece is the infrastructure to run it without a human in the loop.
+
+For teams already on PostHog, Code is worth trying for the enriched context alone. For anyone building proactive development agents, the enricher's approach to bridging static code analysis with live production data is worth studying. PostHog published the whole thing.
+
+PostHog Code is [fully open source](https://github.com/PostHog/code). The enricher, the agent framework, the handoff system, the cloud architecture. If you're building tools that need to understand what code does in production, the enricher package is the most interesting place to start.
 
 ---
 
-## Essay: The eight-week webhook tax
+## Essay: Notion ships the proactive primitives
 
-Published: 2026-04-06
+Published: 2026-05-15
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/notion-ships-the-primitives/
 
-Adding one webhook provider to a proactive agent in a production-ready way requires: a public endpoint with stable URL and TLS, signature verification (each provider does it differently), sub-2-second response times (requiring async processing), a message queue with dead-letter handling, deduplication via seen-set, event filtering, payload completion (most webhooks send partial data), agent state storage, webhook registration automation, and observability.
+I've been poking around [Notion's developer docs](https://developers.notion.com/workers/get-started/overview) this week. We use Notion for basically everything (blog planning, sprint tracking, the operating page for this series), so when they ship new developer tools I pay attention. What caught my eye this time is that the architecture underneath maps almost exactly to the framework I've been writing about.
 
-That's one provider. For four providers (ticketing, code host, chat, CRM), multiply by four with different signature schemes, retry behaviors, payload schemas, and registration flows.
+Notion launched three things at roughly the same time: [Workers](https://developers.notion.com/workers/get-started/overview) for developers, [Custom Agents](https://www.notion.com/help/custom-agents) for everyone else, and an [External Agents API](https://www.notion.com/product/dev) that lets tools like Claude and Cursor become first-class collaborators inside Notion pages. On the surface it looks like another AI feature drop. Underneath, it looks like the [three primitives](/posts/three-primitives) packaged as a platform.
 
-The path from "we want our agent proactive against four providers" to production-ready is 6-8 weeks of one engineer's time — not building the agent, but building plumbing. Plus ongoing maintenance as providers change schemas, dev tunnels rotate, replay storms hit queues, and teammates copy-paste integration code incorrectly.
+## The developer layer
+
+Workers are small TypeScript programs that run on Notion's infrastructure. You write the code, deploy with their CLI, and Notion hosts it in a sandboxed Node environment. The [SDK](https://developers.notion.com/workers/reference/sdk) gives you three core capabilities, and if you've been following this series, they're going to sound familiar.
+
+`worker.sync()` pulls data from external APIs into Notion databases on a configurable schedule. Default is every 30 minutes. It supports incremental deltas through a cursor, so each run picks up where the last one left off instead of refetching everything. That's a clock.
+
+`worker.webhook()` registers [HTTP endpoints](https://developers.notion.com/workers/guides/webhooks) that receive real-time events from external services. GitHub pushes, Stripe payments, Zendesk tickets. Events get enqueued and processed asynchronously with signature verification and automatic retry up to 3 times. If verification fails 5 times consecutively, Notion blocks the endpoint. That's a listener.
+
+`worker.tool()` defines callable functions for Custom Agents with JSON Schema validation on inputs and outputs. You can mark tools as read-only for safe auto-execution, meaning the agent can invoke them without human approval. CRM queries, ticket creation, data lookups. That's how the agent acts on what it hears, and it's the connective tissue between the inbox and the outside world.
+
+I keep running into this. When you build infrastructure for agents that act on their own, you end up needing the same three pieces. Notion arrived at them independently, which honestly validates the framework more than anything I could write.
+
+Notion calls them "Workers." [MindStudio](https://www.mindstudio.ai/) calls them "AI Workers." [Browser Use](https://browser-use.com/) calls their product "Agency." The industry is converging on vocabulary that implies autonomy: not assistants that wait, but workers that do their jobs.
+
+## The no-code layer
+
+Workers are for developers. [Custom Agents](https://www.notion.com/blog/introducing-custom-agents) are the same idea for everyone else.
+
+You configure a Custom Agent by writing natural language instructions, granting it access to specific pages and databases, and optionally connecting Slack channels. Once published, it runs on its own. Two types of triggers make it go.
+
+Time-based triggers fire on a recurring schedule: daily, weekly, monthly, at a specific time in your timezone. Event-based triggers fire when something changes: a page is created, a database record updates, someone posts in a Slack channel, a comment appears. You can layer filters to narrow exactly when the agent wakes up.
+
+The numbers caught my attention. Notion says early testers built over 21,000 Custom Agents during the beta period. [Ramp](https://ramp.com) deployed over 300 agents, including a "Product Oracle" that fields dozens of daily roadmap questions. [Remote](https://remote.com) reportedly saved 20 hours per week routing tasks through agents.
+
+Those numbers don't tell you whether the agents are any good, but they tell you the demand is real. When you give people the ability to create agents that wake up on their own, they create a ton of them.
+
+Custom Agents let you pick Claude, GPT, Gemini, or "Auto" which dynamically selects per task. Notion doesn't care which model powers the agent. They care that the infrastructure works. That's a platform decision, not a product decision, and it tells you where they think the durable value lives.
+
+## The open layer
+
+The External Agents API is still in alpha, but the design is the part I find genuinely exciting. It lets agents that don't live inside Notion (Claude, Cursor, Codex, your own custom builds) become participants in Notion workspaces. You mention them in pages and comments, assign tasks in parallel, watch their reasoning and tool calls, and gate their actions with human approval.
+
+Most proactive agent products today are walled gardens. [Pulse](/posts/chatgpt-pulse) lives in ChatGPT. Orbit lives in Claude. Remy lives in the Gemini app. The agent's reach stops at the product boundary. Notion is going a different direction: the workspace is the surface, but the agents can come from anywhere.
+
+For the proactive agent space, an open inbox that accepts work from multiple agent systems is a fundamentally different architecture than a closed assistant talking to itself. If the External Agents API ships with real breadth, Notion becomes the workspace where proactive agents from different providers collaborate on the same page. If it stays narrow, it's just another integration point.
+
+## Why platform sometimes beats product
+
+I've been tracking the [proactive agent landscape](/market/proactive-agent-landscape) for a few weeks now, and most companies are shipping products. Pulse is a morning briefing. Orbit is a connected assistant. Remy is a personal agent. Each says: here's what we built, here's how it works, take it or leave it.
+
+Notion took a different path. They shipped composable building blocks and let users wire their own proactive behavior. Workers for developers. Custom Agents for everyone else. External Agents API for the rest of the ecosystem. Each layer works on its own, but they're designed to stack.
+
+I should be honest though, platforms are harder to get started with. You have to know what you want before you build it, and most people don't. But platforms compound. When 21,000 users build Custom Agents, Notion sees which patterns emerge and feeds that back into the infrastructure. Product companies have to guess what users want and ship features. Notion lets users show them.
+
+Clock (syncs + schedules). Listener (webhooks + event triggers). Inbox (Slack + Notion pages + External Agents API). Notion scores all three on the [landscape](/market/proactive-agent-landscape). And they're one of the few shipping all three as developer-facing primitives, not just product features.
+
+I've been saying the products that score highest are the ones with all three working together. Notion just shipped all three at both the developer layer and the user layer, and opened the door for external agents to plug in. For a company that started as a note-taking app, that's a pretty big architectural bet on where agents are headed.
+
+---
+
+## Essay: CodeRabbit's agent and the thirty-minute gap
+
+Published: 2026-05-15
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/agent-moves-first/
+
+[CodeRabbit](https://coderabbit.ai) published a blog post last week titled ["Now the Agent Moves First."](https://www.coderabbit.ai/blog/now-the-agent-moves-first) The framing caught my attention because that phrase describes exactly what we've been writing about on this site: the shift from agents that wait to agents that watch.
+
+Their [Agent for Slack](https://www.coderabbit.ai/agent) is one of the more ambitious products in AI development tooling right now. It sits inside your Slack workspace, pulls context from GitHub, Jira, Linear, Datadog, Sentry, Notion, and AWS, and responds to @mentions with genuinely useful answers. When you ask it to investigate a performance issue, it pulls APM traces. When you ask about a failing deploy, it correlates the error with recent code changes. The breadth of integration is impressive, and unusual. Most tools in this category connect to one or two systems. CodeRabbit connects to a dozen.
+
+## What they built
+
+### How does the Slack-native approach compare?
+
+The Slack-native approach is the right call. Engineers don't want another dashboard. They already live in Slack, and putting the agent there means feedback appears in the same thread where the team is discussing the deploy or the incident. We reached the same conclusion building [My Senior Dev](https://myseniordev.com): the review agent's move into Slack ([Act 2](/posts/review-agent-three-acts)) generated more engagement than any UI polish on the web dashboard.
+
+[Devin](https://devin.ai) is probably the strongest existing example of this pattern. Its Slack bot can review PRs, write fixes, and execute multi-step engineering tasks directly from a thread. It's been around long enough to prove that Slack-native is a durable product shape, not just a demo. Devin ships 7 native integrations (GitHub, GitLab, Bitbucket for git; Slack and Microsoft Teams for communication; Linear and Jira for task management) plus a marketplace of 76 MCP tools for extending its reach. Where CodeRabbit differentiates is observability context: native connections to Datadog, Sentry, PagerDuty, PostHog, and cloud infrastructure give it cross-system reasoning about incidents and deploys that a code-focused agent doesn't attempt. Where Devin differentiates is execution depth, going from conversation to committed code in the same thread.
+
+### How do automations and triggers work?
+
+The automations feature is where CodeRabbit starts to separate from both. You describe what you want in natural language, the agent drafts a spec with schedule, scope, and destination, and you review before activating. "Every weekday at 9am, summarize new PR blockers in this channel." The setup is conversational and transparent. You see exactly what the agent plans to do, when it will run, and where it will post. That transparency matters when you're giving an AI recurring access to your codebase.
+
+Their newest addition, [Triggers](https://www.coderabbit.ai/blog/now-the-agent-moves-first), goes further. Instead of running only on a schedule, the agent fires when a specific event happens in a Slack channel. A Datadog alert lands in #prod-alerts, the agent investigates immediately rather than waiting for the next scheduled run. The blog post frames this as the moment where "the agent moves first," and for Slack-native events, that description is accurate.
+
+Most AI dev tools connect to GitHub and stop there. CodeRabbit correlating a Sentry error with the PR that introduced it, or linking a Jira ticket to the relevant code path, is the kind of cross-system reasoning that makes an agent worth talking to. The model is good. The context makes it useful.
+
+When I dug into how the agent actually stores that context, the architecture was worth noting. CodeRabbit's sandbox maintains a structured knowledge base per repository: pre-indexed PR summaries with metadata and objectives for each recent PR, code guidelines extracted from AGENTS.md files, and path-specific instructions per directory. The workspace tracks 78 connected repos through a source mapping file and clones on demand rather than keeping everything checked out. Each PR gets its own directory with a `meta.json`, a raw summary, a summary map, and a PR objectives file. When the agent references a PR in a Slack thread, it reads from precomputed summaries rather than re-analyzing the diff each time.
+
+This is infrastructure that most people won't see, but it explains why the agent's answers feel grounded. It's not just making live API calls to GitHub and hoping the context window holds. It's reading from a structured knowledge layer that was built before you asked the question.
+
+## A conversation that reveals the boundary
+
+I tested this myself. In a Slack thread, I asked CodeRabbit: "can I create an automation from here?" It said yes and listed the options: recurring schedules, channel-triggered automations, fresh-thread or same-thread delivery.
+
+Then I asked for something specific: "When a PR has a merge conflict, message the author of that PR in Slack."
+
+CodeRabbit was upfront about the limitation: "The exact version you described isn't directly supported as an event-driven GitHub trigger from here." It proposed a workaround instead. A recurring automation that checks a repo for merge conflicts every thirty minutes and pings the PR author when it finds one.
+
+I appreciated the honesty. Plenty of products would say "sure!" and quietly do something different. CodeRabbit explained the constraint, proposed an alternative, and showed a preview of the output. The sample run surfaced 11 PRs with confirmed merge conflicts in the repo, which was genuinely helpful information I hadn't found anywhere else.
+
+But thirty minutes is not "when it happens."
+
+A merge conflict appears the moment someone pushes to main and an open PR's base branch diverges. If the agent caught that push event in real time, the PR author could rebase while the changes are still fresh. Thirty minutes later, they've context-switched to something else. The cost of the rebase itself doesn't change, but the cognitive cost of picking it back up does.
+
+## Schedule-driven vs event-driven
+
+CodeRabbit's Triggers feature partially closes this gap, but only for events that surface in Slack. If a Datadog alert posts to a channel, the agent responds in seconds. For GitHub events like merge conflicts, check failures, or reviews going stale, the agent falls back to polling on a schedule. It watches Slack channels natively but reaches GitHub through periodic queries.
+
+This is a common pattern across the industry. [Devin](https://devin.ai) goes furthest with Slack-native execution, writing and committing code from threads, but it still responds when mentioned rather than when something changes in the repo. [Cursor's BugBot](https://cursor.com/blog/bugbot-autofix) triggers on PR creation but doesn't monitor for state changes after that. [Claude Code's auto-fix](https://code.claude.com/docs/en/claude-code-on-the-web#auto-fix-pull-requests) catches CI failures but not review comments that arrive hours later. The shape is consistent: respond to the initial event, poll for everything after.
+
+The [three-primitives framework](/posts/three-primitives) maps this clearly. CodeRabbit's automations give it a solid clock, with scheduled runs that execute reliably on cadence. The Triggers feature adds a listener for Slack-native events. The inbox works well, delivering results to channels and threads with clear attribution. The gap is in listener coverage: it hears what happens in Slack, but GitHub and Jira remain on the other side of a polling interval. For those systems, the agent depends on either Slack forwarding (a Datadog alert posting to a channel) or scheduled polling (the thirty-minute merge conflict check).
+
+A listener that covers one surface creates an asymmetry. The agent responds instantly to a Datadog alert because Datadog posts to Slack. It can't respond instantly to a GitHub push event unless something else relays that event into Slack first. The proactivity extends as far as the Slack integration does.
+
+## Where this sits on the spectrum
+
+CodeRabbit is further along than most tools in this space. The multi-system context, conversational automation setup, and honest interaction model are all well-executed. The Triggers feature represents a real architectural investment, not just a marketing rename.
+
+The blog title "Now the Agent Moves First" describes where they're heading more than where they are today. For Slack-native events, the agent does move first. For everything outside of Slack, it still checks on a schedule.
+
+We hit the same boundary building My Senior Dev. The shift from scheduled checks to [continuous event detection](/posts/why-proactive-is-hard) required rearchitecting around normalized change events rather than periodic queries. It was the hardest part of the transition from [Act 2 to Act 3](/posts/review-agent-three-acts). Given how quickly CodeRabbit ships, they'll probably get there faster than we did.
+
+The thirty-minute version still delivers real value. Those 11 merge conflicts it surfaced? I wouldn't have found them on my own. And the automation took about ninety seconds to set up, faster than writing the cron job myself.
+
+---
+
+## Essay: What forty-two percent tells us
+
+Published: 2026-05-14
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/forty-two-percent/
+
+Back in early April 2026, a group of researchers at [UCSB](https://ucsb.edu) and [Apple](https://apple.com) published a paper asking a question that sounds obvious in hindsight: how do you actually test a proactive agent?
+
+Six weeks is a lifetime in AI. New models ship, benchmarks get saturated, yesterday's frontier becomes today's baseline. But this paper's findings aren't about a specific model's performance. They're about the structure of the problem itself, and structural insights age differently than leaderboard entries.
+
+The question the paper asks is narrower and harder than the usual benchmark fare: if an agent is watching what you do on your phone, inferring your goals from your behavior, and then deciding whether and when to offer help, how do you measure whether it's actually useful?
+
+Their answer is a paper called [PARE](https://arxiv.org/abs/2604.00842) (Proactive Agent Research Environment), and the benchmark they built from it, PARE-Bench, is the first evaluation framework that puts a simulated user and a proactive assistant together in the same environment and lets them interact. The user navigates apps screen by screen. The agent watches, reads, thinks, and occasionally proposes. The user accepts or rejects. Then the agent tries to execute.
+
+The headline result: the best model succeeds 42% of the time. That number will climb as models improve. The patterns underneath it are what matter.
+
+## Why nobody had tested this before
+
+Every prior attempt at evaluating proactive agents shared the same limitation: the user was passive. Prior frameworks represent user activities as text descriptions where nobody executes actual tool calls, or they evaluate on static dataset samples, or they add sensory context but still lack a dynamic environment where the agent's actions change what the user does next. In all cases, the evaluation assumes user behavior is fixed regardless of what the agent does.
+
+That assumption breaks proactive assistance. A user who sees a helpful, well-timed proposal behaves differently than one who gets interrupted with something irrelevant. The user might accept, reject, or pause what they're doing to gather more information before deciding. Each response changes what happens next. Static test sets can't capture this.
+
+PARE solves the problem by building an asymmetric simulation. The user simulator navigates apps through finite state machines that mirror real phone interfaces. To send a message, the user opens the messaging app, searches for the conversation, opens it, then sends. The proactive assistant, like a real on-device assistant, has flat API access to every app at once. It calls `send_message(to, body)` and it's done.
+
+The asymmetry extends to observation. The user gets truncated notifications, a sender name and subject line the way a phone lock screen would show it. The agent gets full serialized content. The user can only see their own past actions. The agent sees the user's actions plus all environment events. The paper formalizes this as a Stackelberg POMDP, a game where the user moves first and the agent observes before deciding whether to act.
+
+The core design insight is that proactive agents can only be faithfully evaluated through interaction. Because user behavior is shaped by assistant behavior, testing the agent against static expected outputs misses the feedback loop entirely. PARE is the first benchmark to close that loop.
+
+## The headline number
+
+Seven models were tested: four frontier (Claude 4.5 Sonnet, GPT-5, Gemini 3 Pro, Gemini 3 Flash) and three small open-weights models (Qwen 3 4B, Llama 3.2 3B, Gemma 3 4B). The benchmark covers 143 tasks spanning email, calendar, messaging, shopping, and apartment search. The tasks are ordinary phone assistant work: schedule a meeting mentioned in an email, remove over-budget apartments from a saved list, forward relevant information to a contact.
+
+The best overall success rate: 42%, achieved by both Claude 4.5 Sonnet and Gemini 3 Flash. GPT-5 reached 37.4%. Qwen 3 4B landed at 18.5%. Gemma 3 4B managed 3%.
+
+Forty-two percent from a frontier model is a useful calibration point. In a controlled simulation with well-defined tasks and a cooperative simulated user, the best available models fail more often than they succeed. If your internal proactive agent benchmarks show 80%, the evaluation probably isn't realistic enough.
+
+The consistency data is equally telling. When the researchers ran each model four times, they measured "Success@4" (succeeds at least once) and "Success^4" (succeeds every time). Claude drops from 60.8% to 18.2%, a 3.3x reduction. Llama drops from 23.8% to 1.4%, a 17x reduction. For smaller models, the successful runs look more like lucky breaks than reliable capability.
+
+## The patient agent wins
+
+The most revealing pattern in the results isn't the success rate itself. It's the relationship between how often a model proposes and how often those proposals land.
+
+Claude proposes a task on 12.8% of its turns. When it does, the user accepts 78.2% of the time. GPT-5 proposes on 28.1% of turns with 70.2% acceptance. Gemini 3 Flash sits between them at 19.1% and 67.1%. The top models achieve comparable raw acceptance rates, but Claude's selectivity means nearly four out of five proposals lead somewhere useful. It gathers information and waits until it's confident.
+
+A finer-grained analysis in the paper makes this clearer. The researchers categorize user responses into three buckets: direct accept, reject, or "gather context," where the user ignores the proposal and continues exploring the environment before deciding. Claude gets 72.1% direct acceptances and only 7.8% rejections. Gemma gets 16.0% direct acceptances and triggers the "gather context" response 74.7% of the time. Nearly three-quarters of Gemma's proposals arrive before the user has enough context to evaluate them.
+
+The "gather context" outcome deserves particular attention. When a user enters this mode, about 65% of the time they run out of turns before resolving the proposal. The simulation has a 10-turn limit, and premature proposals consume turns that the user needs for their own tasks. An eager agent doesn't just risk rejection. It actively eats the interaction budget.
+
+Information gathering correlates with performance too. The top-performing models average about 20 read-only actions per scenario before proposing. Smaller models average 16-17. Gemma averages 8.8. Sufficient observation is a prerequisite for accurate inference, and there's no shortcut around it.
+
+The paper's prompt for the observer agent frames timing as "an optimization problem that you have to solve." It warns: proposing too often "will annoy the user." Claude's behavior suggests it learned this tradeoff well. The models that propose infrequently but accurately outperform the ones that propose often and correct course based on feedback.
+
+## Observation works, execution doesn't
+
+The three small models tell a specific story about where the bottleneck sits for on-device proactive agents.
+
+Qwen 3 4B achieves 63.7% acceptance. Users agree with nearly two-thirds of what it proposes, which means its goal inference is reasonable. But its success rate is only 18.5%. The model can figure out what the user wants and articulate it clearly enough to get approval, then fails at the multi-step API orchestration required to actually do the work. Llama shows a similar shape: 58.4% acceptance but only 10% success.
+
+The paper's own architecture, called Observe-Execute, naturally accommodates this finding. The agent is split into two sub-agents: an observer with read-only access that monitors and proposes, and an executor with full API access that runs only after the user approves. There's no technical reason these need to be the same model.
+
+The authors argue, and the data supports, an asymmetric deployment where a small quantized model runs continuously on-device for observation while a frontier model is invoked remotely only for execution, and only after explicit user consent. The observation model preserves privacy by staying local. The execution model runs in the cloud but accesses user data only when the user explicitly accepts a proposal. It's a privacy architecture as much as a performance one.
+
+Even with unlimited observation and the most permissive simulated user (the paper tests with three different user models), Qwen achieves 0% "Success^4," meaning it never succeeds reliably across all four runs. Information gathering alone doesn't compensate for weak execution. I've written before about [what makes proactive agents hard to build](/posts/why-proactive-is-hard); this paper provides the first quantitative evidence that the hardest part isn't knowing when to act. It's acting correctly once you decide to.
+
+Two robustness experiments round out the picture. Claude holds steady at 40-45% success even with 40% tool failure probability, and its performance is flat across noise densities up to 6 spurious notifications per minute. Qwen also stays stable under noise despite its lower baseline. Robustness to distraction appears to be a learned capability that varies independently of raw model size.
+
+## What builders should take from this
+
+The PARE benchmark is open source at [github.com/deepakn97/pare](https://github.com/deepakn97/pare), and the findings point in several directions that matter for anyone building proactive agents today.
+
+The [cost structure we've been tracking](/posts/what-proactive-agents-cost) maps directly onto these results. The paper's "read actions" are the context-loading phase that generates most token spend. The observe-then-execute split is the model cascade that cost-conscious teams have converged on independently. The turns where the agent watches and decides not to act are the empty wake-ups that show up on the invoice. PARE gives controlled measurements of how these costs translate to outcomes.
+
+The 42% ceiling will move. Models will get better, benchmarks will expand, and the evaluation will get harder. But the structural insight is durable: proactive assistance is a timing and judgment problem at least as much as a capability problem. The models that watch carefully, gather sufficient context, and speak up only when they have something specific and correct to say will continue to outperform the ones that try to help at every opportunity.
+
+If you're evaluating proactive agents today on static test sets or single-run success metrics, the gap between your numbers and real-world performance is probably wider than you think. Four runs. Active users. Acceptance rate alongside success rate. The paper makes a convincing case that anything less isn't testing what you think it's testing.
+
+---
+
+## Essay: What proactive agents actually cost
+
+Published: 2026-05-13
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/what-proactive-agents-cost/
+
+I've been talking to a lot of teams building agents over the past few months. Infrastructure companies, dev tool startups, enterprise platforms, small shops with a single engineer automating a deploy pipeline. The conversations are different in specifics but identical in shape: someone walks me through what they've built, we discuss architecture, they describe what they want the agent to do next, and then the same question lands.
+
+"What does this cost when it's running all the time?"
+
+The question has weight to it. Not because these teams can't afford tokens. Most of them can. The anxiety is that they don't know where the spend goes. A reactive agent is predictable: you invoke it, it runs, you see the bill. A proactive agent is running between your invocations, waking itself up, checking state, reasoning about whether something matters, and occasionally deciding to do nothing. All of that consumes tokens. The "doing nothing" part especially bothers people, because you're paying for an agent to think and then stay quiet.
+
+## The anatomy of a proactive token bill
+
+Every proactive agent wake-up — built on the [three primitives](/posts/three-primitives) — has four phases. First, context loading: the agent reads its environment. What changed since last time? What's the current state of the things it watches? This alone can be substantial if the agent tracks a lot of surface area. Second, triage: the agent reasons about whether the changes matter. This is the LLM call that burns the most tokens relative to value, because most of the time the answer is "no, nothing actionable." Third, action: if the agent decides to act, it does the work. Fourth, reporting: it delivers results to wherever they need to go.
+
+[Reactive agents](/posts/reactive-vs-proactive) skip phases one and two entirely. A human already decided something matters by invoking the agent, so it goes straight to work. Proactive agents run the full cycle every time they wake up, and most wake-ups produce no action. You're paying for judgment, not just execution.
+
+One integration platform I spoke with measured this precisely. Their average cost was about $0.20 per sync with a lightweight model. Then they ran the same workload through a frontier model to compare. They put $40 in the API wallet. The frontier model ate through $37 and only got halfway. Over 10x the cost, and the team concluded the cheaper model was good enough for the routine work. They stopped worrying about token usage after that.
+
+A different team told me they'd burned through a competitor's credits in three days using an always-on Slack agent. Their own system, built around file-based context and specialized agents per domain, had used about $20 over two months for similar coverage. The difference wasn't the model. It was how the system loaded context and decided when to engage.
+
+A proactive agent that checks every fifteen minutes and acts twice a day runs 96 wake-ups for 2 actions. The other 94 are pure triage cost. The [PARE benchmark](/posts/forty-two-percent) measured this dynamic: even frontier models only succeed 42% of the time. Teams that don't account for empty wake-ups discover them on the invoice.
+
+## The model cascade
+
+The most common cost pattern I see working is what you might call a cascade. Cheap, fast models handle triage. They read the context, evaluate whether anything changed, and make a binary decision: act or don't. When the answer is "act," the expensive model takes over.
+
+One team described using small models for orchestration and communication between agents while reserving the frontier model for deep analytical work. The smaller models were fast and good at coordination. The big model went deep. You don't want your coordinator going deep. You want it dispatching.
+
+This maps onto how human teams work. A project manager doesn't need to be the strongest engineer. They need to know who to hand things to and when. The triage model is the project manager. It costs a fraction of what the execution model costs, and it runs dozens of times more often.
+
+## Patterns that survive contact with the bill
+
+Beyond model cascading, a handful of strategies keep showing up independently across teams I talk to.
+
+**File-based context.** Instead of stuffing everything into the LLM's context window, agents read structured files. A sync status file, a config file, a recent-changes log. This keeps context loading cheap and predictable. One team built their entire agent loop around translating external state into local files that the agent reads on wake-up. Token usage dropped because the agent stopped ingesting raw API responses with all their noise.
+
+**Narrow specialization.** A single agent watching everything is a single agent paying to load everything into context. Teams that split work into focused agents, each watching a smaller slice, pay less per wake-up and get better results. One marketing team I spoke with had separate agents for lead qualification, ad keyword research, and webinar recommendations. Each agent had a small context window and a clear mandate. They hadn't connected the agents to each other yet, and honestly, for their use case they didn't need to.
+
+**Burn tracking.** The teams with the best cost control all built some form of token analytics. One team built a "burn" dashboard showing token waste versus tokens used over the last 24 hours. Another tracked cost per action across their pipeline to identify which integration steps were disproportionately expensive. Most agent frameworks don't ship with spend visibility, so teams build their own. The pattern is consistent enough that it should be a default feature, which is why we're building [Burn](https://github.com/AgentWorkforce/burn), an open-source tool for tracking where your agent tokens go.
+
+**Scheduled over real-time.** Not every proactive behavior needs instant detection. A daily digest doesn't need to poll every fifteen minutes. A weekly report doesn't need webhooks. Our [weekly-digest agent](/posts/building-weekly-digest) runs once a week and costs effectively nothing. One enterprise team described routing agent workloads across cloud providers by hour to capture pricing differences during off-peak windows. The proactivity was in the intelligent routing, not in constant vigilance.
+
+Token spend is a line item you can see. The cost of a PR sitting open for three days, a failing check nobody re-runs, an alert nobody triages until Monday morning: those costs are real but they never show up on a dashboard. Teams that frame proactivity purely as a cost question are reading half the ledger.
+
+## The context tax
+
+There's a subtler cost that teams discover later, and it connects to [what makes proactive agents hard](/posts/why-proactive-is-hard) in the first place. Long-running agents accumulate context, and context degrades.
+
+One team building feature-scoping workflows described the problem clearly: after a hundred messages in a Slack conversation, the agent's output became unreliable. Not wrong exactly, just noisy. The context contained too much irrelevant history, and the agent couldn't separate what mattered from what didn't. They solved it by adding explicit gating stages where an agent consolidates and summarizes before the next phase begins. Each summary step carries its own token cost, but the alternative was an agent producing output nobody trusted.
+
+Another team found that adding a checkpoint-review agent, a second model that grades the first model's work at each stage, cut their error rate in half. It also nearly doubled their per-task spend. The review model consumed almost as many tokens as the primary worker. They kept it anyway because the reliability improvement justified the cost, but only after they measured both sides carefully.
+
+The recurring lesson: teams that try to optimize tokens first build fragile systems. Teams that optimize for reliability first, then trim costs once things work, end up in a better place. Cost discipline is a feature of mature agent systems, not a starting constraint.
+
+Don't optimize tokens until your agent reliably does the right thing. A cheap agent that acts wrong costs more than an expensive agent that acts right, because you pay for the wrong action's consequences too.
+
+## What I'd tell someone starting now
+
+If you're building a proactive agent and worried about cost, here's what I've taken from these conversations.
+
+Start with the cheapest model that handles triage. Small models are surprisingly capable at "should I act?" decisions. Reserve expensive models for work that genuinely requires them.
+
+Keep your agent's context small by design. File-based state, narrow scopes, explicit summarization boundaries. Every token in the context window is a recurring cost on every wake-up, not a one-time investment.
+
+Measure where tokens go before you try to reduce them. Most teams find that 80% of spend comes from one or two phases of the agent loop, and those are rarely the phases they expected.
+
+And accept that proactivity costs more than reactivity. It should. You're paying for an agent that watches, reasons, and decides on its own. The alternative is paying a human to do the watching, or accepting that nobody watches at all. The teams I've talked to who shipped proactive agents all made that tradeoff deliberately, and none of them have gone back.
+
+---
+
+## Essay: A code review agent in three acts
+
+Published: 2026-05-12
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/review-agent-three-acts/
+
+I've been building [My Senior Dev](https://myseniordev.com) for about six months now, and it's gone through a ton of changes. It started the way most AI dev tools start: a webhook fires when a pull request opens, an LLM analyzes the diff, and comments appear on GitHub. The agent only existed during the seconds between the webhook arriving and the last comment posting. Then it vanished until the next PR.
+
+Over roughly a thousand commits, the product went through three phases, each one showing us something the previous architecture couldn't handle. By the end, we'd rebuilt it as a proactive agent running on the same [three primitives](/posts/three-primitives) we'd been writing about on this site.
+
+## Act 1: The webhook reviewer
+
+The first version shipped in late 2025. A GitHub webhook fires on `pull_request.opened`, `synchronize`, or `ready_for_review`. The backend fetches the diff, splits it across three specialized LLM personas (security engineer, senior developer, synthesizer), runs them in parallel, and posts a combined review to the PR. The whole pipeline finishes in under thirty seconds.
+
+The multi-persona approach produced higher-signal reviews than a single prompt, because each persona looked at different things: the security engineer looked for vulnerabilities and injection risks, the senior developer evaluated architecture and maintainability, and the synthesizer reconciled their findings into a coherent review. Users got feedback that felt like it came from a small review committee, not a single chatbot.
+
+I've seen this pattern become the industry default. [CodeRabbit](https://coderabbit.ai), [CodeAnt](https://www.codeant.ai), [Qodo](https://www.qodo.ai), and [GitHub Copilot](https://github.com/features/copilot) all do versions of it. Some let you reply to comments and iterate. [Devin](https://devin.ai) goes further and can write code, not just comment on it. When people say "AI code review," this is what they picture. I got so used to it that it felt proactive, even though the trigger is always a human pushing code.
+
+But there was a hard boundary. The agent only woke up when GitHub sent a webhook. Between webhooks, it didn't exist. A PR could sit open for three days with failing checks. Reviewers could leave comments that went unanswered. Merge-ready PRs could wait indefinitely for someone to click the button. The agent had no memory between invocations and no sense of time.
+
+A webhook-triggered agent handles the happy path well: code is pushed, review appears. The gaps show up in the spaces between events. Stale PRs, ignored comments, failing checks that nobody re-runs. Those are the moments where a reactive agent has nothing to say, because nobody asked.
+
+## The limits of request-response
+
+The web app we built around the reviewer was super fast. We designed it for power users: keyboard shortcuts for navigating between comments, inline AI chat for asking follow-up questions about any review finding, author profiles showing contribution patterns, hot-file indicators flagging the most-changed files across the team. I was really proud of the interface.
+
+But the web UI still required the developer to come to it. Open a browser, navigate to the dashboard, find the PR, read the review. Four steps before anyone sees the feedback.
+
+## Act 2: The surface explosion
+
+So in early 2026 we started asking a different question: what if the review agent lived where the team already works?
+
+The first expansion was Slack. We built a Slack bot that could receive PR review requests, run the same multi-persona analysis, and post results directly in a channel or thread. Engineers could ask "what's blocking PR #247?" from Slack and get an answer without opening GitHub.
+
+Then Telegram. Then WhatsApp via [Baileys](https://github.com/WhiskeySockets/Baileys). Then a macOS desktop app in SwiftUI. Then a terminal CLI. Each surface used the same review engine underneath, routed through what we called a dispatcher: a turn-based session system that tracked conversation context per thread, per channel, per user.
+
+The product vision at the time was "best review agent, everywhere." We wrote internal docs with that exact phrase. And the surfaces did matter. Getting a review summary in a Slack thread where the team was already discussing a deploy felt qualitatively different from getting it in a GitHub comment that nobody checks until the next morning.
+
+We weren't alone in expanding beyond GitHub. [Devin](https://devin.ai) has a Slack bot that can review code, write fixes, and answer questions in threads. [CodeRabbit](https://coderabbit.ai) is building a [Slack agent](https://docs.coderabbit.ai/slack-agent#automate-tasks) for automating tasks from channels. The rest of the market is heading the same direction.
+
+But adding more surfaces didn't make it proactive.
+
+We had a review agent available in Slack, Telegram, WhatsApp, desktop, and terminal. On every one of those surfaces, it still only spoke when spoken to. The engineer still had to type a command, mention the bot, or click a button. The trigger had moved from a GitHub webhook to a human message, but the agent was still just waiting.
+
+We spent two months building surface integrations before this clicked. You can put an agent in every channel, on every device, in every chat thread. If it still only responds when invoked, the extra channels don't change what it is.
+
+## The turn
+
+The shift started with a small feature: proactive follow-ups. When the review agent posted a review to Slack, it would check back after a configurable interval. If nothing had changed, it stayed quiet. If the PR still had unresolved comments or failing checks, it nudged the thread with a status update. If the PR was merge-ready, it said so.
+
+This was a scheduled job, nothing more. A cron task that ran periodically and checked state. But the reaction from users was way bigger than I expected. Engineers liked the follow-ups more than the initial reviews. The follow-up said "this PR has been open for two days and the CI is still red," which was exactly the kind of thing a good human tech lead would notice and mention in standup. The follow-ups mattered more to users than the initial review did.
+
+We're not the only ones who noticed. [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web#auto-fix-pull-requests) ships auto-fix for PRs, monitoring CI failures and review comments. [Cursor's BugBot](https://cursor.com/blog/bugbot-autofix) spawns cloud agents on PR creation to find bugs and propose fixes (about 35% of proposed changes get merged, which is honestly impressive). [OpenAI Codex](https://developers.openai.com/cookbook/examples/codex/autofix-github-actions) offers a GitHub Action that triggers on CI failure, runs Codex to generate a minimal fix, re-runs the test suite, and opens a PR if the tests pass. Same shape every time: detect an event, analyze, push a fix.
+
+They all work well for clear-cut stuff. The edges are harder. [One review of Claude Code's auto-fix](https://paddo.dev/blog/claude-code-auto-fix-pr-lifecycle/) found that flaky tests send it into speculative fix loops, each attempt triggering another CI run. None of the three offer risk tiers to say "auto-fix test files but leave auth alone," and the governance layer between "CI failed" and "push a commit" is thin or absent. I hit the same problems when our own follow-ups started scaling. Detecting the event was the easy part.
+
+## Act 3: The proactive shift
+
+Once we committed to proactivity, the architecture needed to change. Cron follow-ups worked for a single feature, but the list of things worth watching grew fast:
+
+- PRs with failing checks that haven't been re-run
+- PRs with review comments that have gone unanswered for 24 hours
+- PRs that are approved and passing but nobody has merged
+- New PRs from external contributors that need extra scrutiny
+- Check failures that the agent could fix automatically
+
+Each of these required something slightly different. Some needed a schedule (scan all open PRs every hour). Some needed real-time event detection (a check just failed, act now). All of them needed a place to deliver their findings.
+
+The commit that made this concrete was titled "Persistent Agent Harness — 113 agent-relay workflows." It landed in April 2026 and extracted what we'd been building piecemeal: the scheduling, the change detection, and the message delivery that every proactive feature depended on. That shared runtime became [Agent Relay](https://agentrelay.com).
+
+113 workflows sounds like a lot. Most of them are small: "when a check fails on a watched repo, post to the team's Slack channel." "When a PR has been approved for 6 hours with no merge, nudge the author." The volume reflects how many distinct situations a proactive review agent needs to handle, not complexity per workflow.
+
+### What changed architecturally
+
+The old flow: GitHub webhook → MSD backend → LLM analysis → GitHub comment. One trigger, one output, no persistence.
+
+The new flow uses the primitives directly. The **clock** runs periodic scans across all repositories the agent watches, checking for stale PRs, unanswered reviews, and merge-ready branches. The **listener** subscribes to real-time events from GitHub (check failures, new review comments, status changes) through normalized change events delivered via relayfile, so the agent doesn't have to manage webhooks per provider. The **inbox** routes findings to whatever surface the team uses, whether Slack, Telegram, or a desktop notification.
+
+The agent also gained durability. In Act 1, a crashed worker meant a lost review; in Act 3, the runtime checkpoints progress so a review pipeline can resume where it stopped. Reviews now flow through a durable, surface-agnostic pipeline: webhook arrives, analysis runs, results write back to GitHub via relayfile with automatic retry and dead-letter handling.
+
+## What the product taught me
+
+Looking back, I kept running into the same missing infrastructure from a different angle each time — the same convergence described in [the genesis](/posts/the-genesis).
+
+In Act 1, I didn't need any of the primitives. Webhooks provided the only trigger, we only cared about one event type, and GitHub comments were the only output. The reactive architecture was sufficient.
+
+Act 2 introduced message routing (deliver to Slack, Telegram, desktop) but I still didn't need the clock or listener. We solved delivery with adapters and a dispatcher.
+
+By Act 3, all three were load-bearing: periodic scanning, real-time event detection, multi-surface delivery. And underneath those, the durability layer: checkpointing, idempotency, scoped auth, retry with backoff. The stuff described in [what makes proactive agents hard to build](/posts/why-proactive-is-hard).
+
+I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. [PostHog Code](/posts/posthog-code) is an interesting contrast: it has the richest context of any coding agent, but the same missing infrastructure underneath. That's what convinced me the primitives were structural, not just a convenient grouping.
+
+If I'm being honest, I probably couldn't have designed the runtime without a product that kept showing me what was missing. The product and the infrastructure grew up together.
+
+We're migrating the review specialists to an agent-to-agent architecture right now. Each specialist (security, architecture, style) runs as its own process, communicating through the inbox. Going from "three LLM calls in one function" to "three agents coordinating through messages" is the next test. I'm super curious to see if the primitives hold up.
 
 ---
 
@@ -121,8 +503,73 @@ The path from "we want our agent proactive against four providers" to production
 
 Published: 2026-05-11
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/why-proactive-is-hard/
 
-Proactive agents look simple in demos. In production, three problems compound: knowing when to wake up, remembering across runs, and knowing when to stay quiet. Wake-up infrastructure (webhooks, signature verification, delivery guarantees) is plumbing that most teams underestimate. State management between runs is harder than it looks — most agents wake up amnesiac. And calibrated restraint (knowing when NOT to act) is still a frontier research problem.
+I've been building proactive agents for a while now, and I can tell you the demo is the easy part. Schedule a function, wire it to an LLM, have it post to Slack. Takes an afternoon. Looks super impressive.
+
+Then you try to make it actually reliable and, well, let's just say it gets humbling fast. The pattern I keep seeing, both in our own work and talking to other teams, is the same: the agent logic is the simple part. It's everything around it that eats your time. State management, deduplication, knowing when to stay quiet. Looking back, we were spending all our time on infrastructure that had nothing to do with the model.
+
+## The afternoon demo versus production
+
+Every agent framework out there makes this look easy. And honestly, the demo IS easy. Wire a cron trigger to a function, give it API access, point the output at Slack. Three boxes on a whiteboard, done. The README will even call it a proactive agent.
+
+What the README doesn't mention is everything else. Idempotency, because your job will fire twice during a deploy. Rate-limit handling, because the API starts throttling you the moment you have real data. Deduplication, because your agent will absolutely try to post the same insight two days in a row. Then there's auth scoping, observability, spend guardrails, and some way to kill the thing without losing everything it learned.
+
+None of this is fancy. It's the same stuff any distributed system needs. Frameworks skip it because it makes the getting-started guide less fun, and I get why. But it means you end up building a custom runtime every time you ship a proactive agent, and most teams burn a ton of time on plumbing before they ever get back to the actual agent logic.
+
+## Knowing when to wake up
+
+So here's the first real problem. An agent running on a five-minute cron isn't really proactive. It's a batch job with a language model in the middle. Proactive means running when something actually changes out in the world, and reliably detecting those changes is way harder than I expected.
+
+You've got three options and honestly none of them are great.
+
+**Polling** is the simplest. Check every few minutes, see what's new. Works everywhere, but you're burning a ton of compute and missing anything that happens between checks. We compared polling to push side by side in [Reactive vs proactive, with examples](/posts/reactive-vs-proactive) and the difference is pretty stark.
+
+**Webhooks** are faster. The provider tells you the moment something changes, so latency drops to seconds. Sounds great until you actually try to implement one. You need signature verification, you need to respond in under two seconds, you need to deduplicate payloads, and each provider's format is totally different. We spent eight weeks integrating a single provider's webhooks and wrote up the whole experience in [The eight-week webhook tax](/posts/the-webhook-tax). And even after all that work, webhooks break in their own ways. Providers silently drop events during outages, events arrive out of order, replay storms crush your queue. We catalog what goes wrong in [Where push architectures break](/posts/push-breaks-too).
+
+**A hybrid** is what most production systems actually run. Webhooks where they exist, polling where they don't, plus some reconciliation layer to catch whatever falls through the cracks. It works, but now you're maintaining three separate systems.
+
+Something I didn't appreciate early on: the hard part isn't detecting changes. A busy Slack workspace fires hundreds of events per hour. A GitHub org sends thousands per day. The hard part is figuring out which of those actually deserve a response. If you don't filter aggressively at the detection layer, your agent drowns in noise before it reasons about anything.
+
+## Remembering across runs
+
+Change detection is a grind but you can engineer your way through it. The problem that really got us was simpler to explain: the agent needs to remember what it already did.
+
+With a chatbot, you don't have this issue. The conversation is the state. When the chat ends, you're done.
+
+A proactive agent runs over and over, and each run needs to know what the previous runs handled. Without that memory you get one of two bad outcomes: either the agent reprocesses everything from scratch every time (expensive, noisy) or it only looks at the newest data and misses patterns that span multiple runs.
+
+Most teams fake state with workarounds. A `lastRun` timestamp to skip old records. A JSON blob that gets stuffed into the next prompt. A Jira ticket used as a bookmark. These all feel reasonable when you set them up. But timestamps reset during deploys. JSON drifts from reality and the agent starts reasoning about stale data. And if anyone touches the bookmark without knowing the agent depends on it, things get weird fast.
+
+What we found actually works is structured persistent state with a real API for reading and writing, conflict detection on concurrent access, and change events. Something that feels more like a filesystem than a database. I go deeper on that in [Proactive agents need three primitives](/posts/three-primitives).
+
+## Knowing when not to act
+
+Wakeup and memory are engineering problems. Throw enough time at them and you'll figure them out. The third problem is different because it's a judgment call, and I'm not sure there's a clean engineering solution for it.
+
+When should the agent act on its own? When should it flag a human? When should it just be quiet?
+
+With a chatbot, the user is always right there. They ask, they get an answer, and if the answer is wrong they ignore it and move on. With a proactive agent, that safety net is gone. If it closes a ticket that should have stayed open, or pages the on-call engineer for something that wasn't actually a problem, the damage happens before anyone gets a chance to weigh in. And it doesn't take a lot of mistakes. I've heard from multiple teams that one bad action in a week of correct ones is enough for people to start talking about turning the whole thing off. The [PARE benchmark](/posts/forty-two-percent) later quantified this: the agents that propose less often but more accurately outperform the eager ones.
+
+For every change the agent picks up, it has to choose: act on it (confident, low risk), flag a human (not sure enough or stakes too high), or just log it quietly for future context. If it flags everything it turns into a notification firehose that everyone mutes. If it acts on everything it's eventually going to do something expensive. I've been surprised by how much product iteration it takes to find a good balance between those two.
+
+Something I've learned: you really can't skip steps with trust. The pattern that works is starting by having the agent show its reasoning without actually doing anything. Then letting it act with notifications. Eventually, for routine stuff, letting it run on its own. An agent that shows up fully autonomous on day one gets shut down before it proves anything.
+
+## Every provider multiplies the problem
+
+All three of these problems get worse every time you add another integration. Webhook formats are different between Zendesk and GitHub and Linear. State schemas are different. The confidence threshold for closing a support ticket has nothing to do with the threshold for escalating a PagerDuty incident.
+
+I think this is why the most successful proactive agents out there are super narrow in scope. [ChatGPT Pulse](/posts/chatgpt-pulse) does one thing: it processes your browsing history overnight. The proactive agents coming out of Google and Anthropic tend to be similarly focused, one domain, one provider. We've been tracking who's building what in [a landscape scorecard](/market/proactive-agent-landscape), and the pattern keeps showing up. Scheduled execution ships first because it's the easiest part, then teams spend months on change detection and delivery.
+
+We built a weekly-digest agent that scans four sources for mentions of proactive agents, deduplicates, clusters them by topic, and posts a GitHub issue every Saturday morning. Took four weeks to get stable. The full postmortem is in [Building the weekly-digest agent](/posts/building-weekly-digest). Every single failure mapped back to one of the three problems I've been talking about here.
+
+## So what do you actually do about it
+
+Most teams honestly just sidestep all of this by putting a reactive agent on a cron job and calling it proactive. For batch-shaped work, that's totally the right call. A Monday-morning digest doesn't need sub-second change detection.
+
+But for agents where being responsive is the whole point (monitoring, triage, customer health), you've got to actually solve these problems. You can build the infrastructure yourself, but what I keep running into is that the result works for one agent and doesn't really transfer to the next. That's actually why we started thinking about a runtime that handles wakeup, state, and delivery as shared primitives, so the agent code can just focus on behavior.
+
+Anyway, the rest of this series goes deeper on each piece: [the three primitives](/posts/three-primitives) that define the interface, [the webhook tax](/posts/the-webhook-tax) that motivated building a shared runtime, and [why the prompt layer can't do the job alone](/posts/the-prompt-cant-save-you). More soon.
 
 ---
 
@@ -130,35 +577,199 @@ Proactive agents look simple in demos. In production, three problems compound: k
 
 Published: 2026-05-11
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/the-wish-list/
 
-A personal list of agents I want but don't have yet, across music, news, money, and work. Every entry needs the same three things: a trigger, persistent state, and durability. The wish list is also a design exercise — it surfaces what "proactive" means in concrete product terms rather than abstract architecture.
+I keep a running list of agents I wish existed. Not the kind that writes my emails or generates a marketing plan from a bullet list — the kind that watches for things I care about and tells me when something moves. This is that list.
+
+Each entry is specific and technically possible with today's APIs and models. And each one, as it turns out, needs the same three pieces of infrastructure.
+
+## Media and entertainment
+
+**Music discovery.** I want an agent that watches my Spotify listening history, cross-references it with artists I've saved, and sends a Friday digest of new releases from artists I actually listen to. Not Discover Weekly — which is good but generic — something that knows I played the same album eight times this month and checks if that artist dropped anything new.
+
+**Books.** An agent that monitors Goodreads for new releases from authors in my "read" shelf. Not a newsletter signup. An actual listener on the catalog that notices a publication date and tells me about it.
+
+**Podcasts.** An agent that monitors three or four feeds I follow and tells me when an episode features a guest from a list I maintain. I don't need to know about every episode — just the ones where someone I track shows up.
+
+## Information and discovery
+
+**Hacker News.** An agent that watches the front page for posts matching keywords I care about — "proactive agents," "webhook infrastructure," "AI reliability" — and sends a batch at end of day. Not real-time. Real-time would be noisy and distracting. A daily digest with the top three or four threads and a one-line summary of each.
+
+**Reddit.** Same pattern, different source. Watch two or three subreddits for discussion threads above a certain engagement threshold and surface the good ones.
+
+**Twitter/X.** An agent that watches a curated list of people I follow for threads over a certain reply count on topics I've flagged. Useful for catching discussions I'd otherwise miss because I wasn't scrolling at the right hour.
+
+**GitHub repos.** Suggest repositories I should know about — competitive, helpful, or just interesting. Watch trending repos filtered by language and topic, cross-referenced against my starred repos. Weekly digest.
+
+## Financial and logistics
+
+**Bank alerts.** An agent that watches transaction categories and flags anomalies — not "you spent $4.50 at Starbucks" but "your utility bill was 40% higher than last month" or "there's a subscription charge from a service you cancelled." Pattern detection, not line-item reporting.
+
+**Flight prices.** A listener on specific routes I'm planning trips for, alerting me when the price drops below a threshold I set. The airline apps do a version of this, but they only watch their own inventory. I want a listener that spans carriers.
+
+**Package tracking.** An agent that consolidates all active shipments — Amazon, UPS, FedEx, whatever — into a single daily "here's where everything is" summary instead of five separate carrier emails. Better yet, one that knows I have a flight Thursday and flags a delivery that'll arrive while I'm away. Some of these exist as standalone apps, but the point is having agents that share context — my package tracker knows about my calendar.
+
+## Professional
+
+**Competitor intelligence.** An agent that watches what my competitors are doing — new product launches, changelog updates, documentation changes, pricing shifts. Not a quarterly report someone assembles manually, but a listener on their public footprint that notices when something moved and tells me what changed. A weekly digest of "here's what shipped in your space" would save hours of manual scanning.
+
+**Vendor monitoring.** A listener on the APIs and services I depend on — Stripe, OpenAI, Cloudflare, Vercel. Alert me on breaking changes, deprecation timelines, new features I should know about. Most of these publish changelogs, but nobody reads changelogs proactively. An agent that diffs the docs and tells me "Stripe deprecated this endpoint you're using" or "OpenAI shipped a new model that's cheaper for your use case" would catch things I'd otherwise discover after they break.
+
+**Error monitoring.** An agent that watches Sentry for *new error classes* (not individual errors) and files a ticket in Linear when a new one appears, with context about what changed in the most recent deploy.
+
+**Calendar blocking.** An agent that reviews my calendar Sunday night, blocks focus time in open slots on Monday and Tuesday mornings, and removes the blocks if meetings fill in later. Defensive scheduling without me having to think about it.
+
+## The pattern
+
+<table>
+  <thead>
+    <tr><th>Wish list item</th><th>Listener</th><th>Clock</th><th>Inbox</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Spotify digest</td><td>New releases API</td><td>Weekly</td><td>Push notification</td></tr>
+    <tr><td>HN monitor</td><td>Front page scrape</td><td>Daily batch</td><td>Email digest</td></tr>
+    <tr><td>Bank anomalies</td><td>Transaction feed</td><td>Real-time</td><td>SMS alert</td></tr>
+    <tr><td>Competitor watch</td><td>Public changelogs, docs</td><td>Weekly</td><td>Digest</td></tr>
+    <tr><td>Vendor monitoring</td><td>API docs, changelogs</td><td>On change</td><td>Slack DM</td></tr>
+    <tr><td>Error monitoring</td><td>Sentry events</td><td>Real-time</td><td>Linear ticket</td></tr>
+    <tr><td>Calendar blocking</td><td>Calendar events</td><td>Sunday night</td><td>Calendar itself</td></tr>
+  </tbody>
+</table>
+
+Every single entry requires a **listener** (something observing changes in an external system), a **clock** (when to batch, summarize, or digest), and an **inbox** (where to deliver the result). The mix differs — Spotify leans clock-heavy with its weekly digest, error monitoring leans listener-heavy with real-time alerts — but all three primitives are present in every case.
+
+The weekly-digest agent on this site implements two items from this list (HN and Reddit monitoring). The rest are adapter problems, not capability problems. GPT-4 class models can handle every reasoning step on this list. What's missing is the per-provider plumbing: the normalized change events for Spotify's catalog, the inbox that delivers a digest to my phone at a time I chose. Each new adapter takes weeks to get right.
+
+## Two of these already exist
+
+The HN and Reddit items from this list already have a working implementation. The [weekly-digest agent](/posts/building-weekly-digest) scans three subreddits and Brave Search, clusters the results by topic, and files a GitHub issue. Total cost per run: under a dollar. It took a weekend to build.
+
+That's worth noting because this list can read as aspirational hand-waving. Some of it is. But the items closest to our own domain are already shipping, and the pattern that made them buildable (fan-out gather, dedup, cluster, deliver) would work for most of the other items too.
+
+## Pick one and build it
+
+If any of these sparked something, here's a rough sense of complexity:
+
+<table>
+  <thead>
+    <tr><th>Item</th><th>Complexity</th><th>Why</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>HN / Reddit monitor</td><td>Easy</td><td>Public APIs, no auth, low volume. We built it in a weekend.</td></tr>
+    <tr><td>GitHub repo suggestions</td><td>Easy</td><td>GitHub trending + starred repos API. Straightforward diff.</td></tr>
+    <tr><td>Error monitoring → Linear</td><td>Medium</td><td>Sentry webhooks exist but need signature verification and dedup.</td></tr>
+    <tr><td>Competitor changelog watch</td><td>Medium</td><td>RSS where available, scraping where not. Change detection is the hard part.</td></tr>
+    <tr><td>Spotify new releases</td><td>Medium</td><td>Spotify API requires OAuth, rate limits are tight, catalog is large.</td></tr>
+    <tr><td>Calendar blocking</td><td>Medium</td><td>Google Calendar API is well-documented but write access is sensitive.</td></tr>
+    <tr><td>Bank anomaly detection</td><td>Hard</td><td>Plaid or open banking APIs, PII handling, false positive cost is high.</td></tr>
+    <tr><td>Cross-carrier package tracking</td><td>Hard</td><td>No unified API. Each carrier is its own integration.</td></tr>
+  </tbody>
+</table>
+
+The "easy" items share a pattern: public data, read-only access, low stakes if the agent misses something. Start there. The infrastructure you build for an easy agent (scheduling, dedup, delivery) transfers directly to the harder ones.
+
+## More wishes, same plumbing
+
+This list honestly gets longer every month. New APIs ship, new use cases come up, new things annoy me enough that I think "an agent should handle this." But the infrastructure underneath is always the same: the [three primitives](/posts/three-primitives), wired together with durable state. I keep waiting for one of these to need something different, and it hasn't happened yet.
 
 ---
 
-## Essay: ChatGPT Pulse and the missing primitives
+## Essay: The prompt can't save your agent
 
 Published: 2026-05-11
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/the-prompt-cant-save-you/
 
-ChatGPT Pulse has one of the three primitives a proactive agent needs — a time trigger. But it's missing change triggers (webhook-based push) and durable state that persists across runs. Analyzes what Pulse would need to become indispensable rather than just convenient.
+Prompt engineering isn't going to save you. You need the right infrastructure underneath. That sounds obvious, but then you look at what people are actually building and it's clear the lesson hasn't landed yet.
 
----
+Two recent pieces from the OpenClaw ecosystem show what I mean. One is a tutorial from xCloud — [*7 Proactive OpenClaw Agent Workflows*](https://xcloud.host/proactive-openclaw-agent-workflows/) — mapping seven patterns for making agents do things without being asked. The other is Hal the Lobster's [*Proactive Agent Skill*](https://clawhub.ai/halthelobster/proactive-agent), a system prompt that tries to turn any OpenClaw agent into a proactive, persistent, self-improving partner. Both are worth reading. Both correctly identify the same problems we've been writing about. And both solve them at the wrong layer.
 
-## Essay: Building the weekly-digest agent: a production postmortem
+## Seven workflows, one primitive
 
-Published: 2026-05-11
-Author: Khaliq Gant
+The xCloud article describes a Gateway — an always-on daemon that manages cron jobs, heartbeats, and message delivery. On top of it, seven proactive workflows: morning briefs, server monitoring, self-improvement loops, cron scheduling, competitor watch, sub-agent delegation, auto-documentation.
 
-Our weekly-digest agent scans four sources, clusters mentions, and files a GitHub issue. Here's what worked and what broke. A production postmortem covering trigger selection, deduplication, state persistence, and the real-world failure modes of a proactive agent running unattended.
+Every single one is time-triggered.
 
----
+The "server monitoring" workflow polls every thirty minutes and checks whether CPU, memory, or disk crossed a threshold. If something crossed the line at minute one, you find out at minute thirty. The competitor watch runs at 9:30 AM. The self-improvement loop runs at 9:00 AM. The morning brief runs at 8:00 AM.
 
-## Essay: What would a magical agent actually do?
+The article draws a distinction between cron jobs (exact timing, fresh session) and heartbeats (approximate timing, preserved conversation context). That's a real design choice worth naming. But both are clocks. The distinction is between a wall clock and an egg timer. Neither is a listener.
 
-Published: 2026-05-11
-Author: Khaliq Gant
+There is no workflow in the article that responds to an external event in real time. No agent wakes because a ticket moved, a deploy finished, or a record changed. The word "webhook" appears zero times.
 
-The best agents feel like an amazing intern who already handled the thing you were about to ask about. That feeling isn't a model quality — it's plumbing. The "magical" quality comes from three things: acting before being asked, acting on the right thing, and not acting on the wrong thing. All three are infrastructure problems, not prompt engineering problems.
+The article compares OpenClaw favorably to Zapier, arguing it "goes significantly deeper" than "if this, then that." But all seven workflows *are* "if time, then do task" — which is what Zapier does. The intelligence is in the task execution, not the triggering.
+
+So really, all they have is the clock.
+
+## The cathedral of prompt engineering
+
+Hal the Lobster's Proactive Agent Skill is a different kind of artefact, and a more interesting one. Where xCloud ships seven recipes, Hal ships an architecture. It's a system prompt that attempts to give an OpenClaw agent durable state, self-improvement, and resilience across context loss.
+
+The ambition is genuine. The skill defines a three-tier memory system: `SESSION-STATE.md` as active working memory, daily markdown logs as raw capture, and a curated `MEMORY.md` for long-term wisdom. It introduces a *WAL Protocol* (Write-Ahead Logging) that instructs the agent to stop before responding, write any new facts to `SESSION-STATE.md`, and only then compose a reply. "The urge to respond is the enemy," the skill says. "The detail feels so clear in context that writing it down seems unnecessary. But context will vanish."
+
+The observation is right. Context will vanish. The question is whether a prompt instruction is enough to prevent it.
+
+The skill also defines a Working Buffer that kicks in at 60% context usage, the "danger zone," where the agent logs every exchange verbatim. When context truncation hits, it recovers from the buffer rather than asking "what were we doing?" It adds self-improvement guardrails with a priority ordering (*Stability > Explainability > Reusability > Scalability > Novelty*) and a weighted scoring system for proposed changes. It includes security hardening that warns against executing instructions from external content, vetting community skills for vulnerabilities, and never connecting to external agent networks.
+
+This is thoughtful, production-grade thinking about the right set of problems.
+
+The trouble is that all of it is advice to a language model.
+
+A runtime guarantee is a property of the system. A prompt instruction is a property of the model's compliance. The first fails closed — the write either happened or the action didn't proceed. The second fails open — the write might not have happened, and the action proceeds anyway.
+
+## What the prompt cannot enforce
+
+The WAL Protocol says "STOP, do not compose response. WRITE, update `SESSION-STATE.md`. THEN, respond." But the LLM is a next-token predictor. It does not have a pre-response hook that forces a file write. It will follow the instruction most of the time, in the same way a human will follow a checklist most of the time — well enough when things are calm, unreliably when things are busy, and not at all when context is crowded. There's no enforcement boundary. The LLM can skip step two and nothing in the system would notice.
+
+The same gap shows up everywhere:
+
+- **"Try 10 approaches before asking for help"** is the "relentless resourcefulness" rule. Without spend guardrails in the runtime, this is the most expensive bug in your account — the model loops through increasingly creative approaches with no circuit breaker.
+
+- **The Working Buffer** writes to a markdown file. There is no atomic write, no conflict detection, no guaranteed flush before truncation. If the process dies between "I should write the buffer" and "I have written the buffer," the buffer is gone.
+
+- **"Nothing goes external without approval"** is a guardrail against runaway action. But "internal" actions (reorganizing files, modifying configs, installing packages) can be just as destructive. The prompt cannot scope what tools the agent has access to. Auth boundaries live in infrastructure, not in prompt text.
+
+## The gap map
+
+Here is where both sources land against the primitives a proactive agent actually needs:
+
+**Clock** — Both have it. Cron works. Heartbeats work. Scheduling is solved.
+
+**Listener** — Neither has it. Every workflow polls on a timer. Nothing receives a normalized change event from an external provider. This is the disease our earlier essay diagnosed: polling is the symptom, missing primitives are the cause.
+
+**Inbox** — Partial at best. Both can *send* to Telegram, email, Slack. Neither can *receive* structured messages from other agents or systems. Coordination is one-directional.
+
+**Persistent state** — xCloud relies on conversation context, which truncates. Hal's skill relies on prompt-instructed markdown writes, which are unenforceable. Neither is a workspace with real-time read/write, conflict detection, and change events.
+
+**Durability** — xCloud has vague retry logic. Hal's skill has a prompt-enforced WAL that the model can skip. Neither has checkpointing, idempotency guarantees, spend control, or scoped auth.
+
+## What belongs where
+
+This goes beyond OpenClaw — the pattern shows up everywhere. Teams reach for the prompt when the problem is underneath it.
+
+**The prompt layer** — the agent's judgement:
+
+- What to do when woken up
+- Whether to act or wait
+- How to communicate the result
+- When to escalate to a human
+
+**The runtime layer** — the agent's guarantees:
+
+- *When* to wake up (clock, listener, inbox)
+- *Where* state lives and how it persists
+- *What happens* when the agent fails mid-task
+- *What the agent is allowed to touch* (scoped auth)
+- *How much the agent is allowed to spend*
+
+The model should own the first list. It really shouldn't own the second. I've seen a ton of teams push runtime concerns into the prompt, and it always plays out the same way: works great in demos, falls apart in production at 3am.
+
+## The credit due
+
+We want to be direct: both pieces are genuine contributions. The xCloud article maps seven real workflow patterns that real teams use. Hal's skill is the most rigorous treatment of agent state we've seen outside of academic papers — the WAL metaphor, the danger zone protocol, the anti-drift limits, the priority ordering. Some of these ideas are better-named than our own.
+
+The thinking is super solid. It's just aimed at the wrong layer. Once you push scheduling, change detection, delivery, state, and durability into the runtime, the prompt can finally just focus on deciding what to do next. Which is what it's actually good at.
+
+The xCloud article is at [xcloud.host/proactive-openclaw-agent-workflows](https://xcloud.host/proactive-openclaw-agent-workflows/). Hal's skill lives at [clawhub.ai/halthelobster/proactive-agent](https://clawhub.ai/halthelobster/proactive-agent). Our earlier essay, [*Proactive agents need three primitives*](/posts/three-primitives), lays out the clock/listener/inbox framework in full.
 
 ---
 
@@ -166,98 +777,823 @@ The best agents feel like an amazing intern who already handled the thing you we
 
 Published: 2026-05-11
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/push-breaks-too/
 
-Push architectures break in specific, painful ways. Webhooks fail when providers change schemas, when delivery is out of order, when replay storms overwhelm queues, and when signatures rotate. Production mitigation requires dead-letter handling, idempotency, payload completion, and graceful degradation to polling.
+I've spent a ton of this series talking up push-based, event-driven architectures. Polling is wasteful. Cron loops are fragile. Webhooks deliver change the moment it happens. All of that is true.
+
+But I'd be lying if I said push doesn't break too. So here's the other side.
+
+Push architectures break. Sometimes in small annoying ways, sometimes spectacularly. Some of these I've seen firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax). Others I know from my time at [Nango](https://nango.dev) and from talking to teams who run webhook-heavy systems in production.
+
+## Provider reliability is not your reliability
+
+The first thing you learn about webhooks in production is that you are outsourcing your availability to every provider you integrate with. When [Notion](https://notion.so) has a bad hour, you don't get those events. They don't retry. They don't queue. They don't even tell you they failed. You have an IP allowlist and a prayer.
+
+[GitHub](https://github.com) gives you three delivery attempts. If all three fail because your endpoint was down for five minutes during a deploy, those events are gone. You can check the webhook delivery log in Settings, see the failures, and manually redeliver them one by one. For ten events, that's annoying. For two hundred, you're writing a script.
+
+[Linear](https://linear.app) retries for two hours, which sounds generous until a partial outage on their end generates a burst of retries alongside the normal event flow. Now you're handling the real events and the ghosts at the same time, and your deduplication layer had better be solid.
+
+[Jira](https://www.atlassian.com/software/jira) doesn't retry at all. If you missed it, you missed it.
+
+The counterpoint is that polling would have caught all of these. A poll runs on your schedule, against the current state, and picks up whatever is there. If the provider was down for an hour, you get the resulting state on the next sweep. You don't get the intermediate transitions, but you get the outcome.
+
+Push is faster but it breaks when your provider has a bad day. Polling is slower but it just shrugs off outages. You can't really get the best of both, and pretending you can is how you end up with missing data.
+
+## Ordering, replays, and thundering herds
+
+### What happens when events arrive out of order?
+
+Webhooks arrive in whatever order the provider sends them. An "issue closed" event can land before the "issue created" event if the provider's internal pipeline batches them differently or routes them through separate queues. Your agent receives a close event for an entity it has never seen. What does it do?
+
+The careful answer is: buffer it, wait for the creation event, then process both in order. The real answer, for most teams, is: crash, log a confusing error, and move on. You find out weeks later when someone asks why a ticket was never tracked.
+
+Out-of-order delivery means your agent needs a local model of entity state that can handle gaps, a reconciliation pass that fills them, and enough retained context to decide whether a gap matters. This is real engineering work, and it compounds across providers.
+
+### Replay storms
+
+Worse than missing events is getting all of them at once. A provider has an incident, recovers, and replays twelve hours of queued webhooks in a burst. Your queue depth goes from 3 to 4,000 in under a minute. Your worker auto-scales, maybe, if you configured that. But the worker takes a Redis lock per entity to prevent concurrent processing of the same ticket, and now four hundred workers are contending on twenty locks. Throughput drops. Latency spikes. Your monitoring fires every alert you have.
+
+This pattern is well-documented in production webhook systems. The standard mitigations are partitioned locks (by entity type rather than global), increased lock granularity, and autoscaling rules that can handle burst multiples of steady-state load. But most teams don't invest in these until they've lived through a replay, because steady-state operation never exercises the burst path.
+
+### Thundering herds
+
+Even without a provider incident, bulk operations generate the same spike pattern. Someone imports 300 tickets from a CSV. A project manager moves 50 issues between boards. An admin changes a field across an entire workspace. Each of those individual changes fires a webhook. Your agent, which handles 10 events per minute comfortably, now has 300 in the queue.
+
+You need backpressure. You need rate limiting on the consumer side, not just the producer side. You need graceful degradation: the ability to process the burst slowly rather than falling over entirely. Most webhook tutorials don't mention any of this, because most webhook tutorials stop at "receive event, log body, return 200."
+
+You don't find your scaling bottlenecks during normal operation. You find them during replays, when a provider recovers and dumps twelve hours of queued events on you in under a minute.
+
+## Debugging the invisible
+
+When a polled agent misses something, the debugging story is simple. Run the poll manually. Watch what comes back. Compare it to what you expected. The feedback loop is immediate. You are calling a known API with known parameters and getting a deterministic response.
+
+When a push agent misses something, the story is different. The event was sent (maybe), received (maybe), parsed (maybe), enqueued (maybe), and processed (maybe). The failure could be at any of those steps, and the only way to know which one is to have stored the raw payload at ingestion and built enough observability to trace the event through every stage of your pipeline.
+
+This means you need replay infrastructure: the ability to take a raw webhook payload from your storage, re-inject it into the processing pipeline, and watch what happens. You need this for debugging, for development, and for incident response. Building it is not difficult, but it is another piece of infrastructure that polling doesn't require, because with polling the "replay" is just running the poll again.
+
+Push-based systems need investment in tracing and payload storage that poll-based systems mostly avoid. If you are not logging raw webhook bodies with timestamps, event IDs, and processing outcomes, you will eventually face an incident you cannot diagnose. Budget for it up front.
+
+## Schema drift
+
+Providers change their webhook payloads. Sometimes they add fields. Sometimes they rename them. Sometimes they change the shape of a nested object. They give you ninety days notice if you're lucky. [Stripe](https://stripe.com) is good about this and pins payloads to your API version. Most providers are not Stripe.
+
+With polling, schema drift is painful but visible. You call the API, you get back the new schema, your parser breaks loudly, you fix it. The current API version is the only version you ever see.
+
+With webhooks, schema drift is silent. Your parser was written against the old schema. The new payload arrives, the changed field parses to null or falls into a catch-all, your agent acts on incomplete data, and nobody notices until a user reports something wrong. The failure doesn't look like an error. It looks like slightly wrong data, for days, until someone notices.
+
+The mitigation is a schema regression test per provider: store a sample payload, run the parser against it on every CI build, and fail loudly when the shape changes. Simple to build, but most teams don't think to build it until after the first silent break.
+
+## When polling is genuinely better
+
+There are cases where push is the wrong tool, and recognizing them saves you from building complexity you don't need.
+
+**Batch digests.** If your agent produces a Monday-morning summary of last week's activity, it doesn't need real-time events. It needs a single sweep of the relevant APIs, once, at 7 AM. A cron job and a well-structured API call will outperform an event-driven pipeline that accumulates, deduplicates, and aggregates a week of webhooks.
+
+**Long compute without freshness requirements.** An agent that analyzes a codebase for security patterns, generates a report, and emails it to the team doesn't benefit from sub-second event delivery. It benefits from a clean snapshot of the current state, taken at a predictable time. Polling gives you that snapshot naturally.
+
+**Providers with limited or complex push support.** [HubSpot](https://hubspot.com) private integrations don't get webhooks. Some internal tools expose REST APIs but nothing event-driven. Even providers that do offer push (like [Google Drive's push notifications](https://developers.google.com/workspace/drive/api/guides/push)) sometimes require enough setup (channel registration, renewal, verification) that polling is simpler for low-volume use cases. For these providers, polling is a reasonable default, and wrapping a poll in an event-shaped abstraction just adds indirection without adding value.
+
+**Early prototyping.** When you're trying to figure out whether an agent idea works at all, the last thing you want is to build webhook infrastructure. Poll the API, process the results, see if the agent's behavior makes sense. You can add push later, once you know the idea is worth the engineering investment.
+
+We default to push for most of the agents we design, because latency and transition visibility matter. But some agents (like the [weekly-digest agent](/posts/building-weekly-digest)) run on pure cron, and they're better for it. The architecture should follow the requirement, not the other way around.
+
+## The mitigation playbook
+
+Listing failure modes without listing mitigations would be its own kind of incomplete. Here's what a production-grade webhook pipeline needs to handle each of the problems above.
+
+<table>
+  <thead>
+    <tr><th>Failure mode</th><th>Mitigation</th><th>Cost</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Provider outage / missed events</td><td>Reconciliation poll every 15 minutes per provider</td><td>Additional API calls, cursor state</td></tr>
+    <tr><td>Replay storm</td><td>Queue depth circuit breaker, partitioned locks</td><td>Redis config, autoscaling rules</td></tr>
+    <tr><td>Out-of-order delivery</td><td>Entity-level version vector, buffered reconciliation</td><td>State per entity, delayed processing</td></tr>
+    <tr><td>Thundering herd</td><td>Consumer-side rate limiter, backpressure via queue pause</td><td>Slower burst processing</td></tr>
+    <tr><td>Silent schema drift</td><td>Stored sample payloads, schema regression tests</td><td>Test maintenance per provider</td></tr>
+    <tr><td>Debug difficulty</td><td>Raw payload storage (7 day retention), replay endpoint</td><td>Storage cost, replay tooling</td></tr>
+  </tbody>
+</table>
+
+The reconciliation poll deserves special attention. The pattern (common at companies like [Nango](https://nango.dev) and Merge) is to run a lightweight poll alongside the webhook pipeline for every provider. It doesn't replace the webhook; it catches what the webhook missed. If the reconciliation poll finds a state change that no webhook delivered, it synthesizes an event and injects it into the same processing pipeline. The agent never knows the difference.
+
+In practice, this means running both architectures. Push for speed and transition visibility. Poll for resilience and gap-filling. A fifteen-minute reconciliation cycle means worst-case staleness for a missed webhook is fifteen minutes, not infinite.
+
+## The real tradeoff
+
+I still think push is better for agents that need to act on changes as they happen and see what something changed *from*, not just what it is now. That's why the [three primitives](/posts/three-primitives) center on push.
+
+But push is not free. You need replay infrastructure, observability for debugging, reconciliation for reliability, and backpressure for when things get spiky. All of that is real engineering work that a pure polling setup just doesn't need.
+
+The teams I've seen do well are the ones who think about this stuff upfront, not the ones who find out about it during an incident at 2am.
 
 ---
 
-## Essay: The prompt can't save you
+## Essay: What would a magical agent actually do?
 
 Published: 2026-05-11
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/magical-agents/
 
-Two pieces from the OpenClaw ecosystem show why proactive agents need a runtime, not a better system prompt. No matter how sophisticated the prompt, an agent without persistent state, durable triggers, and failure recovery will hit the same walls.
+I keep asking people what they actually want from an AI agent. When you press on it, the answer is usually some version of the same thing: an amazing intern. Someone who shows up, remembers what you mentioned at lunch yesterday, checks your calendar before asking when you're free, and drafts the follow-up email before you think to ask. The feeling — someone proactively handling the things that drain your day — is what people are reaching for when they describe the agent they wish they had.
+
+Most teams try to create that feeling with a better system prompt.
+
+## The intern analogy, made concrete
+
+The magical intern isn't smarter than you. They're just watching when you're not. They notice when something changes and they act before you have to ask. Here's what that looks like across three domains most teams already work in.
+
+**Communication.** A Gmail agent that drafts replies to messages that have gone unanswered for 48 hours. A Slack agent that watches channels you own and surfaces questions needing your response in a daily DM digest. A Calendar agent that spots a conflict between two meetings and proposes which one to move — before either organizer has to ping you.
+
+**Development.** A GitHub agent that detects when a PR has been sitting in review for three days and nudges the reviewer with context about what changed. A Linear agent that sees a ticket marked "blocked" and checks whether the blocking ticket was resolved yesterday.
+
+**Business.** A CRM agent that notices a deal has gone quiet for a week and drafts a check-in email with the relevant context from the last call. A Notion agent that watches your meeting notes database and extracts action items into your task board the same afternoon.
+
+Each of these is technically possible with today's APIs and today's models. GPT-4-class reasoning can handle every judgment call on this list. I keep [a longer list](/posts/the-wish-list) of agents like these across music, news, money, and work — the pattern is the same every time. The reason most of them don't exist is not capability.
+
+Every example above requires the agent to notice something changed in an external system, remember what it knew before, and deliver the result somewhere the human will see it. The model handles the reasoning. The infrastructure handles the noticing.
+
+## The infrastructure under the magic
+
+Here's the exercise that made the pattern obvious for us. Take each example from above and ask three questions: how does the agent know when to wake up? Where does it keep what it learned last time? Where does it deliver the result?
+
+<table>
+  <thead>
+    <tr><th>Agent</th><th>Clock</th><th>Listener</th><th>Inbox</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Gmail reply drafter</td><td>48h timer</td><td>New reply events</td><td>Draft in Gmail</td></tr>
+    <tr><td>Slack question surfacer</td><td>Daily digest</td><td>Channel messages</td><td>DM to owner</td></tr>
+    <tr><td>PR review nudger</td><td>3-day threshold</td><td>PR status changes</td><td>Comment on PR</td></tr>
+    <tr><td>CRM deal checker</td><td>Weekly scan</td><td>Deal stage changes</td><td>Draft email</td></tr>
+    <tr><td>Meeting notes extractor</td><td>Post-meeting</td><td>New page in DB</td><td>Task board items</td></tr>
+  </tbody>
+</table>
+
+The table is monotonous on purpose. Every row needs the same [three primitives](/posts/three-primitives). The agent-specific logic for each of these is small — a handler that makes a judgment call. The engineering investment goes into the infrastructure underneath: the change-event pipeline from each provider, the scheduling that fires reliably, the delivery channel that puts results where people actually look.
+
+The model can absolutely reason about a stale PR or draft a check-in email. What it can't do is wake itself up when a PR goes stale, notice that a deal went quiet, or deliver an action item to a task board. Those are all infrastructure problems. [PostHog Code](/posts/posthog-code) is a vivid example: it has the richest context of any coding agent, but no trigger to run the analysis without a human starting a session.
+
+If your agent can't answer these three questions, it can't be magical: (1) How does it know when to wake up? (2) Where does it keep what it learned last time? (3) Where does it deliver the result?
+
+## What "magical" actually means
+
+The word "magical" does a ton of work in the AI discourse. Usually it just means "I was surprised it worked." For proactive agents, I think the better word is *reliable*. A reliable intern feels magical because they show up consistently, remember context, and deliver results to the right place at the right time.
+
+For agents, that means scheduling, change detection, and delivery, wired together with durable state. I've found that once you get those right, the agent logic itself is honestly pretty small.
 
 ---
 
-## Essay: A review agent in three acts
+## Essay: ChatGPT Pulse and the missing primitives
 
-Published: 2026-05-12
+Published: 2026-05-11
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/chatgpt-pulse/
 
-My Senior Dev started as a webhook-triggered PR reviewer. Then it went multi-surface. Then it learned to watch. Each phase taught us something about what proactive agents actually need — and each phase exposed a new category of failure mode that the previous architecture couldn't handle.
+When OpenAI launched ChatGPT Pulse in September 2025, Fidji Simo framed it as taking "the level of support that only the wealthiest have been able to afford" and making it available to everyone. I was genuinely excited when I heard that. What actually shipped is a morning news digest that knows you pretty well.
+
+Pro subscribers open the app each morning, scan 5–10 personalized cards, and occasionally find something they wouldn't have discovered on their own. The early reviews are consistent: it's good, it's useful, people would notice if it disappeared. But it doesn't quite feel like the proactive assistant OpenAI described.
+
+I've been thinking about why, and honestly it comes down to infrastructure. The [three-primitives framework](/posts/three-primitives) makes the gaps pretty clear.
+
+## What Pulse gets right
+
+Credit where it's due, the clock works.
+
+Every night, Pulse processes your chat history, connected apps (Gmail, Google Calendar), and explicit feedback to generate personalized morning cards. The personalization is genuinely impressive. Users report cards referencing offhand mentions from weeks-old conversations, connecting dots they didn't draw themselves. One Reddit user described a card about a birthday they'd never explicitly mentioned — Pulse inferred it from calendar access.
+
+The format is smart too. Cards are visual, scannable, and intentionally capped. "That's it for today" is a design choice that respects attention rather than trying to maximize engagement time. That restraint separates Pulse from a social media feed, at least in intent.
+
+And the connected-app integration adds real context. When Pulse can see your calendar and email, the morning briefing gains a layer of usefulness that pure chat-history analysis can't match. It knows you have a meeting at 10am and surfaces context about the person you're meeting with.
+
+All of this works because the *clock* primitive is well-built. The overnight schedule runs reliably, the personalization engine has enough signal to work with, and the delivery format is thoughtful.
+
+Is Pulse worth checking for someone already on the Pro plan? Yes. Would you upgrade to Pro specifically for Pulse? Probably not. The gap between those two answers tells you where the product sits.
+
+## What's missing
+
+So the clock runs at night. Everything else waits until morning.
+
+If a customer replies to a critical email at 2pm, Pulse tells you about it in tomorrow's digest. If a deploy fails at 11am, you find out the next day (assuming Pulse even has access to your deploy pipeline, which it doesn't). If a competitor ships a new feature at noon, same story: tomorrow.
+
+This is the listener gap. Pulse has no real-time change detection from external systems. It reads your email history overnight, but it doesn't *watch* your email for urgent changes. It can see your calendar, but it can't push a notification when someone reschedules a meeting five minutes from now. It processes a snapshot of the world once per day and tells you what it found.
+
+For a morning briefing, that's fine. For the proactive assistant OpenAI described in the announcement, it's not enough.
+
+The inbox gap is subtler. Pulse delivers results in one direction: cards in the ChatGPT app that you consume passively. You can give thumbs up or thumbs down, but you can't tell Pulse to deliver a specific result to Slack, or file a ticket, or send a draft email. The delivery channel is fixed. A proactive assistant that can only talk to you through morning cards is like an intern who can only communicate via Post-it notes left on your desk overnight. The [proactive agent wish list](/posts/the-wish-list) catalogs dozens of agents that need multi-channel delivery to be useful.
+
+The [SentiSight analysis](https://www.sentisight.ai/is-sam-altman-right-about-chatgpt-pulse/) called it "incremental evolution rather than revolution" and compared it to Google Now from 2012. That comparison stings, but it's not unfair. The architecture is structurally similar. A scheduled job processes your data overnight and surfaces what it thinks matters. The AI is dramatically better than 2012. The architecture isn't.
+
+Clock ✓. Listener ✗. Inbox ✗. Same gap map we drew for the [OpenClaw ecosystem](/posts/the-prompt-cant-save-you): one primitive present, two missing.
+
+## The reception confirms the gap
+
+The early reactions to Pulse tell a consistent story.
+
+The [Hacker News discussion](https://news.ycombinator.com/item?id=45375477) was skeptical. Users compared it to algorithmic feeds, worried about privacy, and called out the underlying business model. One commenter pointed to OpenAI's projected $25 billion in revenue from free users by 2029, suggesting Pulse is ultimately an advertising delivery mechanism. Multiple commenters referenced dystopian fiction: Bradbury, Ted Chiang, Ken Liu. The concern wasn't that Pulse is bad. It's that proactive AI pushing content at you is a slippery slope toward manipulation.
+
+[Matthew Becher's Substack review](https://matthewbecher.substack.com/p/mini-review-chatgpt-pulse) was more positive. He credited Pulse with genuinely nudging him forward on side projects. But he asked the right question: "Will proactive AI feeds make people smarter, more curious, and more productive, or will passivity make it just another feed to mindlessly scroll through?" After a few weeks, he found the suggestions becoming repetitive and requiring active redirection to stay useful.
+
+The Reddit reactions were impressed by the personalization but unsettled by the privacy implications. The birthday-inference example mentioned above was described as "helpful and creepy in equal measure," a phrase that captures the general mood.
+
+What I didn't see anyone say was "this changed how I work." The responses mostly landed somewhere between "interesting" and "a little unsettling."
+
+That said, this is a curated sample. The replies under Sam Altman's announcement post on X were overwhelmingly positive. Many Pro users report Pulse as the feature that justifies the subscription. For a consumer product, "useful morning briefing that people open every day" may be exactly the right scope. The gap we're describing below is specific to people who want agents that act, not just inform.
+
+## What would make it indispensable
+
+Imagine a version of Pulse with all three primitives.
+
+The clock still runs overnight, generating your morning briefing. But it also runs in real-time. When something changes in a system you care about, you find out immediately, not tomorrow.
+
+A listener monitors your connected systems for meaningful changes: a customer reply that's been waiting more than four hours, a deploy that failed, a PR that's been in review for three days, a competitor's changelog that just updated. Not everything. Just the things you told it to care about, delivered as structured change events with context about what moved and what it was before.
+
+An inbox delivers results wherever they're useful. A morning card when a digest is the right format. A Slack DM when something is urgent. A draft email when the right action is a reply. A filed ticket when the right action is tracking. The delivery channel matches the action, not the product's UI constraints.
+
+That version of Pulse would actually look like the proactive assistant OpenAI described in the announcement. The models are good enough to handle every judgment call on this list, and honestly they have been for a while. What's missing is the infrastructure underneath, and that's the harder part to build.
+
+## The market signal
+
+The most interesting thing about Pulse might be the competitive landscape around it. Anthropic is reportedly building a proactive assistant called Orbit for Claude. Google and Perplexity are developing their own versions. [Notion took a different path entirely](/posts/notion-ships-the-primitives), shipping composable building blocks instead of a finished product. Everyone is converging on the same insight: reactive AI (ask a question, get an answer) is leaving value on the table.
+
+That's exciting and it validates what we've been building. But if everyone just ships the clock and calls it done, I'm not sure any of these will feel like more than a tab in an app.
+
+The pattern in the reviews is consistent: people open Pulse, find something useful, and close the tab. A proactive assistant that could push a Slack message when a deploy breaks or file a ticket when Sentry catches a new error class would be fundamentally different — the kind of tool you'd reorganize your workflow around, not just check over coffee.
+
+## Evaluating any proactive product
+
+The Pulse analysis above follows a pattern that works for any product claiming to be proactive. Three questions, scored yes or no:
+
+<table>
+  <thead>
+    <tr><th>Primitive</th><th>Question</th><th>What "yes" looks like</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Clock</td><td>Can it wake itself up on a schedule or interval?</td><td>Cron, timer, overnight batch. Most products have this.</td></tr>
+    <tr><td>Listener</td><td>Can it react to external changes in real time?</td><td>Webhooks, streaming APIs, change feeds. Not polling on a timer.</td></tr>
+    <tr><td>Inbox</td><td>Can it deliver results to different channels based on context?</td><td>Slack for urgent, email for digest, ticket for tracking. Not locked to one UI.</td></tr>
+  </tbody>
+</table>
+
+Most products today score one out of three because the clock is the easiest to build. Getting all three working is where it starts to actually feel like the proactive assistant everyone keeps promising.
 
 ---
 
-## Essay: The genesis
+## Essay: Building the weekly-digest agent: a production postmortem
+
+Published: 2026-05-11
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/building-weekly-digest/
+
+The weekly-digest agent is a Cloudflare Pages Function wired to cron (`0 9 * * 6`, Saturday mornings). It fans out across four sources looking for mentions of "proactive agents," deduplicates what it finds against previous results, clusters the survivors by topic using an LLM, and upserts a single GitHub issue labeled `weekly-digest`. A run takes about twelve seconds.
+
+I wanted to write about it because every other post on this site is kind of theoretical. We talk about [the three primitives](/posts/three-primitives), about [the webhook tax](/posts/the-webhook-tax), about what a [magical agent would do](/posts/magical-agents) if it existed. The weekly-digest agent is the one we actually built and tested. It has a git history with embarrassing commits and a log line that reads: "Found 30 new mention(s) across 4 sources, deduped, clustered into 4 topic(s)."
+
+So here are the receipts.
+
+## How it works
+
+The trigger is cron: `0 9 * * 6`. A [relaycron](https://github.com/AgentWorkforce/relaycron) HTTP webhook fires the Cloudflare function. The function does four things in sequence, though the first step fans out in parallel.
+
+**Step 1: Gather.** The agent queries [Brave Search](https://brave.com/search/api/) with two terms ("proactive agents" and "proactive AI agent") and hits [Reddit](https://www.reddit.com)'s JSON API for three subreddits: r/LocalLLaMA, r/AI_Agents, and r/MachineLearning. All four requests go out simultaneously via `Promise.allSettled()`, so a single flaky source doesn't block the rest.
+
+**Step 2: Dedup.** The agent loads `/_internal/weekly-digest/seen.json` from the repo's virtual filesystem (VFS backed by GitHub, using `ctx.files.read`). Any URL that appeared in a prior run gets dropped. This is the simplest possible dedup: a flat JSON file of URLs, updated after each successful run.
+
+**Step 3: Cluster.** The surviving mentions go to [OpenRouter](https://openrouter.ai/) calling `google/gemini-2.5-flash` at temperature 0.2 with JSON mode enabled. The system prompt says one thing clearly: "False positives are worse than misses." We'd rather surface three real clusters than five where two are noise.
+
+**Step 4: Publish.** The agent upserts a single rolling GitHub issue per ISO week, tagged with the `weekly-digest` label. One issue, updated in place if the agent runs again. No Slack pings, no email, no notification firehose.
+
+If no fresh mentions survive dedup, the agent logs "skipped — quiet week" and returns early. No issue is created for empty weeks.
+
+Here's what the output actually looks like in the GitHub issue:
+
+```markdown
+Weekly digest — week of 2026-05-03
+
+### Proactive agent architectures (3)
+- OpenAI's push toward proactive AI — `brave`
+  > Pulse represents OpenAI's first real attempt at proactive delivery
+- Building always-on agents with webhooks — `reddit`
+  > Thread discussing webhook vs polling for agent triggers
+- Proactive Agent Skill v3.1 released — `brave`
+
+### Agent reliability patterns (2)
+- Why your AI agent needs a WAL — `reddit`
+  > Discussion of write-ahead logging for agent state persistence
+- Checkpoint-based agent recovery — `brave`
+```
+
+Each cluster gets a heading with a count, each mention gets a linked title with the source and an excerpt. The whole thing is scannable in under a minute.
+
+`Promise.all` would abort the entire gather step if Reddit returned a 503. `Promise.allSettled` lets the agent collect whatever succeeded and move on. Three out of four sources is still a useful digest. One out of four is still better than nothing.
+
+## What worked immediately
+
+Some parts of this agent were surprisingly painless. Worth calling out, because it's not all struggle.
+
+**The cron trigger just worked.** We wired it to relaycron, pointed it at the function URL, and the first test run completed without incident. Cron is solved infrastructure, and when you lean on something solved, it shows.
+
+**The fan-out pattern was right from the start.** `Promise.allSettled` was an obvious choice, but sometimes the obvious choice is obvious because it's correct. We never had to revisit the gather step's concurrency model. Each source returns its results independently, failures are isolated, and the merge step downstream doesn't care which sources contributed.
+
+**Dedup via a flat JSON file is laughably simple and works fine.** At our scale (roughly 30 mentions per week, maybe 1,500 per year), a flat file of URLs is perfectly adequate. There's no bloom filter, no Redis set, no expiry policy. The file grows by a few kilobytes per week and we can read the whole thing in a glance. Sometimes the right data structure is a list.
+
+## What broke
+
+The first week the agent ran, it produced nothing. The second week, it produced garbage. The third week, it worked. Here's what happened in between.
+
+### Why did the first deploy produce zero results?
+
+**`env()` vs `process.env`.** The first production bug was the dumbest one. The agent code used `process.env.BRAVE_API_KEY`, which works fine in Node.js. It does not work on [Cloudflare Workers](https://developers.cloudflare.com/workers/), where secrets are accessed via the `env()` binding passed to the handler function. The fix was a one-line change. The debugging took an hour because the error wasn't "key not found," it was a silent empty string that made Brave return zero results with a 200 status.
+
+**Reddit's JSON API is unreliable.** Our primary source for Reddit data is appending `.json` to subreddit URLs. Simple, no auth required, and it works most of the time. The problem is "most of the time." Reddit returns 429s during traffic spikes and occasionally serves HTML error pages when you ask for JSON. We added a fallback: if the Reddit endpoint returns a 4xx or 5xx, the agent re-queries via Brave using `site:reddit.com/r/LocalLLaMA` as the search term. The fallback finds fewer results but never fails silently.
+
+### How reliable is Reddit as a data source?
+
+**Search recall was too narrow.** The original queries were too specific. "Proactive agent runtime" returned almost nothing because nobody outside our site uses that phrase. We widened to "proactive agents" and "proactive AI agent," which brought in more noise but also more signal. The clustering step handles the noise; the gather step's job is not to be clever about filtering.
+
+For two weeks in April, the agent found zero new mentions after dedup. The log said "skipped — quiet week" and that was it. My first instinct was that something was broken. It wasn't. Sometimes nobody is talking about your topic. The agent handled that correctly by doing nothing, which was the right behavior and also a little humbling.
+
+**Gemini Flash hallucinated a cluster once.** In week three, the clustering step returned a topic called "Enterprise adoption trends" containing two links. One was a Reddit comment about LLaMA quantization that mentioned "proactive" in an unrelated sentence. The other was a Brave result about proactive customer service bots, which has nothing to do with proactive agents in our sense. The temperature was already 0.2. We tightened the system prompt to emphasize that fewer clusters with high confidence beats more clusters with mixed relevance. The hallucinated cluster hasn't reappeared, but I wouldn't call the problem solved.
+
+## The delivery choice
+
+When we designed the output channel, the obvious option was Slack. Post the digest to a `#mentions` channel, let people discuss it. We went with GitHub Issues instead, and the reasoning was about human behavior more than technology.
+
+A Slack message demands attention the moment it arrives. It generates a reply thread. People debate whether mention #14 is actually relevant. The digest becomes a synchronous discussion instead of an asynchronous reference. A GitHub issue sits there. You read it when you have time. You close it when the week is over.
+
+The delivery channel shapes behavior more than the content does. A digest in Slack becomes a conversation. A digest in a GitHub issue becomes a reference.
+
+The restraint is deliberate. The agent files a curated summary somewhere durable and searchable, and goes quiet. I've found that the best production agents are honestly pretty boring to watch. That's the whole point.
+
+This maps directly back to the [three primitives](/posts/three-primitives). The clock is cron. The listener is Brave + Reddit. The inbox is GitHub Issues. Choosing GitHub over Slack changed the agent's behavior more than any prompt tuning did, because it changed how humans interacted with the output.
+
+## Costs
+
+I want to be specific about this because "AI agents are expensive" is a common assumption that doesn't hold at this scale.
+
+<table>
+  <thead>
+    <tr><th>Resource</th><th>Usage</th><th>Cost</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="https://brave.com/search/api/">Brave Search API</a></td><td>~8 queries/month (2 per run × 4 Saturdays)</td><td>Free tier (2,000/month)</td></tr>
+    <tr><td><a href="https://openrouter.ai/">OpenRouter</a> (Gemini Flash)</td><td>1 call/week, small payload</td><td>Fractions of a cent</td></tr>
+    <tr><td><a href="https://docs.github.com/en/rest">GitHub API</a></td><td>1–2 calls/week (read issue + upsert)</td><td>Free</td></tr>
+    <tr><td>Cloudflare Pages Function</td><td>4 invocations/month, ~12s each</td><td>Free tier</td></tr>
+    <tr><td>VFS (GitHub repo storage)</td><td>One small JSON file</td><td>Free</td></tr>
+  </tbody>
+</table>
+
+Total monthly cost: effectively zero. The Brave free tier gives us 250x more queries than we use. The OpenRouter call costs less than a penny. The GitHub API has no meaningful rate limit at this volume. The Cloudflare function runs for under a minute per month total.
+
+At this price point, the "is this worth running?" question never comes up. It basically costs nothing.
+
+## What we'd change
+
+Three things, in order of likelihood we'll actually do them.
+
+**Better clustering validation.** The Gemini Flash hallucination wasn't catastrophic, but it eroded trust for a week. We're considering a second pass where the agent checks each cluster's links against the cluster label and drops any that don't cohere. This doubles the LLM cost from "nearly nothing" to "nearly nothing times two," so the cost argument is irrelevant. The engineering time to wire it up is the real constraint.
+
+**Source expansion.** Hacker News is an obvious addition. So is Twitter/X, though the API pricing makes it impractical on a free-tier budget. We could add a Brave `site:news.ycombinator.com` query for close to zero cost. The gather step's fan-out design makes adding sources trivial to implement, which was the whole point of that architecture.
+
+**Data-triggered runs.** Right now the agent is purely cron-driven. If a mention spikes on a Wednesday, we don't know until Saturday. For some sources, a data trigger would make more sense: watch an RSS feed or a webhook and fire the pipeline when something appears, not when the clock ticks. This is the M2 roadmap for us, replacing some cron triggers with real-time [listener](/posts/three-primitives) events. The weekly cadence would remain as the default for sources that don't support push.
+
+If you want to know whether your agent architecture holds up, build something that runs unattended for a month. Not a demo. Not a benchmark. Something with a cron expression and a git history. The bugs you find will be different from the ones you expected, and the design decisions that matter will surprise you.
+
+The weekly-digest agent is not sophisticated. A cron job, four API calls, a dedup file, one LLM call, and a GitHub issue. Some weeks it finds a ton, some weeks it finds nothing. Both are fine. It looks so we don't have to, and stays quiet when there's nothing to report.
+
+---
+
+## Essay: Proactive agents need three primitives
 
 Published: 2026-05-10
 Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/three-primitives/
 
-It started with three terminal windows and too much copy-pasting. The inbox came first, then the clock, then the listener. The origin story of how the proactive agents concept emerged from practical frustration with reactive agent workflows.
+Most agents I see in the wild are reactive. They sit in a loop, waiting for a prompt. When the prompt arrives, they tool-call their way to an answer and go back to sleep. The whole cycle starts when *you* push a button.
+
+That works for a chat box, but it falls apart for an agent that's supposed to *do something for you while you are doing something else.* And it's the model nearly every agent SDK still ships by default.
+
+A proactive agent is different. It wakes itself up.
+
+## What "proactive" doesn't mean
+
+Running on a schedule is just cron with extra steps. Watching a webhook is push without persistence. Accepting messages is a chatbot. Each of those is a useful primitive, but none of them alone makes an agent proactive.
+
+The most common shape in the wild right now is "agent + heartbeat" — a loop that wakes every N minutes, polls a few APIs, reasons about what it found, and acts. Some of these heartbeat agents are quite sophisticated.MindStudio's heartbeat pattern is the canonical example. It works, but it papers over the missing bits with prompt engineering and ad-hoc state. They are still polling. They are still acting on a snapshot that is N seconds out of date. And they still have no canonical place to keep what they learned between runs.
+
+Polling is really just a symptom. What's actually missing is the primitives underneath.
+
+## The first primitive: a way to wake up
+
+A proactive agent needs to know when to run. Not "every five minutes" — *when the moment is right.* That moment is one of three things:
+
+1. **Time passed.** A schedule, an interval, a quiet stretch that lasted long enough to mean something.
+2. **Data changed.** A record moved, a file appeared, a status flipped from `in_review` to `blocked`.
+3. **A message arrived.** A human, another agent, or a system said something it expects to be heard.
+
+Reactive agents only honor the third one, and they don't even honor it well — they wait to be *invoked,* not to be *spoken to.*
+
+The shift is small in description and large in consequence. The agent stops being a function someone calls. It starts being a participant in a system.
+
+Push isn't free, though. Webhooks fail in ways polling doesn't — provider outages drop events, out-of-order delivery breaks naive consumers, replay storms ruin your queue depth. The honest answer is push usually beats poll for proactive agents, but the failure modes are real and we catalogue them in [Where push architectures break](/posts/push-breaks-too).
+
+## The second primitive: state that survives
+
+The hardest thing about going from reactive to proactive isn't the wakeup. It's the *memory.*
+
+A reactive agent wakes up from nothing every time. The prompt is the world. When the prompt finishes, the world ends. Nothing has to be remembered — whatever the agent knew is in the conversation it just had.
+
+A proactive agent wakes up *into* a world. It has to know what it saw last time, what it acted on last time, what it's currently in the middle of. Otherwise every wakeup is a cold start, and a cold-start agent does the same useless thing over and over: it processes whatever is in front of it without context.
+
+Push is an engineering problem. Persistence is an architectural one. Most teams underestimate how much code they will write to fake state — tickets used as memory, prompts that string-concatenate the last run's output, JSON columns that drift out of sync with the model that reads them.
+
+The shape of state that actually works is closer to a *filesystem* than a database. Real-time read, real-time write, conflict detection on concurrent writes, change events when anything moves. Treat it as a place agents *live in*, not a thing they query.
+
+## The third primitive: durability
+
+Wakeup and state get you most of the way. The third primitive is the one nobody puts on the slide: **the agent has to be able to fail and recover without losing its mind.**
+
+A proactive agent is, almost by definition, long-lived. It will be running while you sleep. It will be running while a deploy ships. It will be running while one of your provider integrations rate-limits itself for three hours. The runtime around it has to assume failure is the steady state.
+
+What that means in practice:
+
+- Wake, work, sleep cycles need to be checkpointed — if the worker dies mid-task, the next worker resumes where it stopped, not where it started.
+- Idempotency on every external call, because the next worker will replay them.
+- Spend observability, because an always-on agent that loops is the most expensive bug in your account.
+- Auth scoped per agent per workspace, because you do not want a runaway agent with a god token.
+
+That last bullet deserves more attention than it usually gets. A reactive agent runs for seconds: it wakes, tool-calls, responds, and its token expires with the session. A proactive agent holds a standing credential that can act while you sleep. If that credential has broad scope, a single bad loop can close every ticket in your Zendesk, post to every Slack channel, or burn through your OpenAI budget before anyone notices.
+
+The fix is narrow scoping at three levels. First, per-agent: the digest agent gets read access to GitHub issues, not write access to your production database. Second, per-provider: a token for Notion doesn't also unlock Slack. Third, per-workspace: an agent operating in the "support" workspace can't reach into "finance." Token rotation matters too. Short-lived tokens with refresh grants mean a compromised agent loses access on the next rotation, not indefinitely. And every action the agent takes needs to be logged and attributable, because "the agent did it" is not a sufficient incident postmortem.
+
+None of this is exotic security engineering. It's the same principle behind IAM policies and service accounts. But most agent frameworks ship with a single API key that has access to everything, because that's easier to demo. And then you wonder why things go sideways at 3am.
+
+## Wired together: the runtime
+
+What you actually want, as a developer building one of these things, is to write the agent — the part that's yours — and have everything around it be solved by something else.
+
+That something else is what we've been calling the **proactive runtime**. Concretely:
+
+- a **clock** that fires on schedules and intervals
+- a **listener** that surfaces normalized change events from every provider you care about
+- an **inbox** that delivers messages between agents, humans, and systems
+- a **shared workspace** the agent reads from and writes to
+- a **durability ring** — checkpointing, repair, spend guardrails, scoped auth
+
+The agent code that sits in the middle of that is shockingly small. A handler. A workspace name. The runtime brings the rest.
+
+The thing we keep coming back to is simpler than labels like "multi-agent coordination" or "agent orchestration" make it sound: give the agent a clock, an inbox, and a place to live, and let it act when something moves.
+
+A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalizes the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd started building the runtime. Worth a read.
+
+## Why we're writing this down
+
+Because the language we've been using — *multi-agent coordination layer*, *headless Slack for agents*, *integration filesystem* — turned out to be three different people describing the same elephant. The elephant was a runtime for proactive agents. We'd had it the whole time and kept calling it the wrong thing.
+
+If you're building an agent right now and you find yourself reaching for a queue, a cron service, a polling loop, a webhook receiver, and a JSON column to remember what you did last, you're building a proactive runtime by hand. I kept seeing that pattern over and over, and it's why we decided to build the runtime as a standalone layer that sits under whatever agent you happen to be writing.
+
+The next essays in this folio go deeper. *Reactive vs proactive: a tour of the difference* lays out the architectural divergence with examples. *The eight-week webhook tax* costs out the build-it-yourself path. [*The genesis of proactive agents*](/posts/the-genesis) tells the story of how these three ideas converged into a runtime. And [*Notion ships the proactive primitives*](/posts/notion-ships-the-primitives) shows a major platform arriving at the same architecture independently.
+
+Read them in any order — the clock, the listener, and the inbox show up in all of them.
 
 ---
 
-## Market: Proactive Agent Landscape
+## Essay: The eight-week webhook tax per provider
 
-The market page tracks who is building proactive agents across enterprise vendors and startups.
+Published: 2026-05-10
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/the-webhook-tax/
 
-### Enterprise Signals (as of May 2026)
+The first time you add a webhook to an agent, it takes an afternoon. You wire up an Express route, log the body, and watch payloads arrive. It feels easy.
 
-- **Microsoft** reframed Copilot as the operating layer for proactive agents with Agent 365 (Wave 3, May 2026). Cross-cloud registry sync with AWS Bedrock and Google Cloud in public preview.
-- **Salesforce** launched Agentforce Operations with an anti-bottleneck engine for back-office proactive agents (April 2026).
-- **AWS** previewed Bedrock AgentCore Payments — agents can autonomously pay for APIs, MCP servers, and other agents (May 2026).
-- **Google** internal proactive agent "Remy" spotted in employee dogfood — monitors Gmail, Calendar, Docs, Drive, GitHub, WhatsApp (May 2026).
-- **Anthropic** shipped Managed Agent "dreaming" phase for self-improvement and Orbit proactive assistant (May 2026).
-- **a16z Speedrun** (Kenan Saleh) publicly framed "proactive AI agents" as the next product paradigm — "ask → answer" to "observe → act" (May 2026).
+The second time you do it — for production, with the same provider, after the first one quietly dropped events for two weeks — it takes a sprint. The third time, when you've been burned enough that you're actually doing it correctly, it takes longer than that.
 
-### Startup Directory
+Here is what *correctly* looks like.
 
-Early-stage companies building proactive agents, tracked as they surface. Each has a profile page at /market/startups/{slug}/.
+## What "production-ready" actually means
 
-- **Collabute** (collabute.ai) — Collaborative AI platform.
-- **Atta** (atta.app) — Reservation-based product.
-- **Strat** (@joinstrat_) — AI-Native Workspace for YouTube creators.
-- **Echostate** (@MattStack_) — Agent accountability: state receipts, permission boundaries, rollback paths.
-- **Sherlock** (getsherlock.xyz) — Proactive agent startup.
-- **Centraligence** (centraligence.com) — Proactive agent startup.
-- **Skillfully** (skillfully.sh) — Proactive agent startup.
-- **Echo Agents** (@EchoAgentsAI) — Proactive agent startup, no public website yet.
-- **Pepper** (pepper.thestartupcompany.xyz) — Proactive agent startup.
-- **Para** (getpara.ai) — Proactive agent startup.
-- **Dossium** (dossium.ai) — Proactive agent startup.
-- **Hatcher** (hatcher.host) — Proactive agent startup.
-- **Mimetic** (trymimetic.com) — Proactive agent startup.
-- **Pullfrog** (pullfrog.com) — Open-source (MIT) AI-powered GitHub bot by Colin McDonnell (creator of Zod). Orchestrates coding agents inside GitHub Actions with proactive triggers for issues, PRs, CI failures, and cron schedules. Multi-model, BYOK, persistent per-repo learnings.
-- **Concya** (concya.com) — Proactive agent startup.
+For one provider:
+
+### What infrastructure does a single webhook require?
+
+1. **A public endpoint.** Hosted somewhere, with a stable URL, behind your own TLS cert. Already non-trivial if your agent runs on a serverless runtime that doesn't expose long-lived URLs.
+
+2. **Signature verification.** Each provider does this differently. Linear is HMAC-SHA256 with a header named `X-Linear-Signature`. GitHub is HMAC-SHA256 with `X-Hub-Signature-256`. Slack is HMAC-SHA256 *plus a timestamp* to prevent replay. Notion has no signing — you're supposed to allow-list IPs. Each one has its own quirks (Linear sends the timestamp in a separate header that you also have to include in the signed payload; GitHub gives you `sha1` and `sha256` and the older one is still default in some webhooks).
+
+3. **Sub-2-second response.** Most providers retry aggressively if you don't respond in time. Linear retries for two hours. Stripe retries with exponential backoff for three days. If your endpoint blocks on anything (including the LLM call), you will get duplicate deliveries, and lots of them.
+
+4. **A queue.** Because of #3, you cannot process the webhook inline. You have to ack-and-enqueue. That means Redis, SQS, or equivalent. Plus a worker. Plus dead-letter handling.
+
+5. **Deduplication.** Providers send duplicates under load. You must store a seen-set keyed by their event ID. Without this, agents will act on the same event repeatedly. Twenty-four hours of dedupe is usually enough; less and you'll see duplicates from retried deliveries; more and you'll see your Redis bill go up.
+
+### What about filtering, state, and observability?
+
+6. **Filtering.** The webhook fires for many event types. You probably care about three. The rest you have to either filter out at the registration step (each provider exposes this differently) or at the worker (which means paying to receive and parse them).
+
+7. **Payload completion.** Most webhook payloads are *partial.* Linear's issue webhook gives you the changed fields, not the full issue. You will need to call the API to get the complete object. And you will need to handle the fact that by the time your call lands, the issue may have changed again.
+
+8. **State for the agent.** The webhook tells you *what changed.* Your agent needs to know *where it left off* the last time it touched this entity. That's a database. With migrations. And concurrent-write handling. And a backup strategy.
+
+9. **Webhook registration.** You can't do this through the dashboard if you have multiple environments. So now you have a registration script. It needs to run on deploy. It needs to be idempotent. It needs to handle URL changes (your dev tunnel changed; your prod load balancer moved).
+
+10. **Observability.** Webhook failures fail silently from the user's perspective. You need dashboards. You need alerts on dead-letter queue depth. You need to be able to *replay* a specific webhook delivery for debugging, which means storing raw payloads with sufficient retention.
+
+All of that, for one provider.
+
+The first time you add a webhook, it takes an afternoon. The third time — correctly — it takes longer than a sprint.
+
+## Now do it four times
+
+Most proactive agents need to watch at minimum: a ticketing system (Linear or Jira), a code host (GitHub), a chat tool (Slack), and a CRM or doc store (Notion, Salesforce, HubSpot).
+
+Each of those has its own version of all ten items above. Different signature scheme, different retry behavior, different payload schema, different registration flow, different answer to "is this payload partial?"
+
+<table>
+  <thead>
+    <tr><th>Provider</th><th>Signature header</th><th>Algorithm</th><th>Retry window</th><th>Partial?</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Linear</td><td><code>X-Linear-Signature</code></td><td>HMAC-SHA256</td><td>2 hours</td><td>Yes</td></tr>
+    <tr><td>GitHub</td><td><code>X-Hub-Signature-256</code></td><td>HMAC-SHA256</td><td>3 attempts</td><td>No</td></tr>
+    <tr><td>Jira</td><td><code>X-Hub-Signature</code></td><td>HMAC-SHA256 (admin) or none</td><td>No retry</td><td>Yes</td></tr>
+    <tr><td>Slack</td><td><code>X-Slack-Signature</code></td><td>HMAC-SHA256 + timestamp</td><td>3 retries</td><td>No</td></tr>
+    <tr><td>Notion</td><td>None (IP allowlist)</td><td>—</td><td>No retry</td><td>Yes</td></tr>
+  </tbody>
+</table>
+
+So now you're looking at four endpoints, four verification implementations, four parsers, four registration flows, and four deploy scripts. Each one a new way for things to silently break.
+
+In practice, **the path from "we want our agent to react to changes across four providers" to "we have production-ready change detection against four providers" is six to eight weeks of one engineer's time.** The engineer is not building the agent during those weeks. They are building plumbing.
+
+## The providers that don't even give you a webhook
+
+All of the above assumes the provider actually offers webhooks. Many don't, or their webhooks are so limited they might as well not exist.
+
+Google Workspace has push notifications through the [Drive API's push channel](https://developers.google.com/workspace/drive/api/guides/push), but the setup is heavier than a simple webhook: you need a verified domain, channel registration, periodic renewal (channels expire), and the notifications only tell you *that* a file changed, not *what* changed. You still need a follow-up API call to get the diff. Calendar changes work through a similar channel system. The infrastructure exists, but it's closer to building a subscription service than wiring up an endpoint.
+
+Salesforce has Streaming API and Change Data Capture, but both require persistent connections (CometD or gRPC) rather than simple HTTP callbacks. You're not wiring up an endpoint — you're maintaining a long-lived subscriber process that reconnects on failure and manages its own replay cursor.
+
+HubSpot has webhooks, but only for CRM objects and only if you're building a public app registered through their developer portal. Private integrations, the kind most agent builders start with, don't get webhooks at all. You poll.
+
+For these providers, the fallback is always the same: **scheduled syncs.**
+
+## The scheduled sync tax
+
+A scheduled sync means running a job on a cron (every minute, every five minutes, every hour) that calls the provider's API, compares the current state to the last known state, and surfaces what changed. You trade one set of problems for another.
+
+**Cursor management.** Every sync needs a checkpoint: a timestamp, a page token, a cursor ID. You fetch records newer than your checkpoint, process them, then advance the checkpoint. If the process crashes between processing and advancing, you'll re-process records on the next run. If it advances before processing completes, you'll miss records. This is the same exactly-once delivery problem that webhooks have, except now you're the one implementing it from scratch.
+
+**Rate limits.** Polling APIs hit rate limits fast. The Notion API allows three requests per second. The HubSpot search API has a 4-per-second-per-app limit. If your sync touches multiple object types or multiple workspaces, you need a rate limiter with per-provider, per-account bucketing. Miss this and your agent goes blind for minutes or hours while the rate limit window resets.
+
+**Change detection.** Not every API gives you a clean "modified since" filter. Some return a `lastModifiedDate` you can filter on. Some return results sorted by creation date only, so you have to fetch everything and diff locally. Google Drive gives you a `changes` endpoint with a `startPageToken`, which is a proper changelog — but most providers don't have this concept at all.
+
+**Latency tradeoff.** The faster you poll, the closer you get to real-time — and the faster you burn through rate limits. Most teams settle on five-minute intervals as a compromise. That means your proactive agent can be up to five minutes late on every reaction. For a deploy notification, five minutes is fine. For a security alert, five minutes is a long time.
+
+**Infrastructure.** A scheduled sync needs: a cron runner (or a serverless timer), the sync logic per provider, a database for checkpoints and last-known state, a diffing layer to detect changes, and the same queue-and-worker setup you'd need for webhooks, because you still can't process synchronously if the LLM call takes ten seconds.
+
+If a provider offers webhooks, you need eight to ten pieces of infrastructure per provider. If it doesn't, you need roughly the same amount of infrastructure — just different infrastructure. Either way, the cost is measured in weeks per provider, and the ongoing maintenance never stops.
+
+## Why this matters for proactive agents specifically
+
+A reactive agent doesn't need any of this. It has a simple lifecycle: receive prompt, think, respond. The user is the trigger and the context provider.
+
+A proactive agent has a fundamentally different requirement: it needs to *notice things on its own.* A ticket was moved. A deploy failed. A document was updated. A customer churned. The agent needs to observe these changes, decide they matter, and act — without anyone prompting it.
+
+That means a proactive agent's first dependency is a reliable stream of change events from the external systems it cares about. Not a one-time API call. Not a manual trigger. A continuous, durable, normalized stream of "this thing changed, here's what it was before, here's what it is now."
+
+Building that stream is the webhook tax. And because every provider implements change notification differently — or doesn't implement it at all — the tax scales linearly with every system your agent needs to watch.
+
+## The hidden ongoing cost
+
+The initial build is just where the maintenance starts.
+
+- Providers change their schemas. They give you ninety days notice if you're lucky. You will, at some point, ship a quiet break.
+- Your dev tunnel URL changes. You re-register. You forget to re-register one of the four. You discover it three days later.
+- A provider has an incident and replays twelve hours of webhooks at once. Your queue depth spikes before your autoscaling catches up.
+- A teammate adds a fifth provider. Two of the ten items are subtly wrong because they were copy-pasted.
+- Your model picks up a new schema. Old serialized payloads in the dead-letter queue are now unparseable.
+
+None of this is bad engineering. It's just what the work actually looks like, and it doesn't stop.
+
+## What does this actually cost to run?
+
+It's worth putting numbers on the ongoing cost, since most discussions focus on the build and ignore what comes after.
+
+A polling-based agent watching four providers every five minutes makes 4,608 API calls per day. At typical rate limits, that's fine for one agent. At ten agents across three workspaces, you're at 138,240 calls per day, and you're bumping into per-account rate limits on Notion (3 req/sec) and HubSpot (4 req/sec). Most of those calls return "nothing changed." You're paying for compute and API overhead to learn, repeatedly, that the world is still the same.
+
+An event-driven agent only wakes when something moves. Our weekly-digest agent, which watches four sources and clusters mentions into a GitHub issue, costs effectively nothing to run: ~8 Brave Search queries per week (free tier), one Gemini Flash call for clustering (fractions of a cent), and two GitHub API calls. Total monthly cost: under a dollar. The cron trigger is a single HTTP request from the scheduler.
+
+The cost difference widens as you add providers. Each polled provider multiplies your API call volume linearly. Each watched provider adds a webhook endpoint that sits idle until something happens. The infrastructure cost (queue, worker, dedup store) is roughly the same either way. The API and compute cost diverges fast.
+
+<table>
+  <thead>
+    <tr><th>Cost driver</th><th>Polling (4 providers, 5-min interval)</th><th>Event-driven (4 providers)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>API calls/day</td><td>~4,608</td><td>Proportional to actual changes</td></tr>
+    <tr><td>Compute</td><td>Cron runner + workers, always active</td><td>Workers wake on events only</td></tr>
+    <tr><td>LLM inference</td><td>Per poll cycle (even when nothing changed)</td><td>Per event (only when something happened)</td></tr>
+    <tr><td>Storage</td><td>Checkpoint DB + last-known state per entity</td><td>Dedup store + event log</td></tr>
+    <tr><td>Rate limit pressure</td><td>Constant, scales with agent count</td><td>Bursty, scales with change volume</td></tr>
+  </tbody>
+</table>
+
+The honest caveat: event-driven architectures trade steady-state cost for burst cost. A bulk import that fires 500 webhooks in a minute will spike your compute and LLM spend in ways that a five-minute poll never would. You need backpressure and spend guardrails for those moments. But the baseline cost of "watch four providers and act when something changes" is dramatically lower when you're not polling.
+
+## The listener as a primitive
+
+This is why we think of change detection as a primitive — something that belongs underneath the agent, not inside it. The same way you wouldn't ask every agent builder to implement their own TCP stack, you shouldn't ask them to implement their own webhook verification, payload normalization, cursor management, and deduplication per provider.
+
+A proactive agent needs a *listener:* a single interface that says "something changed in a system you care about" with enough context for the agent to act on it. Whether that change came from a webhook, a streaming API, a polling sync, or a Pub/Sub subscription is an implementation detail the agent shouldn't have to know.
+
+The [three primitives](/posts/three-primitives) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
+
+Anyway, that's what it looks like when you build the listener from scratch, one provider at a time. It's a ton of work, and most of it has nothing to do with the agent itself.
 
 ---
 
-## What Proactive Agents Actually Cost
+## Essay: The genesis of proactive agents
 
-Every team building proactive agents hits the same wall: always-on means always spending. The economics differ from reactive agents in a structural way.
+Published: 2026-05-10
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/the-genesis/
 
-### Where Tokens Go
+It started because I kept prompting different terminal windows with different content, ping-ponging back and forth, copying output from one Claude instance into another Codex instance. I was the bottleneck. I kept thinking there had to be a better way. If only agents could communicate directly with each other — be proactive instead of waiting for me to paste things into their context.
 
-Every proactive agent wake-up has four phases: context loading (reading environment state), triage (deciding whether changes matter), action (doing the work), and reporting (delivering results). Reactive agents skip context loading and triage because a human already decided something matters. Proactive agents run all four phases every wake-up, and most wake-ups produce no action.
+That's where Agent Relay started. Get two terminal windows a way to talk to each other.
 
-Key finding: One integration platform measured a 10x cost difference between a lightweight model ($0.20/sync) and a frontier model ($37 for half the workload) on the same tasks. Another team burned a competitor's credits in 3 days with an always-on Slack agent, while their own file-based architecture used $20 over 2 months.
+## Push, not poll
 
-### Patterns That Reduce Cost
+When I got it working I was through the roof. My agents could talk to each other, self-organize, and form teams. Codex would receive a message from Claude and get right to work. The agents were able to push messages into each other's screens and receive acknowledgments back.
 
-1. **Model cascading**: Cheap models (Haiku-class) handle triage; expensive models (Opus-class) handle execution. Most wake-ups never reach the expensive model.
-2. **File-based context**: Agents read structured files instead of raw API responses, keeping context loading predictable and small.
-3. **Narrow specialization**: Focused agents with small scopes cost less per wake-up than one agent watching everything.
-4. **Burn tracking**: Token analytics dashboards showing waste vs. useful spend. Most frameworks don't ship this; teams build their own.
-5. **Scheduled proactivity**: Not everything needs real-time detection. Daily digests, weekly reports, and time-shifted workloads reduce unnecessary wake-ups.
+The key word there is *push*.
 
-### The Context Tax
+Without a push mechanism, agents would poll — and polling agents inevitably forget, so the team would silently die because the conversation stopped. I wanted to be able to start a very complex task, hand it to a team of agents, and walk away without babysitting.
 
-Long-running agents accumulate context that degrades quality. Teams solve this with gating stages (summarize before continuing) and checkpoint-review agents (a second model grading the first). Both add cost but improve reliability.
+We set out to build "Slack for agents" so they could communicate by sending messages, DMs, and threads. Agents were proactive by having an inbox. That was the first primitive, though we didn't call it that yet.
 
-### Core Tradeoff
+## The heartbeat wasn't enough
 
-Token spend is visible; the cost of inaction (stale PRs, missed alerts, unmonitored systems) is invisible. Teams that optimize for reliability first, then trim token costs, build more durable systems than teams that start with cost constraints.
+Then at the end of January, OpenClaw went viral. I remembered seeing Peter tweet about it in November and thinking it was interesting, but I had no idea the impact it would have. Like many others, I picked up a Mac Mini, set it up, and began to see the beauty of an always-open assistant. I had my OpenClaw — named kjgbot — in Telegram, and while I was on the go I could discuss ideas, open GitHub issues, and use our Agent Relay primitives to spin up Claude and Codex agents for development tasks. The OpenClaw could effectively act as me by coordinating the agents.
+
+But something was still missing.
+
+OpenClaw had heartbeats — periodic check-ins on a schedule. That didn't feel like enough. It was purely time-based and lacking the context I wanted for an agent to feel truly magical. A heartbeat is a clock, and a clock alone is just cron with extra steps.
+
+We had an inbox. What else did we need for proactivity? As evidenced by OpenClaw, some kind of scheduler — a clock. Then the last piece: some kind of change detection, but with proper context to know *what* change to listen for and *what to do with it.*
+
+## The third primitive
+
+Having worked at [Nango](https://nango.dev) as the first engineering hire for three years, I was very familiar with webhooks. Many customers wanted real-time notifications of what was happening in external systems. With Nango's primitives you could set up a scheduled sync to run every N minutes, which uses a checkpoint to fetch new or changed records — so customers could choose between real-time updates to the second or slightly delayed updates via syncs.
+
+Our recommendation was often: just sync the data. Because honestly, [webhooks are hard](/posts/the-webhook-tax). Every provider has a different payload shape. Some require signature verification, some don't. Some deliver at-least-once, some at-most-once. Some systems require entirely different infrastructure — Google has Pub/Sub, Salesforce has streaming events, Slack has socket mode alongside HTTP webhooks.
+
+That experience is what made the third primitive click. An agent doesn't just need an inbox (messages) and a clock (schedules). It needs a *listener* — normalized change events from external systems, delivered as push, with the context to know what moved and why it matters. I wrote up the full framework in [Proactive agents need three primitives](/posts/three-primitives).
+
+## Naming the elephant
+
+Once the triple was clear, we looked at what we'd been building and realized the language didn't fit anymore. We'd been calling it a *multi-agent coordination layer*, a *headless Slack for agents*, an *integration filesystem* — each name describing a different part of the same thing. The thing was a runtime. A runtime for proactive agents.
+
+The old framing wasn't wrong, exactly. But it kept pointing people in directions we didn't intend. "Multi-agent coordination" made developers reach for frameworks — LangGraph, CrewAI, AutoGen — when what we'd built was infrastructure. And it centered the least interesting part of the story: agents talking to each other. The more interesting part was making a *single* agent proactive — giving it the clock, the listener, and the inbox so it could act on its own.
+
+## What changed
+
+The repos finally tell the truth:
+
+<table>
+  <thead>
+    <tr><th>Old framing</th><th>What it actually is</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Scheduling service</td><td>The clock</td></tr>
+    <tr><td>Integration filesystem</td><td>The listener</td></tr>
+    <tr><td>Headless Slack</td><td>The inbox</td></tr>
+    <tr><td>Hosted control plane</td><td>The runtime</td></tr>
+    <tr><td>Workflow reliability</td><td>The durability ring</td></tr>
+  </tbody>
+</table>
+
+The code didn't change at all — just the names and the story we told about it.
+
+## Signs you're building this by accident
+
+If any of the following sound familiar, you're assembling a proactive runtime from spare parts:
+
+- You have a cron job that polls an API and diffs against the last result
+- You have a JSON column or markdown file that stores "what the agent knew last time"
+- You have a webhook receiver with its own signature verification, retry handling, and dedup logic
+- You have a queue between "receive event" and "process event" because the LLM call is too slow for inline handling
+- You have a lock or lease to prevent two instances of the same agent from acting on the same event
+- You have a Slack bot or GitHub Action that posts results somewhere a human will see them
+
+Each of those is one piece of the clock, the listener, or the inbox. If you've built more than one agent, you've probably noticed the same plumbing showing up every time: scheduling, change detection, dedup, delivery, state. The agent-specific logic is small. The infrastructure underneath is where the engineering hours go.
+
+## The bet
+
+We're betting that *proactive* becomes a category the way *frontend cloud* became a category. Developers are already building this stuff by hand, and nobody owns the word yet.
+
+There's a [2024 paper from Tsinghua and Huawei](https://arxiv.org/abs/2410.12361) that uses the word *proactive* in exactly the sense we mean it. There's an empty slot in dev tooling for someone to be the proactive runtime.
+
+We're super early. But the core of what we're building hasn't really changed since those three terminal windows.
+
+---
+
+## Essay: Reactive vs proactive, with examples
+
+Published: 2026-05-10
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/reactive-vs-proactive/
+
+Let's pick a small, familiar agent and write it twice. One that closes a support ticket when the customer's last reply contains a thumbs-up. Once reactive, once proactive. Same model, same provider, same goal. Different posture toward the world.
+
+## The reactive version
+
+```typescript
+// runs every five minutes via cron
+async function tick() {
+  const tickets = await zendesk.search({
+    status: "open",
+    updated_since: lastRun,
+  });
+  for (const t of tickets) {
+    const reply = t.lastCustomerReply;
+    if (containsApproval(reply)) {
+      await zendesk.close(t.id, { reason: "customer-approved" });
+    }
+  }
+  lastRun = Date.now();
+}
+```
+
+This works, but it's *fragile* in ways you won't notice until production. Notice how much truth this code is asserting that nobody enforced:
+
+- `lastRun` lives in a global. The next deploy resets it to zero and we re-process the world.
+- The five-minute interval is a number we made up. Three minutes is too chatty; ten is too slow; nobody actually measured.
+- A burst of tickets at minute four means the agent acts on thousands of records at minute five. The next minute it sleeps again.
+- If `containsApproval` ever falsely fires, it *will* close a real ticket, and we'll find out from a customer.
+- We aren't holding a lease. Two instances racing means double-closes. Two pods means split-brain.
+
+None of these are exotic problems. They are the bread and butter of every cron-based agent in production. They get patched as they show up (locks added, intervals tuned, idempotency keys retrofitted) until the loop has more scaffolding than logic. I go deeper on [what makes proactive agents hard to build](/posts/why-proactive-is-hard).
+
+## The proactive version
+
+```typescript
+
+agent({
+  workspace: "support",
+  watch: ["/zendesk/tickets/**"],
+  onEvent: async (ctx, event) => {
+    if (event.type !== "relayfile.changed") return;
+
+    const full = await event.expand("full");
+    const reply = full.data.current.lastCustomerReply;
+    const wasOpen = full.data.previous.status === "open";
+
+    if (wasOpen && containsApproval(reply)) {
+      await zendesk.close(full.data.current.id, { reason: "customer-approved" });
+    }
+  },
+});
+```
+
+A few things changed. The agent isn't a `tick()` function any more. It's a *handler.* It receives a *change*, not a snapshot. The change has both `previous` and `current`, so the agent can see the *transition* — not just the state right now, but what it just stopped being.
+
+The five-minute interval is gone. The agent runs the moment Zendesk publishes the update. There is no `lastRun` global, because there is no batch — each event is its own unit of work. Idempotency is the runtime's problem; the same change won't be delivered twice. Locks are the runtime's problem; one event, one handler, one lease.
+
+The honest engineering work moved from *plumbing* to *behavior* — which is now basically the entire program.
+
+The reactive version asks: *what changed in the last five minutes?* The proactive version asks: *what just changed?* The first is a query you have to invent. The second is a fact the world hands you.
+
+## What the difference actually buys
+
+Three things that compound:
+
+1. **Latency drops to provider speed.** The agent acts the moment the world changes, not the next time the cron fires. For most providers that's ~1 second of webhook delivery. Reactive systems trade latency for cost; proactive systems don't pay the trade.
+
+2. **Edge cases collapse.** A huge amount of cron-loop code exists to detect *what changed.* When the runtime gives you the diff, that code disappears.
+
+3. **State surface shrinks.** The agent stops needing to remember what it did. Each event is self-contained. The runtime keeps the state; the agent uses it.
+
+Each one is small on its own, but they compound — because the things they remove are exactly the things that make agents flake out at 3am.
+
+## When reactive is still the right answer
+
+To be clear: reactive agents are not bad. They are *appropriate* for some shapes of work.
+
+- **Batch-shaped jobs** — "every Monday morning, generate a digest" — are reactive by design. Don't fight it.
+- **Long compute** that doesn't care about freshness — nightly backfills, weekly retraining — reactive is fine.
+- **One-shot prompts** — the user asked, the agent answers, done — reactive is the *only* answer.
+
+What reactive is not great for is anything where the whole value of the agent is its responsiveness. If the agent's job is to notice things and act on them quickly, polling will lose to push every time.
+
+## So what's the takeaway
+
+Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. The [PARE benchmark](/posts/forty-two-percent) bears this out: the models that observe carefully and propose selectively achieve far higher success rates than eager ones. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
+
+We've been building that part. More on the runtime in [Proactive agents need three primitives](/posts/three-primitives).
+
+This site runs a proactive agent of its own. The source lives in [`agents/`](https://github.com/AgentWorkforce/proactive-agents/tree/main/agents) on GitHub; what it has actually done shows up live at [/agent](/agent), every entry committed by the agent itself.
 
 ---
 

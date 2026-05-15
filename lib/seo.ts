@@ -55,7 +55,7 @@ export function articleSchema(post: PostMeta) {
     headline: post.title,
     description: post.summary,
     datePublished: post.date,
-    dateModified: post.date,
+    dateModified: post.lastModified ?? post.date,
     image: `${SITE_URL}/posts/${post.slug}/opengraph-image`,
     author: personSchema(),
     publisher: organizationSchema(),

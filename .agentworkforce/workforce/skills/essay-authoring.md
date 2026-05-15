@@ -128,6 +128,7 @@ Before publishing, check the essay against these anti-patterns. Each one slipped
 - **Branded phrase repetition.** "Clock, listener, inbox" at most 2-3 times per essay (except three-primitives.mdx). Vary with "the three primitives," "the runtime's core," or just describe the concept.
 - **Tricolon overuse.** "Not X. Not Y. Not Z." at most once per essay. Multiple parallel structures with identical openings are an LLM tell.
 - **Em-dash density.** 1-2 per section. Convert excess to commas, colons, parentheses, or restructure.
+- **"Why does X matter?"** Never use this as a heading or sentence. No human blogger frames their own writing by asking why their own topic matters. Make headings specific to the content instead.
 
 ## Checklist for every article
 
@@ -149,5 +150,6 @@ Before considering an article complete:
 - [ ] No more than one tricolon per essay
 - [ ] Em dashes limited to 1-2 per section
 - [ ] No "This matters because" sentence openers
+- [ ] No "Why does X matter?" headings or sentences — pure AI tell
 - [ ] No "uncomfortable truth/math/pattern" labels
 - [ ] No fabricated incidents, outages, or operational claims the founder didn't experience

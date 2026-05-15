@@ -325,14 +325,12 @@ export default async function Home() {
           <ol className="mt-14 grid gap-8 md:grid-cols-3">
             {HARD_PARTS.map((h, i) => (
               <li key={h.label} className="reveal">
-                <div className="flex items-baseline gap-3">
-                  <span className="font-display text-4xl italic text-terracotta">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-display text-xl leading-tight text-ink">
-                    {h.label}
-                  </h3>
-                </div>
+                <span className="font-display text-4xl italic text-terracotta">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="mt-2 font-display text-xl leading-tight text-ink">
+                  {h.label}
+                </h3>
                 <p
                   className="mt-3 font-serif text-[1rem] leading-relaxed text-ink-soft"
                   dangerouslySetInnerHTML={{ __html: h.body }}

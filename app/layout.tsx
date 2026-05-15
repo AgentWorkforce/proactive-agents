@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Inter, Literata, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
@@ -17,19 +17,12 @@ const inter = Inter({
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+const literata = Literata({
+  variable: "--font-literata",
   subsets: ["latin"],
   display: "swap",
-  axes: ["opsz", "SOFT"],
-});
-
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
-  subsets: ["latin"],
-  weight: ["400"],
+  axes: ["opsz"],
   style: ["normal", "italic"],
-  display: "swap",
 });
 
 const jetbrains = JetBrains_Mono({
@@ -97,7 +90,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${instrument.variable} ${jetbrains.variable} antialiased`}
+      className={`${inter.variable} ${literata.variable} ${jetbrains.variable} antialiased`}
     >
       <head>
         <link rel="alternate" type="text/plain" href="/llms.txt" title="LLM-readable site summary" />

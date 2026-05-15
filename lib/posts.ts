@@ -7,6 +7,7 @@ export type PostMeta = {
   title: string;
   summary: string;
   date: string;
+  lastModified?: string;
   readingTime: string;
   accent: "peach" | "butter" | "sage" | "lavender" | "rose" | "sky";
   dropcap?: boolean;
@@ -36,6 +37,7 @@ export async function getAllPosts(): Promise<PostMeta[]> {
           title: data.title as string,
           summary: data.summary as string,
           date: data.date as string,
+          lastModified: (data.lastModified as string) ?? undefined,
           accent: (data.accent ?? "peach") as PostMeta["accent"],
           dropcap: Boolean(data.dropcap),
           readingTime: estimateReadingTime(content),
@@ -54,6 +56,7 @@ export async function getPost(slug: string): Promise<Post | null> {
       title: data.title as string,
       summary: data.summary as string,
       date: data.date as string,
+      lastModified: (data.lastModified as string) ?? undefined,
       accent: (data.accent ?? "peach") as PostMeta["accent"],
       dropcap: Boolean(data.dropcap),
       readingTime: estimateReadingTime(content),
