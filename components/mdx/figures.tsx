@@ -2344,44 +2344,67 @@ export function ExecutionGapFigure() {
 
 /** PostHog enricher — code file annotated with production data. */
 export function PHEnricherFigure() {
+  const lines = [
+    { code: "isFeatureEnabled('checkout')", annotation: "23% rollout · stale · exp +4%", status: "warn" as const },
+    { code: "posthog.capture('purchase')", annotation: "1,240 events/30d · verified", status: "ok" as const },
+    { code: "isFeatureEnabled('old-banner')", annotation: "0% rollout · no evals 60d", status: "bad" as const },
+  ];
+  const statusColor = { ok: C.moss, warn: C.terracotta, bad: "#b5564e" };
+  const statusDot = { ok: C.sage, warn: C.butter, bad: C.rose };
+
   return (
-    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="ph-enrich-title">
+    <svg viewBox="0 0 320 360" className="w-full" role="img" aria-labelledby="ph-enrich-title">
       <title id="ph-enrich-title">The enricher reads source code, fetches production data from PostHog, and injects inline annotations the LLM can see</title>
-      <text x="160" y="22" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
+      <text x="160" y="20" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.faint} letterSpacing="0.05em">
         what the agent sees
       </text>
 
-      {/* Source file box */}
-      <rect x="20" y="38" width="280" height="100" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
-      <text x="32" y="56" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>isFeatureEnabled(&apos;checkout&apos;)</text>
-      <text x="32" y="72" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>// → 23% rollout · stale · exp +4%</text>
-      <text x="32" y="92" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>posthog.capture(&apos;purchase&apos;)</text>
-      <text x="32" y="108" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>// → 1,240 events/30d · verified</text>
-      <text x="32" y="128" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>isFeatureEnabled(&apos;old-banner&apos;)</text>
-      <text x="32" y="144" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>// → 0% rollout · no evals 60d</text>
+      {/* Enriched file box */}
+      <rect x="16" y="32" width="288" height={lines.length * 48 + 16} rx="10" fill={C.paper} stroke={C.ink} strokeWidth="1.6" />
 
-      {/* Enricher arrow */}
-      <g transform="translate(160, 170)">
-        <line x1="-40" y1="0" x2="40" y2="0" stroke={C.ink} strokeWidth="1.5" strokeDasharray="4 3" />
-        <text x="0" y="-8" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>enricher</text>
+      {lines.map((l, i) => {
+        const y = 56 + i * 48;
+        return (
+          <g key={i}>
+            {/* Code line */}
+            <text x="30" y={y} fontFamily="var(--font-mono)" fontSize="9.5" fill={C.ink}>{l.code}</text>
+            {/* Status dot */}
+            <circle cx="24" cy={y + 14} r="3" fill={statusDot[l.status]} stroke={C.ink} strokeWidth="0.6" />
+            {/* Annotation */}
+            <text x="32" y={y + 18} fontFamily="var(--font-mono)" fontSize="8.5" fill={statusColor[l.status]}>
+              {"→ " + l.annotation}
+            </text>
+            {/* Separator line (except last) */}
+            {i < lines.length - 1 && (
+              <line x1="26" y1={y + 30} x2="294" y2={y + 30} stroke={C.rule} strokeWidth="0.6" />
+            )}
+          </g>
+        );
+      })}
+
+      {/* Enricher pill */}
+      <rect x="115" y="196" width="90" height="26" rx="13" fill={C.lavender} fillOpacity="0.6" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="213" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>enricher</text>
+
+      {/* Arrows from source boxes up to enricher pill */}
+      <g stroke={C.inkSoft} strokeWidth="1.2" fill="none" strokeLinecap="round">
+        <path d="M82 270 L82 250 Q82 230 105 222 L115 219" />
+        <path d="M238 270 L238 250 Q238 230 215 222 L205 219" />
       </g>
+      {/* Arrow from enricher pill up to code box */}
+      <line x1="160" y1="196" x2="160" y2="178" stroke={C.inkSoft} strokeWidth="1.2" />
+      <path d="M155 182 L160 176 L165 182" fill="none" stroke={C.inkSoft} strokeWidth="1.2" strokeLinecap="round" />
 
-      {/* Two source boxes below */}
-      <rect x="20" y="190" width="125" height="70" rx="8" fill={C.sage} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
-      <text x="82" y="212" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>source code</text>
-      <text x="82" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>tree-sitter parse</text>
-      <text x="82" y="242" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>import resolution</text>
+      {/* Two source boxes */}
+      <rect x="20" y="270" width="120" height="58" rx="10" fill={C.sage} fillOpacity="0.35" stroke={C.ink} strokeWidth="1.2" />
+      <text x="80" y="290" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>source code</text>
+      <text x="80" y="306" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>tree-sitter · imports</text>
 
-      <rect x="175" y="190" width="125" height="70" rx="8" fill={C.sky} fillOpacity="0.4" stroke={C.ink} strokeWidth="1.2" />
-      <text x="237" y="212" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>PostHog API</text>
-      <text x="237" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>flags, events</text>
-      <text x="237" y="242" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>experiments, funnels</text>
+      <rect x="180" y="270" width="120" height="58" rx="10" fill={C.sky} fillOpacity="0.35" stroke={C.ink} strokeWidth="1.2" />
+      <text x="240" y="290" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>PostHog API</text>
+      <text x="240" y="306" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.inkSoft}>flags · events · exps</text>
 
-      {/* Arrows up from both boxes */}
-      <line x1="82" y1="190" x2="120" y2="170" stroke={C.faint} strokeWidth="1.2" />
-      <line x1="237" y1="190" x2="200" y2="170" stroke={C.faint} strokeWidth="1.2" />
-
-      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.faint}>
+      <text x="160" y="352" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.faint}>
         code + production context
       </text>
     </svg>
