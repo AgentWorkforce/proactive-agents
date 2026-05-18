@@ -40,7 +40,10 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
         Authorization: `Token ${env.BUTTONDOWN_API_KEY}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ email_address: email, type: "regular" }),
+      // Omit `type` so Buttondown uses its default double opt-in flow:
+      // the subscriber is created `unactivated` and sent a confirmation
+      // email, becoming active only after they click the confirm link.
+      body: JSON.stringify({ email_address: email }),
       signal: AbortSignal.timeout(10_000),
     });
   } catch (err) {
@@ -49,7 +52,7 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
   }
 
   if (res.ok) {
-    return json({ ok: true, message: "You're subscribed! New essays will land in your inbox." });
+    return json({ ok: true, message: "Check your inbox to confirm your subscription." });
   }
 
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
