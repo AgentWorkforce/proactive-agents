@@ -63,6 +63,81 @@ Last updated: 2026-05-18
 
 ---
 
+## Essay: Google Remy and the background agent bet
+
+Published: 2026-05-18
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/google-remy-background-agent/
+
+An internal document leaked from Google last week describes something called Remy: "your 24/7 personal agent for work, school, and daily life, powered by Gemini." Employees are already dogfooding it inside a staff-only version of the Gemini app. Google I/O starts tomorrow, and Remy is expected to be part of the keynote.
+
+What caught my attention isn't the marketing framing. It's that the reported architecture maps to infrastructure problems I've been writing about for weeks. Remy is Google's attempt to build a proactive agent on top of the largest consumer ecosystem on earth, and the choices they've made (and the ones they've deferred) tell you a lot about where this space is going.
+
+## The ecosystem advantage
+
+The reported list of connected apps is long: [Gmail](https://mail.google.com), [Google Calendar](https://calendar.google.com), [Docs](https://docs.google.com), [Drive](https://drive.google.com), Keep, Tasks, [GitHub](https://github.com), [WhatsApp](https://www.whatsapp.com), [Spotify](https://spotify.com), [Google Photos](https://photos.google.com), and Google Home. The data sources go further: chats, personal context, location, something called "Personal Intelligence," and "Agent files."
+
+Most proactive agent builders spend weeks wiring up each provider. We catalogued the cost in [the webhook tax](/posts/the-webhook-tax/): signature verification, queue infrastructure, payload normalization, deduplication storage. Eight weeks per provider, conservatively. Four providers eats most of a quarter.
+
+Google doesn't have that problem for its own services. Gmail, Calendar, Drive, and Photos all share authentication, share infrastructure, and can emit change events through internal channels that never touch a public webhook endpoint. When Remy watches your inbox, it doesn't poll an API on a timer. It listens through the same infrastructure that powers Gmail notifications. The [clock and the listener](/posts/three-primitives/) come nearly for free when you own the platform.
+
+The third-party integrations are more interesting. GitHub, WhatsApp, and Spotify don't run on Google infrastructure. Those connections require the same webhook plumbing and API adapters that every proactive agent builder deals with. How Google handles that boundary, whether they normalize external events into the same internal format or treat them as second-class, will say a lot about Remy's real breadth versus its demo breadth.
+
+Google shut down [Project Mariner](https://deepmind.google/technologies/project-mariner/) on May 4, and the team rolled into the Remy effort. Mariner was a browser-based agent that clicked around websites to complete tasks. Remy works through direct API integrations instead. The shift tells you something: simulating a human at a keyboard doesn't scale the way direct service access does.
+
+## The trust question
+
+The leaked description says Remy can make purchases, send documents, and communicate with others on your behalf. That's a much larger surface than anything [Pulse](/posts/chatgpt-pulse/) or Orbit attempt. Pulse generates morning cards you read passively. Orbit connects to developer tools and prepares context-aware updates. Remy wants to *act* in the world, with your money.
+
+The [PARE benchmark](/posts/forty-two-percent/) showed that even frontier models only succeed at proactive tasks 42% of the time. The models that scored highest were the ones that proposed selectively and stayed quiet when uncertain. An agent that makes purchases needs a significantly higher bar than one that summarizes your email.
+
+According to reporting from [Kingy AI](https://kingy.ai/news/googles-remy-and-the-race-to-build-the-ai-agent-that-actually-does-stuff/), Remy implements tiered autonomy: low-risk tasks run automatically, medium-risk tasks require review, and high-risk actions demand explicit approval. The task dashboard organizes work by status: ongoing, scheduled, waiting for input, and completed. That structure maps directly to what the [PARE research](/posts/forty-two-percent/) suggests is the right architecture: observe first, act only when confidence is high, and always give the human a way to intervene.
+
+Google's own [AI research guidance](https://www.artificialintelligence-news.com/news/google-remy-ai-agent-gemini-user-control/) says agents should have "well-defined human controllers, carefully limited powers, observable actions, and the ability to plan." What none of the leaked materials describe is how Remy decides which tier a given action falls into. Is sending a calendar invite low-risk or medium-risk? Is purchasing a $12 item different from a $200 one? The tier assignment logic is where the real engineering lives, and it's the part nobody has seen yet.
+
+The reporting explicitly notes uncertainty: "It also did not say whether Remy can act independently without user confirmation." For the highest-stakes proactive agent announced so far, the approval model is still a black box.
+
+## Three architectures for the same idea
+
+The proactive assistant space now has three major entrants with meaningfully different approaches, and running them through the [three-primitives framework](/posts/three-primitives/) reveals where each one placed its bets.
+
+**[ChatGPT Pulse](/posts/chatgpt-pulse/)** shipped first, in September 2025. It runs a scheduled overnight job (clock), processes your chat history and connected Gmail and Calendar (limited listener), and delivers morning cards in the ChatGPT app (fixed inbox). It scores one out of three on the primitives. The reception has been consistent: useful for morning context, not transformative.
+
+**Anthropic's Orbit** connects to Gmail, [Slack](https://slack.com), GitHub, [Figma](https://figma.com), Calendar, and Drive. It has appeared as a settings toggle in Claude's web and mobile builds, suggesting a staged rollout is close. The connector list is developer-heavy, which makes sense given Claude's audience. Orbit seems aimed at builders who live in GitHub and Figma, not consumers managing errands.
+
+**Remy** targets everyone. Its connector list spans consumer apps (Spotify, Photos, WhatsApp), productivity (Gmail, Calendar, Docs, Drive), and developer tools (GitHub). The internal description frames it as covering "work, school, and daily life." That's the broadest scope of the three by a wide margin, and the one most likely to run into the [judgment problem](/posts/why-proactive-is-hard/) where the agent has to decide between acting and staying quiet across wildly different domains.
+
+<table>
+  <thead>
+    <tr><th></th><th>Pulse</th><th>Orbit</th><th>Remy</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Clock</td><td>Overnight batch</td><td>Unclear</td><td>24/7 continuous</td></tr>
+    <tr><td>Listener</td><td>Gmail + Calendar (snapshot)</td><td>Gmail, Slack, GitHub, Figma, Calendar, Drive</td><td>12+ services, internal + external</td></tr>
+    <tr><td>Inbox</td><td>Cards in ChatGPT</td><td>Claude web + mobile</td><td>Gemini app + actions in connected services</td></tr>
+    <tr><td>Can act</td><td>No</td><td>Unclear</td><td>Yes (purchases, messages, documents)</td></tr>
+    <tr><td>Audience</td><td>Consumer</td><td>Developer</td><td>Everyone</td></tr>
+  </tbody>
+</table>
+
+The framing of these as competitors is partly misleading. Pulse is a morning briefing. Orbit is a developer context layer. Remy is an autonomous agent. They're solving different slices of the same underlying problem: reduce the number of tabs you have to open before you can start thinking. But the architectural ambition varies dramatically.
+
+## What to watch at I/O
+
+Google I/O starts tomorrow. A few specific things worth tracking:
+
+**The approval model.** Does Remy show its reasoning before acting? Can you set per-action-type policies ("always approve purchases over $50, auto-approve calendar changes")? The tier system described in leaked documents is the right shape, but the granularity matters. Too coarse and users won't trust it. Too fine and nobody will configure it.
+
+**External provider depth.** The connected-app list includes GitHub, WhatsApp, and Spotify. How deep do those integrations go? Can Remy watch a GitHub repo for new issues and draft a response, or can it only read your notifications? The difference between "connected" and "proactive" is whether the listener actually fires on external events.
+
+**State and memory.** The leaked documents mention "Agent files" and "Personal Intelligence" as data sources. Those terms are vague. If Remy maintains durable state across sessions, remembering what it tried, what worked, and what you overrode, it has a real shot at improving over time. If it's cold-starting from your Google data each session, it's a smarter version of Google Now.
+
+[Notion took a fundamentally different path](/posts/notion-ships-the-primitives/) by shipping composable building blocks instead of a finished agent. Google is going the opposite direction: a finished agent that works across everything. Both approaches have real advantages. Platforms compound through user creativity. Products compound through integration depth. Which one matters more for proactive agents is still an open question, and I/O might give us the first real data point.
+
+We track the proactive agent landscape at [/market](/market/proactive-agent-landscape/). After I/O, we'll update Remy's entry with whatever ships publicly. For now, it scores the highest on architectural ambition and the lowest on public verifiability.
+
+---
+
 ## Essay: PostHog Code and the production signal
 
 Published: 2026-05-15
@@ -1130,7 +1205,7 @@ That version of Pulse would actually look like the proactive assistant OpenAI de
 
 ## The market signal
 
-The most interesting thing about Pulse might be the competitive landscape around it. Anthropic is reportedly building a proactive assistant called Orbit for Claude. Google and Perplexity are developing their own versions. [Notion took a different path entirely](/posts/notion-ships-the-primitives/), shipping composable building blocks instead of a finished product. Everyone is converging on the same insight: reactive AI (ask a question, get an answer) is leaving value on the table.
+The most interesting thing about Pulse might be the competitive landscape around it. Anthropic is reportedly building a proactive assistant called Orbit for Claude. Google is testing [Remy](https://www.absolutegeeks.com/article/tech-news/google-tests-remy-a-proactive-gemini-powered-ai-agent-for-daily-tasks/), a Gemini-powered agent designed to act autonomously in the background, managing errands, sending documents, and coordinating across connected apps without constant user input. Perplexity is developing its own version. [Notion took a different path entirely](/posts/notion-ships-the-primitives/), shipping composable building blocks instead of a finished product. Everyone is converging on the same insight: reactive AI (ask a question, get an answer) is leaving value on the table.
 
 That's exciting and it validates what we've been building. But if everyone just ships the clock and calls it done, I'm not sure any of these will feel like more than a tab in an app.
 
@@ -1361,7 +1436,7 @@ The agent code that sits in the middle of that is shockingly small. A handler. A
 
 The thing we keep coming back to is simpler than labels like "multi-agent coordination" or "agent orchestration" make it sound: give the agent a clock, an inbox, and a place to live, and let it act when something moves.
 
-A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalizes the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd started building the runtime. Worth a read.
+A 2024 paper from Tsinghua and Huawei — [*Proactive Agent: Shifting LLM Agents from Reactive Responses to Active Assistance*](https://arxiv.org/abs/2410.12361) (arXiv:2410.12361) — formalizes the same five claims we ended up with: push beats poll, persistent state is non-negotiable, shared environmental state is the coordination primitive, calibrated restraint is the hard problem, and multi-candidate fan-out beats single proposals. We didn't find it until after we'd started building the runtime. A [Forbes Tech Council piece](https://www.forbes.com/councils/forbestechcouncil/2026/04/28/the-four-capabilities-a-proactive-ai-system-needs-to-be-the-next-major-product-category/) on the four capabilities a proactive system needs arrives at a similar set of requirements from the product side. The taxonomies differ, but the convergence is telling.
 
 ## Why we're writing this down
 
@@ -1706,7 +1781,7 @@ What reactive is not great for is anything where the whole value of the agent is
 
 ## So what's the takeaway
 
-Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. The [PARE benchmark](/posts/forty-two-percent/) bears this out: the models that observe carefully and propose selectively achieve far higher success rates than eager ones. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
+Push and persistence beat pull and statelessness for agents, same way they do in every other distributed system. The [PARE benchmark](/posts/forty-two-percent/) bears this out: the models that observe carefully and propose selectively achieve far higher success rates than eager ones. [MindStudio's overview](https://www.mindstudio.ai/blog/what-is-proactive-ai-agents-shifting-reactive-anticipatory) frames the same shift as "reactive to anticipatory," and their definition lands in the same place: proactive means acting on your behalf without waiting for a prompt, maintaining persistent state across sessions. Most agents are still reactive because the runtime to make them proactive didn't exist as something you could just import. People get the tradeoff. The tooling just wasn't there.
 
 We've been building that part. More on the runtime in [Proactive agents need three primitives](/posts/three-primitives/).
 

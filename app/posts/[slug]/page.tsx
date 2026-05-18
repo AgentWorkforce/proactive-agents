@@ -38,6 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       url: `${SITE_URL}/posts/${slug}/`,
       type: "article",
       publishedTime: post.date,
+      modifiedTime: post.lastModified ?? post.date,
       authors: ["Khaliq Gant"],
     },
     twitter: {
@@ -125,7 +126,11 @@ export default async function PostPage({
 
         <div className="mt-12 border-t border-rule pt-8">
           <p className="text-xs uppercase tracking-[0.22em] text-ink-faint">
-            Posted {formatDate(post.date)} &middot; AgentWorkforce
+            Posted {formatDate(post.date)}
+            {post.lastModified && post.lastModified !== post.date && (
+              <> &middot; Updated {formatDate(post.lastModified)}</>
+            )}
+            {" "}&middot; AgentWorkforce
           </p>
           <p className="mt-4 font-serif text-[1.05rem] leading-relaxed text-ink-soft">
             Issues, PRs, and arguments welcome on{" "}

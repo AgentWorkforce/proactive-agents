@@ -3014,3 +3014,183 @@ export function PhaseAgentFigure() {
     </svg>
   );
 }
+
+/** Remy — connected-app ecosystem radiating from a central agent. */
+export function RemyEcosystemFigure() {
+  const apps = [
+    { label: "Gmail", angle: 0 },
+    { label: "Calendar", angle: 45 },
+    { label: "Drive", angle: 90 },
+    { label: "GitHub", angle: 135 },
+    { label: "WhatsApp", angle: 180 },
+    { label: "Spotify", angle: 225 },
+    { label: "Photos", angle: 270 },
+    { label: "Tasks", angle: 315 },
+  ];
+  const cx = 160, cy = 150, innerR = 36, outerR = 110;
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="remy-eco-title">
+      <title id="remy-eco-title">Google Remy connected-app ecosystem: eight services radiating from a central agent</title>
+      <defs>
+        <radialGradient id="remyecograd" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stopColor={C.sky} stopOpacity="0.85" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx={cx} cy={cy} r={outerR + 10} fill="url(#remyecograd)" />
+      {/* Connecting lines */}
+      {apps.map(({ angle }, i) => {
+        const rad = (angle * Math.PI) / 180;
+        return (
+          <line
+            key={`line-${i}`}
+            x1={cx + Math.cos(rad) * innerR}
+            y1={cy + Math.sin(rad) * innerR}
+            x2={cx + Math.cos(rad) * (outerR - 20)}
+            y2={cy + Math.sin(rad) * (outerR - 20)}
+            stroke={C.faint}
+            strokeWidth="1"
+            strokeDasharray="3 3"
+          />
+        );
+      })}
+      {/* Center agent circle */}
+      <circle cx={cx} cy={cy} r={innerR} fill={C.paper} stroke={C.ink} strokeWidth="2" />
+      <text x={cx} y={cy - 4} textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>
+        Remy
+      </text>
+      <text x={cx} y={cy + 8} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>
+        24/7
+      </text>
+      {/* App nodes */}
+      {apps.map(({ label, angle }, i) => {
+        const rad = (angle * Math.PI) / 180;
+        const x = cx + Math.cos(rad) * (outerR - 14);
+        const y = cy + Math.sin(rad) * (outerR - 14);
+        const isExternal = ["GitHub", "WhatsApp", "Spotify"].includes(label);
+        return (
+          <g key={`app-${i}`}>
+            <circle cx={x} cy={y} r="16" fill={C.paper} stroke={isExternal ? C.terracotta : C.ink} strokeWidth={isExternal ? "1.8" : "1.2"} />
+            <text x={x} y={y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={isExternal ? C.terracotta : C.inkSoft}>
+              {label}
+            </text>
+          </g>
+        );
+      })}
+      {/* Legend */}
+      <g transform="translate(160, 290)">
+        <circle cx="-50" cy="0" r="4" fill="none" stroke={C.ink} strokeWidth="1.2" />
+        <text x="-42" y="3" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>Google</text>
+        <circle cx="12" cy="0" r="4" fill="none" stroke={C.terracotta} strokeWidth="1.8" />
+        <text x="20" y="3" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>external</text>
+      </g>
+    </svg>
+  );
+}
+
+/** Remy — three tiers of autonomy (auto, review, approve). */
+export function RemyTrustTierFigure() {
+  const tiers = [
+    { label: "auto", desc: "calendar, lookups", color: C.sage, y: 60 },
+    { label: "review", desc: "drafts, scheduling", color: C.butter, y: 140 },
+    { label: "approve", desc: "purchases, messages", color: C.rose, y: 220 },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="remy-trust-title">
+      <title id="remy-trust-title">Three tiers of autonomy: auto-run for low-risk, review for medium, explicit approval for high-risk</title>
+      <defs>
+        <radialGradient id="remytrustgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.peach} stopOpacity="0.35" />
+        </radialGradient>
+      </defs>
+      <rect x="20" y="20" width="280" height="280" rx="16" fill="url(#remytrustgrad)" />
+      {/* Risk arrow on left */}
+      <line x1="48" y1="50" x2="48" y2="240" stroke={C.inkSoft} strokeWidth="1.2" />
+      <path d="M44 234 L48 244 L52 234" fill="none" stroke={C.inkSoft} strokeWidth="1.2" strokeLinecap="round" />
+      <text x="48" y="262" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>risk</text>
+      {/* Tier blocks */}
+      {tiers.map(({ label, desc, color, y }, i) => (
+        <g key={i}>
+          <rect x="72" y={y - 28} width="220" height="56" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+          <rect x="72" y={y - 28} width="220" height="56" rx="8" fill={color} opacity="0.25" />
+          <text x="100" y={y - 4} fontFamily="var(--font-display)" fontSize="14" fill={C.ink}>{label}</text>
+          <text x="100" y={y + 12} fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>{desc}</text>
+          {/* Shield icons — more for higher risk */}
+          {Array.from({ length: i + 1 }).map((_, j) => (
+            <g key={j} transform={`translate(${252 + j * 16}, ${y - 2})`}>
+              <path d="M0 -6 L6 -3 L6 3 Q6 8 0 10 Q-6 8 -6 3 L-6 -3 Z" fill="none" stroke={C.inkSoft} strokeWidth="1" />
+            </g>
+          ))}
+        </g>
+      ))}
+      {/* Header */}
+      <text x="182" y="300" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.terracotta}>
+        autonomy narrows as stakes rise
+      </text>
+    </svg>
+  );
+}
+
+/** Remy — comparison of three proactive agents (Pulse, Orbit, Remy). */
+export function RemyComparisonFigure() {
+  const agents = [
+    { name: "Pulse", primitives: [true, false, false], color: C.peach },
+    { name: "Orbit", primitives: [false, true, false], color: C.lavender },
+    { name: "Remy", primitives: [true, true, true], color: C.sky },
+  ];
+  const labels = ["clock", "listener", "inbox"];
+  const colW = 86, startX = 36, topY = 70;
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="remy-compare-title">
+      <title id="remy-compare-title">Three proactive agents compared: Pulse has clock only, Orbit has listener, Remy has all three primitives</title>
+      <defs>
+        <radialGradient id="remycmpgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.sky} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.sage} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="10" width="300" height="300" rx="16" fill="url(#remycmpgrad)" />
+      {/* Column headers */}
+      {agents.map(({ name, color }, i) => {
+        const x = startX + i * colW + colW / 2;
+        return (
+          <g key={`hdr-${i}`}>
+            <rect x={x - 34} y={topY - 20} width="68" height="28" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+            <rect x={x - 34} y={topY - 20} width="68" height="28" rx="6" fill={color} opacity="0.3" />
+            <text x={x} y={topY - 2} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>{name}</text>
+          </g>
+        );
+      })}
+      {/* Primitive rows */}
+      {labels.map((label, row) => {
+        const y = topY + 50 + row * 58;
+        return (
+          <g key={`row-${row}`}>
+            <text x="160" y={y - 18} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>{label}</text>
+            {agents.map(({ primitives }, col) => {
+              const x = startX + col * colW + colW / 2;
+              const has = primitives[row];
+              return (
+                <g key={`cell-${row}-${col}`}>
+                  <circle cx={x} cy={y} r="12" fill={C.paper} stroke={has ? C.terracotta : C.rule} strokeWidth={has ? "2" : "1"} />
+                  {has ? (
+                    <path d={`M${x - 5} ${y} L${x - 1} ${y + 4} L${x + 6} ${y - 5}`} fill="none" stroke={C.terracotta} strokeWidth="2" strokeLinecap="round" />
+                  ) : (
+                    <g stroke={C.rule} strokeWidth="1.4">
+                      <line x1={x - 4} y1={y - 4} x2={x + 4} y2={y + 4} />
+                      <line x1={x + 4} y1={y - 4} x2={x - 4} y2={y + 4} />
+                    </g>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        );
+      })}
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.terracotta}>
+        same problem, different scope
+      </text>
+    </svg>
+  );
+}
