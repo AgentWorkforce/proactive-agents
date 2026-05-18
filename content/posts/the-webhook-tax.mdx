@@ -163,7 +163,7 @@ This is why we think of change detection as a primitive — something that belon
 
 A proactive agent needs a *listener:* a single interface that says "something changed in a system you care about" with enough context for the agent to act on it. Whether that change came from a webhook, a streaming API, a polling sync, or a Pub/Sub subscription is an implementation detail the agent shouldn't have to know.
 
-The [three primitives](/posts/three-primitives) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
+The [three primitives](/posts/three-primitives/) exist because each one represents a class of infrastructure that is hard to build, undifferentiated, and required for an agent to be proactive.
 
 Anyway, that's what it looks like when you build the listener from scratch, one provider at a time. It's a ton of work, and most of it has nothing to do with the agent itself.
 

@@ -11,7 +11,7 @@ I've spent a ton of this series talking up push-based, event-driven architecture
 
 But I'd be lying if I said push doesn't break too. So here's the other side.
 
-Push architectures break. Sometimes in small annoying ways, sometimes spectacularly. Some of these I've seen firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax). Others I know from my time at [Nango](https://nango.dev) and from talking to teams who run webhook-heavy systems in production.
+Push architectures break. Sometimes in small annoying ways, sometimes spectacularly. Some of these I've seen firsthand while building the webhook infrastructure described in [the webhook tax](/posts/the-webhook-tax/). Others I know from my time at [Nango](https://nango.dev) and from talking to teams who run webhook-heavy systems in production.
 
 <Scene figure="PushFailureFigure" caption="The failure modes nobody warns you about.">
 
@@ -104,7 +104,7 @@ There are cases where push is the wrong tool, and recognizing them saves you fro
 **Early prototyping.** When you're trying to figure out whether an agent idea works at all, the last thing you want is to build webhook infrastructure. Poll the API, process the results, see if the agent's behavior makes sense. You can add push later, once you know the idea is worth the engineering investment.
 
 <Callout tone="warm" label="Honesty about defaults">
-We default to push for most of the agents we design, because latency and transition visibility matter. But some agents (like the [weekly-digest agent](/posts/building-weekly-digest)) run on pure cron, and they're better for it. The architecture should follow the requirement, not the other way around.
+We default to push for most of the agents we design, because latency and transition visibility matter. But some agents (like the [weekly-digest agent](/posts/building-weekly-digest/)) run on pure cron, and they're better for it. The architecture should follow the requirement, not the other way around.
 </Callout>
 
 </Scene>
@@ -133,7 +133,7 @@ In practice, this means running both architectures. Push for speed and transitio
 
 ## The real tradeoff
 
-I still think push is better for agents that need to act on changes as they happen and see what something changed *from*, not just what it is now. That's why the [three primitives](/posts/three-primitives) center on push.
+I still think push is better for agents that need to act on changes as they happen and see what something changed *from*, not just what it is now. That's why the [three primitives](/posts/three-primitives/) center on push.
 
 But push is not free. You need replay infrastructure, observability for debugging, reconciliation for reliability, and backpressure for when things get spiky. All of that is real engineering work that a pure polling setup just doesn't need.
 

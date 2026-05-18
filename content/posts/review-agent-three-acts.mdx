@@ -9,7 +9,7 @@ dropcap: true
 
 I've been building [My Senior Dev](https://myseniordev.com) for about six months now, and it's gone through a ton of changes. It started the way most AI dev tools start: a webhook fires when a pull request opens, an LLM analyzes the diff, and comments appear on GitHub. The agent only existed during the seconds between the webhook arriving and the last comment posting. Then it vanished until the next PR.
 
-Over roughly a thousand commits, the product went through three phases, each one showing us something the previous architecture couldn't handle. By the end, we'd rebuilt it as a proactive agent running on the same [three primitives](/posts/three-primitives) we'd been writing about on this site.
+Over roughly a thousand commits, the product went through three phases, each one showing us something the previous architecture couldn't handle. By the end, we'd rebuilt it as a proactive agent running on the same [three primitives](/posts/three-primitives/) we'd been writing about on this site.
 
 <Scene figure="ReviewReactiveFigure" caption="Act 1 — the webhook-triggered review loop.">
 
@@ -103,15 +103,15 @@ The agent also gained durability. In Act 1, a crashed worker meant a lost review
 
 ## What the product taught me
 
-Looking back, I kept running into the same missing infrastructure from a different angle each time — the same convergence described in [the genesis](/posts/the-genesis).
+Looking back, I kept running into the same missing infrastructure from a different angle each time — the same convergence described in [the genesis](/posts/the-genesis/).
 
 In Act 1, I didn't need any of the primitives. Webhooks provided the only trigger, we only cared about one event type, and GitHub comments were the only output. The reactive architecture was sufficient.
 
 Act 2 introduced message routing (deliver to Slack, Telegram, desktop) but I still didn't need the clock or listener. We solved delivery with adapters and a dispatcher.
 
-By Act 3, all three were load-bearing: periodic scanning, real-time event detection, multi-surface delivery. And underneath those, the durability layer: checkpointing, idempotency, scoped auth, retry with backoff. The stuff described in [what makes proactive agents hard to build](/posts/why-proactive-is-hard).
+By Act 3, all three were load-bearing: periodic scanning, real-time event detection, multi-surface delivery. And underneath those, the durability layer: checkpointing, idempotency, scoped auth, retry with backoff. The stuff described in [what makes proactive agents hard to build](/posts/why-proactive-is-hard/).
 
-I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. [PostHog Code](/posts/posthog-code) is an interesting contrast: it has the richest context of any coding agent, but the same missing infrastructure underneath. That's what convinced me the primitives were structural, not just a convenient grouping.
+I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. [PostHog Code](/posts/posthog-code/) is an interesting contrast: it has the richest context of any coding agent, but the same missing infrastructure underneath. That's what convinced me the primitives were structural, not just a convenient grouping.
 
 If I'm being honest, I probably couldn't have designed the runtime without a product that kept showing me what was missing. The product and the infrastructure grew up together.
 

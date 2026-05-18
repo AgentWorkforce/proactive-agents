@@ -6,7 +6,7 @@ accent: "sky"
 dropcap: true
 ---
 
-In [the three primitives](/posts/three-primitives) we argued that a proactive agent needs a clock, a listener, and an inbox. The clock is cron. The inbox is messaging. The listener is the hard one: the thing that wakes an agent up when something changes in the outside world, without the agent having to ask.
+In [the three primitives](/posts/three-primitives/) we argued that a proactive agent needs a clock, a listener, and an inbox. The clock is cron. The inbox is messaging. The listener is the hard one: the thing that wakes an agent up when something changes in the outside world, without the agent having to ask.
 
 We've been building the listener for the past 86 days. This is a look at what it actually took, sourced from `git log` across four open-source repositories, plus a hosted cloud layer. The decisions are interesting not because they're clever, but because they reveal what a proactive agent demands from its integration infrastructure.
 
