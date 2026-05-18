@@ -31,6 +31,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "posthog-code": PostHogCodeArt,
   "notion-ships-the-primitives": NotionPrimitivesArt,
   "every-tool-ships-an-agent": EveryToolAgentArt,
+  "google-remy-background-agent": RemyBackgroundArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -1061,6 +1062,54 @@ function EveryToolAgentArt() {
               </g>
             );
           })}
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function RemyBackgroundArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 115)">
+          {/* Central agent — always-on circle */}
+          <circle r="20" strokeWidth="1.8" />
+          <circle r="2.5" fill={C.ink} stroke="none" />
+          {/* Orbiting app dots */}
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const r = 52;
+            const x = Math.cos(rad) * r;
+            const y = Math.sin(rad) * r;
+            return (
+              <g key={i}>
+                <line
+                  x1={Math.cos(rad) * 20}
+                  y1={Math.sin(rad) * 20}
+                  x2={x}
+                  y2={y}
+                  strokeWidth="0.8"
+                  strokeDasharray="2 3"
+                />
+                <circle cx={x} cy={y} r="4" fill={C.ink} stroke="none" />
+              </g>
+            );
+          })}
+          {/* Outer dashed orbit ring */}
+          <circle r="52" strokeWidth="0.8" strokeDasharray="4 4" />
+          {/* 24/7 label */}
+          <text y="2" textAnchor="middle" fontFamily="inherit" fontSize="8" fill={C.ink} strokeWidth="0">24/7</text>
         </g>
       </g>
     </svg>
