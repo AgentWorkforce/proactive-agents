@@ -125,18 +125,18 @@ async function fetchWeeklyEssays(
   since: string,
 ): Promise<EssayEntry[]> {
   try {
-    const commits = await octokit.rest.repos.listCommits({
+    const commits = await octokit.paginate(octokit.rest.repos.listCommits, {
       owner: REPO.owner,
       repo: REPO.name,
       path: "content/posts",
       since,
-      per_page: 50,
+      per_page: 100,
     });
 
     const slugsSeen = new Set<string>();
     const essays: EssayEntry[] = [];
 
-    for (const commit of commits.data) {
+    for (const commit of commits) {
       const detail = await octokit.rest.repos.getCommit({
         owner: REPO.owner,
         repo: REPO.name,
@@ -164,7 +164,7 @@ async function fetchWeeklyEssays(
     return essays;
   } catch (err) {
     console.error("[newsletter-drafter] fetchWeeklyEssays failed", err);
-    return [];
+    throw err instanceof Error ? err : new Error("fetchWeeklyEssays failed");
   }
 }
 
@@ -173,18 +173,18 @@ async function fetchWeeklyMarket(
   since: string,
 ): Promise<MarketEntry[]> {
   try {
-    const commits = await octokit.rest.repos.listCommits({
+    const commits = await octokit.paginate(octokit.rest.repos.listCommits, {
       owner: REPO.owner,
       repo: REPO.name,
       path: "content/market",
       since,
-      per_page: 30,
+      per_page: 100,
     });
 
     const slugsSeen = new Set<string>();
     const entries: MarketEntry[] = [];
 
-    for (const commit of commits.data) {
+    for (const commit of commits) {
       const detail = await octokit.rest.repos.getCommit({
         owner: REPO.owner,
         repo: REPO.name,
@@ -216,7 +216,7 @@ async function fetchWeeklyMarket(
     return entries;
   } catch (err) {
     console.error("[newsletter-drafter] fetchWeeklyMarket failed", err);
-    return [];
+    throw err instanceof Error ? err : new Error("fetchWeeklyMarket failed");
   }
 }
 
@@ -240,7 +240,7 @@ async function fetchLatestDigest(
     return parseDigestBody(body);
   } catch (err) {
     console.error("[newsletter-drafter] fetchLatestDigest failed", err);
-    return [];
+    throw err instanceof Error ? err : new Error("fetchLatestDigest failed");
   }
 }
 
