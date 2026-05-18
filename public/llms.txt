@@ -18,6 +18,7 @@ This site is a working manual on proactive agents: AI agents that act without be
 - [What Are Proactive Agents? The Definitive Guide](/guide/): Comprehensive definition, architecture, comparison with reactive agents, and how to build them.
 
 ### Essays
+- [Google Remy and the background agent bet](/posts/google-remy-background-agent/): Google is testing a 24/7 Gemini-powered proactive agent. Architecture analysis through the three-primitives framework, with Pulse/Orbit/Remy comparison.
 - [Proactive agents need three primitives](/posts/three-primitives/): Why agents need a clock, a watcher, and an inbox wired together with durable state.
 - [Reactive vs proactive, with examples](/posts/reactive-vs-proactive/): Side-by-side code comparison of the same agent built both ways.
 - [The eight-week webhook tax per provider](/posts/the-webhook-tax/): The real engineering cost of making an agent proactive against multiple providers.
