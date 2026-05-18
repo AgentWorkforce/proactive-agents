@@ -4,6 +4,7 @@ import { BackgroundOrbs } from "@/components/background-orbs";
 import { ScrollReveal } from "@/components/scroll-reveal";
 import { Sparkle } from "@/components/decorations";
 import { CardArt, ClockListenerInbox } from "@/components/card-illustrations";
+import { NewsletterSignup } from "@/components/newsletter-signup";
 import {
   jsonLd,
   websiteSchema,
@@ -486,6 +487,13 @@ export default async function Home() {
               </span>
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* NEWSLETTER */}
+      <section className="relative mt-24 sm:mt-40">
+        <div className="reveal mx-auto max-w-3xl px-5 sm:px-10">
+          <NewsletterSignup />
         </div>
       </section>
     </>

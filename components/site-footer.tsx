@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { SiteLogo } from "@/components/site-logo";
+import { NewsletterSignup } from "@/components/newsletter-signup";
 
 export function SiteFooter() {
   return (
     <footer className="relative z-20 mt-24 border-t border-rule/70 sm:mt-32">
       <div className="mx-auto max-w-6xl px-5 py-12 sm:px-10 sm:py-14">
         <div className="grid gap-10 sm:grid-cols-12 sm:gap-8">
-          {/* Brand */}
+          {/* Brand + Newsletter */}
           <div className="sm:col-span-7">
             <div className="flex items-center gap-3">
               <SiteLogo className="h-7 w-auto" />
@@ -15,6 +16,10 @@ export function SiteFooter() {
             <p className="mt-3 max-w-md font-serif text-[0.95rem] leading-relaxed text-ink-soft">
               A working manual on the agents that don&rsquo;t wait to be asked.
             </p>
+            <p className="mt-5 font-serif text-xs text-ink-faint">
+              Get new essays delivered to your inbox.
+            </p>
+            <NewsletterSignup variant="inline" />
           </div>
 
           {/* Links */}

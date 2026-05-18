@@ -65,26 +65,19 @@ export default async function AgentPage() {
   const log = await getAgentLog();
   const grouped = groupByDay(log);
 
-  // Stats: this calendar week (Sunday → today)
-  const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay());
-  weekStart.setHours(0, 0, 0, 0);
-  const thisWeek = log.filter((e) => new Date(e.timestamp) >= weekStart);
-
   const stats = [
-    { label: thisWeek.length === 1 ? "Action this week" : "Actions this week", value: thisWeek.length },
+    { label: log.length === 1 ? "Total action" : "Total actions", value: log.length },
     {
       label: "Time-triggered",
-      value: thisWeek.filter((e) => e.trigger === "time").length,
+      value: log.filter((e) => e.trigger === "time").length,
     },
     {
       label: "Change-triggered",
-      value: thisWeek.filter((e) => e.trigger === "change").length,
+      value: log.filter((e) => e.trigger === "change").length,
     },
     {
       label: "Message-triggered",
-      value: thisWeek.filter((e) => e.trigger === "message").length,
+      value: log.filter((e) => e.trigger === "message").length,
     },
   ];
 
@@ -110,12 +103,14 @@ export default async function AgentPage() {
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />
         <p className="mt-8 font-serif text-lg leading-relaxed text-ink-soft">
-          Proactive agents run pieces of this site &mdash; for now, one of them
-          does. The <em>weekly digest</em> agent wakes every Saturday, scans
-          the web and Reddit for proactive-agent mentions, clusters what it
-          finds, and files a single GitHub issue. The other agents in the
-          roster are scaffolded but not yet wired to a runtime; they&rsquo;ll
-          appear here as they come online.
+          Proactive agents run pieces of this site. The{" "}
+          <em>weekly digest</em> agent wakes every Saturday, scans the web and
+          Reddit for proactive-agent mentions, clusters what it finds, and
+          files a single GitHub issue. The <em>newsletter drafter</em> runs
+          every Sunday, packages the week&rsquo;s essays, market updates, and
+          web mentions into a Buttondown draft, then opens a review issue. The
+          remaining agents in the roster are scaffolded but not yet wired to a
+          runtime; they&rsquo;ll appear here as they come online.
         </p>
         <p className="mt-3 font-serif text-base leading-relaxed text-ink-faint">
           A reactive agent fires when called. A proactive agent has to{" "}

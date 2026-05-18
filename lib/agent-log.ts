@@ -7,6 +7,7 @@ export type Outcome = "success" | "skipped" | "error";
 export type AgentName =
   | "notion-to-blog"
   | "weekly-digest"
+  | "newsletter-drafter"
   | "sunday-ping"
   | "pr-reviewer"
   | "manual-chatbot";
@@ -57,6 +58,13 @@ export const AGENT_META: Record<
     accent: "butter",
     status: "live",
   },
+  "newsletter-drafter": {
+    title: "Newsletter drafter",
+    trigger: "time",
+    blurb: "Collects the week's essays, market updates, and web mentions; drafts a Buttondown newsletter.",
+    accent: "sky",
+    status: "live",
+  },
   "notion-to-blog": {
     title: "Notion → blog",
     trigger: "change",
@@ -88,7 +96,7 @@ export const AGENT_META: Record<
 };
 
 export const TRIGGER_META: Record<Trigger, { label: string; symbol: string; tone: string }> = {
-  time: { label: "Time", symbol: "◷", tone: "text-butter" },
-  change: { label: "Change", symbol: "◇", tone: "text-sage" },
-  message: { label: "Message", symbol: "✦", tone: "text-rose" },
+  time: { label: "Time", symbol: "◷", tone: "text-[#b8960e]" },
+  change: { label: "Change", symbol: "◇", tone: "text-[#4a7a5b]" },
+  message: { label: "Message", symbol: "✦", tone: "text-[#c4616c]" },
 };
