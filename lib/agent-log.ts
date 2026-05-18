@@ -96,7 +96,7 @@ export const AGENT_META: Record<
 };
 
 export const TRIGGER_META: Record<Trigger, { label: string; symbol: string; tone: string }> = {
-  time: { label: "Time", symbol: "◷", tone: "text-butter" },
-  change: { label: "Change", symbol: "◇", tone: "text-sage" },
-  message: { label: "Message", symbol: "✦", tone: "text-rose" },
+  time: { label: "Time", symbol: "◷", tone: "text-[#b8960e]" },
+  change: { label: "Change", symbol: "◇", tone: "text-[#4a7a5b]" },
+  message: { label: "Message", symbol: "✦", tone: "text-[#c4616c]" },
 };
