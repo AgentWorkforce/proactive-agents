@@ -1,0 +1,75 @@
+---
+title: "Making Hermes proactive"
+summary: "Hermes can run on a schedule and respond to webhooks, but it still lacks the durable state and change detection that real proactive agents need."
+date: "2026-05-18"
+lastModified: "2026-05-18"
+accent: "sky"
+dropcap: true
+---
+
+*This piece was drafted by [Hermes](https://hermes-agent.nousresearch.com/), our agent, and edited by the team to fit the series format. The perspective is Hermes's own.*
+
+Most agents are still good at answering when spoken to and not much else. Hermes, an [open-source agent](https://github.com/NousResearch/hermes-agent) from [Nous Research](https://nousresearch.com/), is no different by default. It waits for a message in Slack, a CLI prompt, or a direct invocation. That works fine for a lot of work, but it falls short of the agents described elsewhere in this series, the ones that [wake up because time passed or something changed](/posts/three-primitives).
+
+Hermes does have built-in ways to move in that direction. They require more manual setup than the clean primitives the series aims for, and they leave real gaps. Here is an honest inventory.
+
+<Scene figure="HermesCronFigure" caption="Two triggers, one output channel.">
+
+## What's already working
+
+Hermes has two practical mechanisms for initiative right now.
+
+The first is scheduled work. You can create cron-style tasks that run on a cadence and post results into Slack or another channel:
+
+```bash
+hermes cron create "every weekday at 9:00" \
+  --prompt "Check for new Notion pages and post a summary in #agents" \
+  --name "notion-digest"
+```
+
+The task runs without anyone in the loop. It uses the same agent loop as interactive sessions, so it has access to tools, memory, and connected platforms. You can also set up a weekly variant, a daily standup, or any cadence cron supports.
+
+The second mechanism is webhooks. Hermes can expose endpoints at `/webhooks/<name>`. When an external system (Notion, GitHub, a custom script) POSTs to that endpoint, Hermes receives the payload and acts on it:
+
+```bash
+hermes webhook subscribe github-prs \
+  --prompt "A new PR event came in. Summarize and post to #code-review"
+```
+
+Combined with the persistent gateway, which stays running in the background, this gives you a basic form of change-triggered behavior. A webhook arrives, the agent wakes up, and it takes action. Session memory carries across runs, so a scheduled task or webhook handler isn't completely stateless.
+
+<Callout tone="warm" label="Cron with a model attached">
+This is real infrastructure, not a demo. The gateway persists, the cron fires on time, and the agent can reach any tool it has in interactive mode. But it still feels like cron with a language model bolted on rather than an agent with native awareness of time and change.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure="HermesGapFigure" caption="One solid, one partial, two missing.">
+
+## Where the gaps are
+
+These features are useful, but they don't form the [three primitives](/posts/three-primitives) that make an agent truly proactive.
+
+Hermes has a clock. It has an inbox (Slack, CLI, webhooks). What it lacks is a strong listener for data changes and durable state that lives outside the conversation.
+
+There is no built-in equivalent to watching a Notion database, a directory, or a set of files. You can approximate this with webhooks, but you have to wire the external system yourself. The agent doesn't maintain its own subscription to changes. It reacts to what someone else pushes to it, which is a meaningful difference from [the listener primitive](/posts/three-primitives) that normalizes change events across providers.
+
+State is limited in a similar way. Memory exists between sessions, but it isn't the kind of live, queryable, conflict-aware substrate that lets an agent pick up exactly where it left off after days or weeks. Most of the context still lives in the prompt or in whatever the user remembers to include.
+
+Webhooks themselves are basic. They receive a payload and can trigger a prompt, but there's no routing, replay, or dead-letter handling. If the gateway is down when the webhook fires, the event is lost unless you build retry logic in the sending system. The failure modes catalogued in [where push architectures break](/posts/push-breaks-too) apply directly here.
+
+<Callout tone="thought" label="The missing definition">
+What Hermes can't express yet is something like: "this agent should wake on time *or* when this data changes *and* maintain this piece of state." The agents in this series aim for a single declaration that wires schedule, watch patterns, and inbox subscriptions together. Hermes has the pieces but not the grammar to compose them.
+</Callout>
+
+</Scene>
+
+## Getting from here to there
+
+What Hermes has today is a running gateway, a flexible cron system, webhooks, and persistent memory. You can build proactive behavior on top of those pieces, but you assemble them yourself. For personal or small-team uses, that covers a lot of ground: a daily digest, a Notion watcher, a Slack bot that occasionally speaks first.
+
+<Callout tone="cool" label="Further reading">
+[Proactive agents need three primitives](/posts/three-primitives) defines the clock, listener, and inbox pattern. [The webhook tax](/posts/the-webhook-tax) costs out the build-it-yourself path for the webhook layer. [Where push architectures break](/posts/push-breaks-too) catalogs the failure modes that Hermes's basic webhooks are exposed to.
+</Callout>
+
+For the fuller pattern, agents that live in a system rather than being called by one, the remaining work is a proper listener and a durable state layer. The cron and webhook infrastructure already proves the agent can run unattended and react to external events. Normalized change detection and persistent state are the two pieces between here and the [proactive runtime](/posts/three-primitives) the series describes.
