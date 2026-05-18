@@ -1,9 +1,10 @@
 /**
- * One-shot: register every time-triggered agent's cron with relaycron.
+ * Upsert every time-triggered agent's cron schedule with relaycron.
  * Idempotent — looks up by stable schedule name; updates if it exists,
  * creates otherwise.
  *
- * Run from your laptop after the Pages secrets are set:
+ * Runs automatically on every deploy via .github/workflows/deploy.yml.
+ * Can also be run locally:
  *
  *   RELAYCRON_API_KEY=ac_... CRON_WEBHOOK_SECRET=... \
  *     npx tsx scripts/register-schedules.ts
@@ -11,9 +12,6 @@
  * The CRON_WEBHOOK_SECRET passed here MUST match the value set as the
  * Cloudflare Pages secret of the same name. Otherwise the function rejects
  * the delivery 401.
- *
- * We use plain fetch instead of @relaycron/sdk to dodge ESM/CJS resolution
- * drama; the API surface is small enough to inline.
  */
 import { SCHEDULES } from "../agents/schedules";
 

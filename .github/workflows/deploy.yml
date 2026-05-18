@@ -46,3 +46,10 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: pages deploy ./out --project-name=proactive-agents --branch=${{ github.ref_name }}
+
+      - name: Upsert relaycron schedules
+        if: ${{ env.RELAYCRON_API_KEY != '' }}
+        env:
+          RELAYCRON_API_KEY: ${{ secrets.RELAYCRON_API_KEY }}
+          CRON_WEBHOOK_SECRET: ${{ secrets.CRON_WEBHOOK_SECRET }}
+        run: npx tsx scripts/register-schedules.ts
