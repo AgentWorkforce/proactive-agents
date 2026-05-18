@@ -49,7 +49,7 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
   }
 
   if (res.ok) {
-    return json({ ok: true, message: "Check your inbox to confirm your subscription." });
+    return json({ ok: true, message: "You're subscribed! New essays will land in your inbox." });
   }
 
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;

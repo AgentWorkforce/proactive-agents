@@ -39,7 +39,7 @@ export function NewsletterSignup({
 
       if (data.ok) {
         setStatus("success");
-        setMessage(data.message ?? "Check your inbox to confirm.");
+        setMessage(data.message ?? "You're subscribed!");
         setEmail("");
       } else {
         setStatus("error");
