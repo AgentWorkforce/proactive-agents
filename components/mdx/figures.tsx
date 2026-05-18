@@ -3194,3 +3194,93 @@ export function RemyComparisonFigure() {
     </svg>
   );
 }
+
+export function HermesCronFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="hermes-cron-title">
+      <title id="hermes-cron-title">What Hermes already has: cron schedules and webhook endpoints feeding into the agent</title>
+      <circle cx="160" cy="140" r="105" fill={C.sky} opacity="0.25" />
+      <circle cx="160" cy="140" r="28" fill={C.paper} stroke={C.ink} strokeWidth="2" />
+      <text x="160" y="144" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.ink}>agent</text>
+      {/* Clock / cron on the left */}
+      <g transform="translate(65, 100)">
+        <circle r="24" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+        <circle r="1.5" fill={C.ink} />
+        {[0, 3, 6, 9].map((i) => {
+          const a = (i / 12) * Math.PI * 2 - Math.PI / 2;
+          return (
+            <line key={i} x1={Math.cos(a) * 18} y1={Math.sin(a) * 18} x2={Math.cos(a) * 22} y2={Math.sin(a) * 22} stroke={C.ink} strokeWidth="1.5" strokeLinecap="round" />
+          );
+        })}
+        <line x1="0" y1="0" x2="0" y2="-14" stroke={C.ink} strokeWidth="1.8" strokeLinecap="round" />
+        <line x1="0" y1="0" x2="8" y2="4" stroke={C.terracotta} strokeWidth="1.3" strokeLinecap="round" />
+      </g>
+      <text x="65" y="140" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>cron</text>
+      <line x1="92" y1="105" x2="130" y2="130" stroke={C.ink} strokeWidth="1.2" strokeDasharray="4 3" />
+      <path d="M126 126 L132 132 L126 134" fill="none" stroke={C.ink} strokeWidth="1.2" strokeLinecap="round" />
+      {/* Webhook on the right */}
+      <g transform="translate(255, 100)">
+        <rect x="-22" y="-16" width="44" height="32" rx="4" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+        <path d="M-4 -10 L2 -2 L-2 0 L6 10" fill="none" stroke={C.terracotta} strokeWidth="1.8" strokeLinecap="round" />
+      </g>
+      <text x="255" y="140" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>webhook</text>
+      <line x1="230" y1="105" x2="192" y2="130" stroke={C.ink} strokeWidth="1.2" strokeDasharray="4 3" />
+      <path d="M196 126 L190 132 L196 134" fill="none" stroke={C.ink} strokeWidth="1.2" strokeLinecap="round" />
+      {/* Output below */}
+      <g transform="translate(160, 210)">
+        <rect x="-18" y="-12" width="36" height="24" rx="3" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+        <line x1="-10" y1="-4" x2="10" y2="-4" stroke={C.ink} strokeWidth="0.8" />
+        <line x1="-10" y1="2" x2="6" y2="2" stroke={C.ink} strokeWidth="0.8" />
+      </g>
+      <text x="160" y="240" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>slack</text>
+      <line x1="160" y1="170" x2="160" y2="196" stroke={C.ink} strokeWidth="1.2" strokeDasharray="4 3" />
+      <path d="M156 192 L160 198 L164 192" fill="none" stroke={C.ink} strokeWidth="1.2" strokeLinecap="round" />
+      <text x="160" y="280" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        two triggers, one output channel
+      </text>
+    </svg>
+  );
+}
+
+export function HermesGapFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="hermes-gap-title">
+      <title id="hermes-gap-title">Coverage map: Hermes has a clock and partial inbox but lacks a listener and durable state</title>
+      {/* Clock — has it */}
+      <g transform="translate(70, 110)">
+        <circle r="38" fill={C.sky} opacity="0.35" />
+        <circle r="38" fill="none" stroke={C.ink} strokeWidth="1.5" />
+        <path d="M-8 2 L-2 8 L10 -6" fill="none" stroke={C.terracotta} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      <text x="70" y="164" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>clock</text>
+      <text x="70" y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.terracotta}>has it</text>
+      {/* Listener — missing */}
+      <g transform="translate(160, 110)">
+        <circle r="38" fill="none" stroke={C.rule} strokeWidth="1.5" strokeDasharray="5 4" />
+        <g stroke={C.rule} strokeWidth="2" strokeLinecap="round">
+          <line x1="-7" y1="-7" x2="7" y2="7" />
+          <line x1="7" y1="-7" x2="-7" y2="7" />
+        </g>
+      </g>
+      <text x="160" y="164" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>listener</text>
+      <text x="160" y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>missing</text>
+      {/* Inbox — partial */}
+      <g transform="translate(250, 110)">
+        <circle r="38" fill={C.sky} opacity="0.15" />
+        <circle r="38" fill="none" stroke={C.ink} strokeWidth="1.5" strokeDasharray="6 3" />
+        <path d="M-8 0 Q-3 -6 0 0 Q3 6 8 0" fill="none" stroke={C.faint} strokeWidth="2" strokeLinecap="round" />
+      </g>
+      <text x="250" y="164" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>inbox</text>
+      <text x="250" y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>partial</text>
+      {/* Durable state — missing */}
+      <rect x="40" y="205" width="240" height="36" rx="5" fill="none" stroke={C.rule} strokeWidth="1.5" strokeDasharray="6 4" />
+      <text x="160" y="228" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>durable state</text>
+      <line x1="70" y1="150" x2="70" y2="205" stroke={C.rule} strokeWidth="0.8" strokeDasharray="3 3" />
+      <line x1="160" y1="150" x2="160" y2="205" stroke={C.rule} strokeWidth="0.8" strokeDasharray="3 3" />
+      <line x1="250" y1="150" x2="250" y2="205" stroke={C.rule} strokeWidth="0.8" strokeDasharray="3 3" />
+      <text x="160" y="275" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        one solid, one partial, two missing
+      </text>
+    </svg>
+  );
+}

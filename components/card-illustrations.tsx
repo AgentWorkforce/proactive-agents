@@ -32,6 +32,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "notion-ships-the-primitives": NotionPrimitivesArt,
   "every-tool-ships-an-agent": EveryToolAgentArt,
   "google-remy-background-agent": RemyBackgroundArt,
+  "making-hermes-proactive": HermesProactiveArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -1110,6 +1111,50 @@ function RemyBackgroundArt() {
           <circle r="52" strokeWidth="0.8" strokeDasharray="4 4" />
           {/* 24/7 label */}
           <text y="2" textAnchor="middle" fontFamily="inherit" fontSize="8" fill={C.ink} strokeWidth="0">24/7</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function HermesProactiveArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Central agent circle */}
+          <circle r="20" strokeWidth="1.8" />
+          <circle r="2.5" fill={C.ink} stroke="none" />
+          {/* Clock on the left — solid */}
+          <g transform="translate(-55, -5)">
+            <circle r="16" strokeWidth="1.4" />
+            <line x1="0" y1="0" x2="0" y2="-10" strokeWidth="1.4" />
+            <line x1="0" y1="0" x2="7" y2="3" strokeWidth="1" />
+          </g>
+          <line x1="-37" y1="-2" x2="-22" y2="0" strokeWidth="1.2" />
+          {/* Webhook on the right — solid */}
+          <g transform="translate(55, -5)">
+            <rect x="-14" y="-10" width="28" height="20" rx="3" strokeWidth="1.4" />
+            <path d="M-3 -6 L1 -1 L-1 0 L4 6" strokeWidth="1.3" />
+          </g>
+          <line x1="37" y1="-2" x2="22" y2="0" strokeWidth="1.2" />
+          {/* Listener below — dashed (missing) */}
+          <g transform="translate(0, 45)">
+            <circle r="16" strokeWidth="1.4" strokeDasharray="4 3" />
+            <line x1="-5" y1="-5" x2="5" y2="5" strokeWidth="1.2" />
+            <line x1="5" y1="-5" x2="-5" y2="5" strokeWidth="1.2" />
+          </g>
+          <line x1="0" y1="22" x2="0" y2="28" strokeWidth="0.8" strokeDasharray="2 2" />
         </g>
       </g>
     </svg>
