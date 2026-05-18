@@ -10,6 +10,7 @@ import { ScrollToTop } from "@/components/scroll-to-top";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { Asterism } from "@/components/decorations";
 import { AgentActions } from "@/components/agent-actions";
+import { NewsletterSignup } from "@/components/newsletter-signup";
 import {
   jsonLd,
   articleSchema,
@@ -122,6 +123,13 @@ export default async function PostPage({
 
         <div className="mt-20 flex justify-center">
           <Asterism className="h-4 opacity-70" />
+        </div>
+
+        <div className="mt-12">
+          <NewsletterSignup
+            heading="Liked this essay?"
+            description="Get the next one in your inbox. One email per essay, no spam."
+          />
         </div>
 
         <div className="mt-12 border-t border-rule pt-8">

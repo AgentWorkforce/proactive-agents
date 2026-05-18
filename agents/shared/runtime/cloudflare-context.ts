@@ -17,6 +17,7 @@ export type CfEnv = GithubEnv & {
   NANGO_HOST?: string;
   NANGO_NOTION_CONNECTION_ID?: string;
   NOTION_DATABASE_ID?: string;
+  BUTTONDOWN_API_KEY?: string;
 };
 
 const REPO_OWNER = "AgentWorkforce";
