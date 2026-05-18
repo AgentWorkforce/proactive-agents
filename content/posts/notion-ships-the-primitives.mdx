@@ -9,7 +9,7 @@ dropcap: true
 
 I've been poking around [Notion's developer docs](https://developers.notion.com/workers/get-started/overview) this week. We use Notion for basically everything (blog planning, sprint tracking, the operating page for this series), so when they ship new developer tools I pay attention. What caught my eye this time is that the architecture underneath maps almost exactly to the framework I've been writing about.
 
-Notion launched three things at roughly the same time: [Workers](https://developers.notion.com/workers/get-started/overview) for developers, [Custom Agents](https://www.notion.com/help/custom-agents) for everyone else, and an [External Agents API](https://www.notion.com/product/dev) that lets tools like Claude and Cursor become first-class collaborators inside Notion pages. On the surface it looks like another AI feature drop. Underneath, it looks like the [three primitives](/posts/three-primitives) packaged as a platform.
+Notion launched three things at roughly the same time: [Workers](https://developers.notion.com/workers/get-started/overview) for developers, [Custom Agents](https://www.notion.com/help/custom-agents) for everyone else, and an [External Agents API](https://www.notion.com/product/dev) that lets tools like Claude and Cursor become first-class collaborators inside Notion pages. On the surface it looks like another AI feature drop. Underneath, it looks like the [three primitives](/posts/three-primitives/) packaged as a platform.
 
 <Scene figure="NotionStackFigure" caption="Three platform layers, one set of primitives.">
 
@@ -57,20 +57,20 @@ Custom Agents let you pick Claude, GPT, Gemini, or "Auto" which dynamically sele
 
 The External Agents API is still in alpha, but the design is the part I find genuinely exciting. It lets agents that don't live inside Notion (Claude, Cursor, Codex, your own custom builds) become participants in Notion workspaces. You mention them in pages and comments, assign tasks in parallel, watch their reasoning and tool calls, and gate their actions with human approval.
 
-Most proactive agent products today are walled gardens. [Pulse](/posts/chatgpt-pulse) lives in ChatGPT. Orbit lives in Claude. Remy lives in the Gemini app. The agent's reach stops at the product boundary. Notion is going a different direction: the workspace is the surface, but the agents can come from anywhere.
+Most proactive agent products today are walled gardens. [Pulse](/posts/chatgpt-pulse/) lives in ChatGPT. Orbit lives in Claude. Remy lives in the Gemini app. The agent's reach stops at the product boundary. Notion is going a different direction: the workspace is the surface, but the agents can come from anywhere.
 
 For the proactive agent space, an open inbox that accepts work from multiple agent systems is a fundamentally different architecture than a closed assistant talking to itself. If the External Agents API ships with real breadth, Notion becomes the workspace where proactive agents from different providers collaborate on the same page. If it stays narrow, it's just another integration point.
 
 ## Why platform sometimes beats product
 
-I've been tracking the [proactive agent landscape](/market/proactive-agent-landscape) for a few weeks now, and most companies are shipping products. Pulse is a morning briefing. Orbit is a connected assistant. Remy is a personal agent. Each says: here's what we built, here's how it works, take it or leave it.
+I've been tracking the [proactive agent landscape](/market/proactive-agent-landscape/) for a few weeks now, and most companies are shipping products. Pulse is a morning briefing. Orbit is a connected assistant. Remy is a personal agent. Each says: here's what we built, here's how it works, take it or leave it.
 
 Notion took a different path. They shipped composable building blocks and let users wire their own proactive behavior. Workers for developers. Custom Agents for everyone else. External Agents API for the rest of the ecosystem. Each layer works on its own, but they're designed to stack.
 
 I should be honest though, platforms are harder to get started with. You have to know what you want before you build it, and most people don't. But platforms compound. When 21,000 users build Custom Agents, Notion sees which patterns emerge and feeds that back into the infrastructure. Product companies have to guess what users want and ship features. Notion lets users show them.
 
 <Callout tone="cool" label="The full scorecard">
-Clock (syncs + schedules). Listener (webhooks + event triggers). Inbox (Slack + Notion pages + External Agents API). Notion scores all three on the [landscape](/market/proactive-agent-landscape). And they're one of the few shipping all three as developer-facing primitives, not just product features.
+Clock (syncs + schedules). Listener (webhooks + event triggers). Inbox (Slack + Notion pages + External Agents API). Notion scores all three on the [landscape](/market/proactive-agent-landscape/). And they're one of the few shipping all three as developer-facing primitives, not just product features.
 </Callout>
 
 I've been saying the products that score highest are the ones with all three working together. Notion just shipped all three at both the developer layer and the user layer, and opened the door for external agents to plug in. For a company that started as a note-taking app, that's a pretty big architectural bet on where agents are headed.

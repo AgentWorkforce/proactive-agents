@@ -110,7 +110,7 @@ export default async function MarketIndex() {
           Tracking who's building proactive agents, how their architectures
           compare, and what ships next. Analysis scored against the{" "}
           <Link
-            href="/posts/three-primitives"
+            href="/posts/three-primitives/"
             className="text-terracotta underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta"
           >
             three-primitives framework

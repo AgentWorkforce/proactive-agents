@@ -8,7 +8,7 @@ dropcap: true
 
 Six months ago, nobody was really shipping proactive agents. Now every major AI lab either has one in market or has one in internal testing. The convergence is something else: OpenAI, Google, Anthropic, Meta, Perplexity, and several startups all building agents that act without being asked.
 
-This page maps the landscape through the [three-primitives framework](/posts/three-primitives): does each product have a **clock** (scheduled execution), a **listener** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
+This page maps the landscape through the [three-primitives framework](/posts/three-primitives/): does each product have a **clock** (scheduled execution), a **listener** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
 
 *Last updated: May 15, 2026.*
 
@@ -50,7 +50,7 @@ Every product on this list runs on a schedule. That's the easy primitive to buil
 
 ## The big labs
 
-**[ChatGPT Pulse](https://openai.com/index/introducing-chatgpt-pulse/) (OpenAI)** launched in September 2025 as part of ChatGPT Pro. It processes chat history, Gmail, and Google Calendar overnight, then delivers 5 to 10 personalized morning cards. The personalization is genuinely impressive. The architecture is [clock-only](/posts/chatgpt-pulse): no real-time change detection, no delivery outside the ChatGPT app.
+**[ChatGPT Pulse](https://openai.com/index/introducing-chatgpt-pulse/) (OpenAI)** launched in September 2025 as part of ChatGPT Pro. It processes chat history, Gmail, and Google Calendar overnight, then delivers 5 to 10 personalized morning cards. The personalization is genuinely impressive. The architecture is [clock-only](/posts/chatgpt-pulse/): no real-time change detection, no delivery outside the ChatGPT app.
 
 **[Orbit](https://www.testingcatalog.com/anthropic-is-working-on-orbit-its-upcoming-proactive-assistant/) (Anthropic)** was unveiled at the Code with Claude conference in May 2026. It generates proactive briefings from connected tools (Gmail, Slack, GitHub, Calendar, Drive, Figma) on a timezone-aware schedule. "Orbit apps" let users pin specific insight views. It has the listener, which puts it ahead of Pulse architecturally, though the inbox is still limited to the Claude interface.
 
@@ -66,7 +66,7 @@ Every product on this list runs on a schedule. That's the easy primitive to buil
 
 **[Writer's Playbooks](https://writer.com/blog/writer-agent-skills-playbooks-press-release/)** are event-driven enterprise workflows: listen for triggers (emails arriving, sales calls completing, files landing), then execute multi-step automations. All three primitives, focused on enterprise teams. The least consumer-visible product on this list, and potentially the most revenue-generating.
 
-**[Notion](https://www.notion.com/product/dev)** is attacking proactive agents from both sides of the stack simultaneously. [Workers](https://developers.notion.com/workers/get-started/overview) are a TypeScript SDK that gives developers three composable capabilities: `sync()` for scheduled data pulls, `webhook()` for real-time event ingestion, and `tool()` for agent-callable functions. [Custom Agents](https://www.notion.com/help/custom-agents) wrap the same architecture in a no-code layer with time-based and event-based triggers, natural language instructions, and Slack delivery. An [External Agents API](https://www.notion.com/product/dev) (alpha) opens the workspace to agents from other providers like Claude, Cursor, and Codex. Early testers built over 21,000 Custom Agents during beta. The positioning is unique on this list: Notion isn't shipping a proactive agent product, it's shipping the primitives as a platform. Deep dive in [Notion ships the primitives](/posts/notion-ships-the-primitives).
+**[Notion](https://www.notion.com/product/dev)** is attacking proactive agents from both sides of the stack simultaneously. [Workers](https://developers.notion.com/workers/get-started/overview) are a TypeScript SDK that gives developers three composable capabilities: `sync()` for scheduled data pulls, `webhook()` for real-time event ingestion, and `tool()` for agent-callable functions. [Custom Agents](https://www.notion.com/help/custom-agents) wrap the same architecture in a no-code layer with time-based and event-based triggers, natural language instructions, and Slack delivery. An [External Agents API](https://www.notion.com/product/dev) (alpha) opens the workspace to agents from other providers like Claude, Cursor, and Codex. Early testers built over 21,000 Custom Agents during beta. The positioning is unique on this list: Notion isn't shipping a proactive agent product, it's shipping the primitives as a platform. Deep dive in [Notion ships the primitives](/posts/notion-ships-the-primitives/).
 
 **[Tonkean's Proactive AI Agents](https://www.tonkean.com/platform/proactive-ai-agents)** operate across 250+ enterprise systems as autonomous digital workers. Their agents run in three modes: time-based (scheduled), signal-based (event-driven change detection), and delegation-based (human-initiated). Delivery goes through Slack, Teams, email, and directly into enterprise platforms. The positioning is explicitly proactive, with agents that monitor continuously and anticipate renewals, risks, or anomalies before teams have to ask. Tonkean focuses on enterprise process orchestration, particularly procurement and operations, which gives it the same bounded-problem advantage as Managerbot and Writer.
 
@@ -94,7 +94,7 @@ We build [Agent Relay](https://agentrelay.com), a developer SDK that provides th
 
 ## What the convergence tells us
 
-Every product on this list arrived at roughly the same architecture independently. Scheduled execution, change detection, multi-channel delivery. The [three-primitives framework](/posts/three-primitives) wasn't so much a prediction as a description of what proactive agents just need to work.
+Every product on this list arrived at roughly the same architecture independently. Scheduled execution, change detection, multi-channel delivery. The [three-primitives framework](/posts/three-primitives/) wasn't so much a prediction as a description of what proactive agents just need to work.
 
 The differences are in coverage and depth:
 
@@ -102,7 +102,7 @@ The differences are in coverage and depth:
 - **Depth**: Is the listener doing real-time event streaming or periodic polling? The user experience is completely different. A four-hour-old alert is not the same as a real-time notification.
 - **Delivery**: Can results go where the action is (Slack, email, tickets), or are they trapped in the product's own UI? Most horizontal assistants are still trapped.
 
-I think the products that nail all three at depth are the ones people will actually reorganize their workflows around. Everyone else just ships a clock and calls it done, and those end up feeling like [another tab to check](/posts/chatgpt-pulse).
+I think the products that nail all three at depth are the ones people will actually reorganize their workflows around. Everyone else just ships a clock and calls it done, and those end up feeling like [another tab to check](/posts/chatgpt-pulse/).
 
 ## What to watch next
 
