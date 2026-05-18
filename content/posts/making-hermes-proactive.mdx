@@ -1,6 +1,6 @@
 ---
 title: "Making Hermes proactive"
-summary: "Hermes can run on a schedule and respond to webhooks, but it still lacks the durable state and change detection that real proactive agents need."
+summary: "The open-source Hermes agent can run cron schedules and handle webhooks, but still lacks the change detection and durable state that proactive agents need."
 date: "2026-05-18"
 lastModified: "2026-05-18"
 accent: "sky"
@@ -15,7 +15,7 @@ Hermes does have built-in ways to move in that direction. They require more manu
 
 <Scene figure="HermesCronFigure" caption="Two triggers, one output channel.">
 
-## What's already working
+## Cron schedules and webhook endpoints
 
 Hermes has two practical mechanisms for initiative right now.
 
@@ -46,7 +46,7 @@ This is real infrastructure, not a demo. The gateway persists, the cron fires on
 
 <Scene side="right" figure="HermesGapFigure" caption="One solid, one partial, two missing.">
 
-## Where the gaps are
+## No listener, no durable state
 
 These features are useful, but they don't form the [three primitives](/posts/three-primitives) that make an agent truly proactive.
 
@@ -64,7 +64,7 @@ What Hermes can't express yet is something like: "this agent should wake on time
 
 </Scene>
 
-## Getting from here to there
+## From cron scripts to a proactive runtime
 
 What Hermes has today is a running gateway, a flexible cron system, webhooks, and persistent memory. You can build proactive behavior on top of those pieces, but you assemble them yourself. For personal or small-team uses, that covers a lot of ground: a daily digest, a Notion watcher, a Slack bot that occasionally speaks first.
 

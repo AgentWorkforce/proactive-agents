@@ -75,7 +75,7 @@ Most agents are still good at answering when spoken to and not much else. Hermes
 
 Hermes does have built-in ways to move in that direction. They require more manual setup than the clean primitives the series aims for, and they leave real gaps. Here is an honest inventory.
 
-## What's already working
+## Cron schedules and webhook endpoints
 
 Hermes has two practical mechanisms for initiative right now.
 
@@ -100,7 +100,7 @@ Combined with the persistent gateway, which stays running in the background, thi
 
 This is real infrastructure, not a demo. The gateway persists, the cron fires on time, and the agent can reach any tool it has in interactive mode. But it still feels like cron with a language model bolted on rather than an agent with native awareness of time and change.
 
-## Where the gaps are
+## No listener, no durable state
 
 These features are useful, but they don't form the [three primitives](/posts/three-primitives) that make an agent truly proactive.
 
@@ -114,7 +114,7 @@ Webhooks themselves are basic. They receive a payload and can trigger a prompt, 
 
 What Hermes can't express yet is something like: "this agent should wake on time *or* when this data changes *and* maintain this piece of state." The agents in this series aim for a single declaration that wires schedule, watch patterns, and inbox subscriptions together. Hermes has the pieces but not the grammar to compose them.
 
-## Getting from here to there
+## From cron scripts to a proactive runtime
 
 What Hermes has today is a running gateway, a flexible cron system, webhooks, and persistent memory. You can build proactive behavior on top of those pieces, but you assemble them yourself. For personal or small-team uses, that covers a lot of ground: a daily digest, a Notion watcher, a Slack bot that occasionally speaks first.
 
