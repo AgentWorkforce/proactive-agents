@@ -13,16 +13,21 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
     return json({ ok: false, error: "Newsletter not configured" }, 500);
   }
 
-  let body: { email?: string; hp?: string };
+  let raw: unknown;
   try {
-    body = (await request.json()) as { email?: string; hp?: string };
+    raw = await request.json();
   } catch {
     return json({ ok: false, error: "Invalid request" }, 400);
   }
 
+  if (typeof raw !== "object" || raw === null) {
+    return json({ ok: false, error: "Invalid request" }, 400);
+  }
+
+  const body = raw as Record<string, unknown>;
   if (body.hp) return json({ ok: false, error: "Invalid request" }, 400);
 
-  const email = body.email?.trim().toLowerCase();
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   if (!email || !isValidEmail(email)) {
     return json({ ok: false, error: "A valid email is required." }, 400);
   }

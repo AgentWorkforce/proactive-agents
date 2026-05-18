@@ -28,13 +28,13 @@ export const onRequestGet: PagesFunction<NewsletterEnv> = async (ctx) => {
 
   const url = new URL(request.url);
   const id = url.searchParams.get("id");
-  const endpoint = id ? `${BUTTONDOWN_API}/emails/${id}` : `${BUTTONDOWN_API}/emails`;
+  const endpoint = id ? `${BUTTONDOWN_API}/emails/${encodeURIComponent(id)}` : `${BUTTONDOWN_API}/emails`;
 
   const res = await fetch(endpoint, {
     headers: { Authorization: `Token ${env.BUTTONDOWN_API_KEY}` },
   });
 
-  const data = await res.json();
+  const data = await safeJson(res);
   return json({ ok: res.ok, data }, res.ok ? 200 : res.status);
 };
 
@@ -75,7 +75,7 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
       }),
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
     return json({ ok: res.ok, data }, res.ok ? 201 : res.status);
   }
 
@@ -83,7 +83,7 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
     const id = body.id as string;
     if (!id) return json({ ok: false, error: "id is required to send" }, 400);
 
-    const res = await fetch(`${BUTTONDOWN_API}/emails/${id}`, {
+    const res = await fetch(`${BUTTONDOWN_API}/emails/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: {
         Authorization: `Token ${env.BUTTONDOWN_API_KEY}`,
@@ -92,12 +92,20 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
       body: JSON.stringify({ status: "about_to_send" }),
     });
 
-    const data = await res.json();
+    const data = await safeJson(res);
     return json({ ok: res.ok, data }, res.ok ? 200 : res.status);
   }
 
   return json({ ok: false, error: 'action must be "create" or "send"' }, 400);
 };
+
+async function safeJson(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

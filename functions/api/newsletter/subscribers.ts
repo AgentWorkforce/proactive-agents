@@ -29,14 +29,14 @@ export const onRequestGet: PagesFunction<NewsletterEnv> = async (ctx) => {
   const id = url.searchParams.get("id");
 
   const endpoint = id
-    ? `${BUTTONDOWN_API}/subscribers/${id}`
+    ? `${BUTTONDOWN_API}/subscribers/${encodeURIComponent(id)}`
     : `${BUTTONDOWN_API}/subscribers${url.search}`;
 
   const res = await fetch(endpoint, {
     headers: { Authorization: `Token ${env.BUTTONDOWN_API_KEY}` },
   });
 
-  const data = await res.json();
+  const data = await safeJson(res);
   return json({ ok: res.ok, data }, res.ok ? 200 : res.status);
 };
 
@@ -51,13 +51,13 @@ export const onRequestDelete: PagesFunction<NewsletterEnv> = async (ctx) => {
   const id = url.searchParams.get("id");
   if (!id) return json({ ok: false, error: "id query param required" }, 400);
 
-  const res = await fetch(`${BUTTONDOWN_API}/subscribers/${id}`, {
+  const res = await fetch(`${BUTTONDOWN_API}/subscribers/${encodeURIComponent(id)}`, {
     method: "DELETE",
     headers: { Authorization: `Token ${env.BUTTONDOWN_API_KEY}` },
   });
 
   if (res.status === 204) return json({ ok: true });
-  const data = await res.json().catch(() => ({}));
+  const data = await safeJson(res);
   return json({ ok: false, data }, res.status);
 };
 
@@ -79,7 +79,7 @@ export const onRequestPatch: PagesFunction<NewsletterEnv> = async (ctx) => {
     return json({ ok: false, error: "Invalid JSON" }, 400);
   }
 
-  const res = await fetch(`${BUTTONDOWN_API}/subscribers/${id}`, {
+  const res = await fetch(`${BUTTONDOWN_API}/subscribers/${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: {
       Authorization: `Token ${env.BUTTONDOWN_API_KEY}`,
@@ -88,9 +88,17 @@ export const onRequestPatch: PagesFunction<NewsletterEnv> = async (ctx) => {
     body: JSON.stringify(body),
   });
 
-  const data = await res.json();
+  const data = await safeJson(res);
   return json({ ok: res.ok, data }, res.ok ? 200 : res.status);
 };
+
+async function safeJson(res: Response): Promise<unknown> {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

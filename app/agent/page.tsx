@@ -110,12 +110,14 @@ export default async function AgentPage() {
         </h1>
         <Squiggle className="mt-6 h-3 w-40 opacity-70" />
         <p className="mt-8 font-serif text-lg leading-relaxed text-ink-soft">
-          Proactive agents run pieces of this site &mdash; for now, one of them
-          does. The <em>weekly digest</em> agent wakes every Saturday, scans
-          the web and Reddit for proactive-agent mentions, clusters what it
-          finds, and files a single GitHub issue. The other agents in the
-          roster are scaffolded but not yet wired to a runtime; they&rsquo;ll
-          appear here as they come online.
+          Proactive agents run pieces of this site. The{" "}
+          <em>weekly digest</em> agent wakes every Saturday, scans the web and
+          Reddit for proactive-agent mentions, clusters what it finds, and
+          files a single GitHub issue. The <em>newsletter drafter</em> runs
+          every Sunday, packages the week&rsquo;s essays, market updates, and
+          web mentions into a Buttondown draft, then opens a review issue. The
+          remaining agents in the roster are scaffolded but not yet wired to a
+          runtime; they&rsquo;ll appear here as they come online.
         </p>
         <p className="mt-3 font-serif text-base leading-relaxed text-ink-faint">
           A reactive agent fires when called. A proactive agent has to{" "}
