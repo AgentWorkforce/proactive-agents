@@ -64,14 +64,21 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
 
   // A blocked or invalid address is a client-side condition, not an upstream
   // outage. Return 400 so Cloudflare doesn't replace it with its 502 page.
+  // Buttondown returns these as either 400 or 422 depending on the rule.
   if (
-    res.status === 400 &&
+    (res.status === 400 || res.status === 422) &&
     errorMessages.some((m) => m.includes("blocked") || m.includes("invalid"))
   ) {
     return json({ ok: false, error: "That email address can't be subscribed." }, 400);
   }
 
-  console.error("[newsletter/subscribe] Buttondown error", res.status, JSON.stringify(data));
+  // Log status and Buttondown's error codes only — never the raw payload,
+  // which echoes the submitted email address.
+  console.error(
+    "[newsletter/subscribe] Buttondown error",
+    res.status,
+    extractCodes(data).join(",") || "(no code)",
+  );
   return json({ ok: false, error: "Could not subscribe. Please try again." }, 502);
 };
 
@@ -102,6 +109,24 @@ function extractErrors(value: unknown): string[] {
   };
   visit(value);
   return messages;
+}
+
+// Pull only Buttondown's machine error codes (e.g. "subscriber_blocked",
+// "field_renamed") for logging. These are non-PII, unlike `detail`, which
+// echoes the submitted email.
+function extractCodes(value: unknown): string[] {
+  const codes: string[] = [];
+  const visit = (v: unknown) => {
+    if (Array.isArray(v)) {
+      for (const item of v) visit(item);
+    } else if (v && typeof v === "object") {
+      const obj = v as Record<string, unknown>;
+      if (typeof obj.code === "string") codes.push(obj.code);
+      for (const item of Object.values(obj)) visit(item);
+    }
+  };
+  visit(value);
+  return codes;
 }
 
 function corsHeaders(): Record<string, string> {
