@@ -2,7 +2,7 @@
 title: "A code review agent in three acts"
 summary: "From webhook-triggered PR reviewer to multi-surface to always-watching. Each phase taught us what proactive agents need."
 date: "2026-05-12"
-lastModified: "2026-05-15"
+lastModified: "2026-05-18"
 accent: "peach"
 dropcap: true
 ---
@@ -111,7 +111,7 @@ Act 2 introduced message routing (deliver to Slack, Telegram, desktop) but I sti
 
 By Act 3, all three were load-bearing: periodic scanning, real-time event detection, multi-surface delivery. And underneath those, the durability layer: checkpointing, idempotency, scoped auth, retry with backoff. The stuff described in [what makes proactive agents hard to build](/posts/why-proactive-is-hard/).
 
-I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. [PostHog Code](/posts/posthog-code/) is an interesting contrast: it has the richest context of any coding agent, but the same missing infrastructure underneath. That's what convinced me the primitives were structural, not just a convenient grouping.
+I didn't set out to validate a framework. I set out to build a good code reviewer. But every time I tried to make the reviewer more useful, it kept pointing at the same three missing pieces. [PostHog Code](/posts/posthog-code/) is an interesting contrast: it has the richest context of any coding agent, but the same missing infrastructure underneath. That's what convinced me the primitives were structural, not just a convenient grouping. A recent [empirical study of proactive coding assistants](https://arxiv.org/html/2605.05700v1) is starting to put numbers on what I've been seeing from the product side. Proactive suggestions in real dev workflows face the same timing and context challenges whether you're building a code reviewer or an IDE copilot.
 
 If I'm being honest, I probably couldn't have designed the runtime without a product that kept showing me what was missing. The product and the infrastructure grew up together.
 

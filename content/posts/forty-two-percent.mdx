@@ -2,7 +2,7 @@
 title: "What forty-two percent tells us"
 summary: "The first realistic benchmark for proactive agents shows a 42% success ceiling. The models that win speak up least."
 date: "2026-05-14"
-lastModified: "2026-05-15"
+lastModified: "2026-05-18"
 accent: "sky"
 dropcap: true
 ---
@@ -90,6 +90,8 @@ Two robustness experiments round out the picture. Claude holds steady at 40-45% 
 The PARE benchmark is open source at [github.com/deepakn97/pare](https://github.com/deepakn97/pare), and the findings point in several directions that matter for anyone building proactive agents today.
 
 The [cost structure we've been tracking](/posts/what-proactive-agents-cost/) maps directly onto these results. The paper's "read actions" are the context-loading phase that generates most token spend. The observe-then-execute split is the model cascade that cost-conscious teams have converged on independently. The turns where the agent watches and decides not to act are the empty wake-ups that show up on the invoice. PARE gives controlled measurements of how these costs translate to outcomes.
+
+PARE isn't the only benchmark showing up either. [ProVoice-Bench](https://arxiv.org/abs/2604.15037) tackles the same question for voice agents: when should an assistant jump into a conversation without being asked? The same patience-over-eagerness pattern keeps showing up. Agents that interrupt less but more accurately outperform the eager ones, regardless of modality.
 
 The 42% ceiling will move. Models will get better, benchmarks will expand, and the evaluation will get harder. But the structural insight is durable: proactive assistance is a timing and judgment problem at least as much as a capability problem. The models that watch carefully, gather sufficient context, and speak up only when they have something specific and correct to say will continue to outperform the ones that try to help at every opportunity.
 
