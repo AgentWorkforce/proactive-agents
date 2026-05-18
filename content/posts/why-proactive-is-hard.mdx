@@ -2,7 +2,7 @@
 title: "What makes proactive agents hard to build"
 summary: "Proactive agents look simple in demos. In production, three problems compound: knowing when to wake up, remembering across runs, and knowing when to stay quiet."
 date: "2026-05-11"
-lastModified: "2026-05-15"
+lastModified: "2026-05-18"
 accent: "lavender"
 dropcap: true
 ---
@@ -51,7 +51,7 @@ A proactive agent runs over and over, and each run needs to know what the previo
 
 Most teams fake state with workarounds. A `lastRun` timestamp to skip old records. A JSON blob that gets stuffed into the next prompt. A Jira ticket used as a bookmark. These all feel reasonable when you set them up. But timestamps reset during deploys. JSON drifts from reality and the agent starts reasoning about stale data. And if anyone touches the bookmark without knowing the agent depends on it, things get weird fast.
 
-What we found actually works is structured persistent state with a real API for reading and writing, conflict detection on concurrent access, and change events. Something that feels more like a filesystem than a database. I go deeper on that in [Proactive agents need three primitives](/posts/three-primitives/).
+What we found actually works is structured persistent state with a real API for reading and writing, conflict detection on concurrent access, and change events. Something that feels more like a filesystem than a database. I go deeper on that in [Proactive agents need three primitives](/posts/three-primitives/). The [PASK framework](https://arxiv.org/html/2604.08000v1) from recent research gets at the same thing from the academic side. They split agent memory into workspace memory (what's happening right now) and global memory (patterns from past sessions). Different implementation, but the core insight matches: an agent that forgets between runs can't build the context it needs to act well.
 
 </Scene>
 
@@ -63,7 +63,7 @@ Wakeup and memory are engineering problems. Throw enough time at them and you'll
 
 When should the agent act on its own? When should it flag a human? When should it just be quiet?
 
-With a chatbot, the user is always right there. They ask, they get an answer, and if the answer is wrong they ignore it and move on. With a proactive agent, that safety net is gone. If it closes a ticket that should have stayed open, or pages the on-call engineer for something that wasn't actually a problem, the damage happens before anyone gets a chance to weigh in. And it doesn't take a lot of mistakes. I've heard from multiple teams that one bad action in a week of correct ones is enough for people to start talking about turning the whole thing off. The [PARE benchmark](/posts/forty-two-percent/) later quantified this: the agents that propose less often but more accurately outperform the eager ones.
+With a chatbot, the user is always right there. They ask, they get an answer, and if the answer is wrong they ignore it and move on. With a proactive agent, that safety net is gone. If it closes a ticket that should have stayed open, or pages the on-call engineer for something that wasn't actually a problem, the damage happens before anyone gets a chance to weigh in. And it doesn't take a lot of mistakes. I've heard from multiple teams that one bad action in a week of correct ones is enough for people to start talking about turning the whole thing off. The [PARE benchmark](/posts/forty-two-percent/) later quantified this: the agents that propose less often but more accurately outperform the eager ones. [ValuePlanner](https://arxiv.org/abs/2604.27699) takes a more formal approach, building a hierarchy where the agent reasons about whether an action aligns with the user's stated goals before committing. It's an academic framing of something I keep hearing from teams in practice: show your reasoning before you act.
 
 For every change the agent picks up, it has to choose: act on it (confident, low risk), flag a human (not sure enough or stakes too high), or just log it quietly for future context. If it flags everything it turns into a notification firehose that everyone mutes. If it acts on everything it's eventually going to do something expensive. I've been surprised by how much product iteration it takes to find a good balance between those two.
 
