@@ -32,11 +32,12 @@ jobs:
         run: npm run build
 
       - name: Sync secrets to Cloudflare Pages
-        if: ${{ secrets.BUTTONDOWN_API_KEY != '' }}
+        if: ${{ env.BUTTONDOWN_API_KEY != '' }}
         env:
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: echo "${{ secrets.BUTTONDOWN_API_KEY }}" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name=proactive-agents
+        run: echo "$BUTTONDOWN_API_KEY" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name=proactive-agents
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

@@ -22,4 +22,9 @@ export const SCHEDULES: AgentSchedule[] = [
     cron: "0 9 * * 6",
     tz: "UTC",
   },
+  {
+    agentName: "newsletter-drafter",
+    cron: "0 10 * * 0",
+    tz: "UTC",
+  },
 ];

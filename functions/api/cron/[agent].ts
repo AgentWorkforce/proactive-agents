@@ -13,6 +13,7 @@
  */
 import weeklyDigest, { setEnv as setWeeklyDigestEnv } from "../../../agents/weekly-digest/agent";
 import notionToBlog, { setEnv as setNotionToBlogEnv } from "../../../agents/notion-to-blog/agent";
+import newsletterDrafter, { setEnv as setNewsletterDrafterEnv } from "../../../agents/newsletter-drafter/agent";
 import { makeCloudflareContext, type CfEnv } from "../../../agents/shared/runtime/cloudflare-context";
 import type { AgentEvent, AgentHandleWithDef } from "../../../agents/shared/sdk";
 
@@ -30,6 +31,11 @@ const REGISTRY: Record<
   "notion-to-blog": {
     handle: notionToBlog,
     setEnv: setNotionToBlogEnv,
+    workspace: "proactive-agents",
+  },
+  "newsletter-drafter": {
+    handle: newsletterDrafter,
+    setEnv: setNewsletterDrafterEnv,
     workspace: "proactive-agents",
   },
 };

@@ -13,6 +13,7 @@
  */
 
 import type { CfEnv } from "../../../agents/shared/runtime/cloudflare-context";
+import { verifyCronSecret } from "../../shared/auth";
 
 type NewsletterEnv = CfEnv & { BUTTONDOWN_API_KEY: string };
 
@@ -20,7 +21,9 @@ const BUTTONDOWN_API = "https://api.buttondown.com/v1";
 
 export const onRequestGet: PagesFunction<NewsletterEnv> = async (ctx) => {
   const { request, env } = ctx;
-  if (!authorize(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
+  if (!(await verifyCronSecret(request, env.CRON_WEBHOOK_SECRET))) {
+    return json({ ok: false, error: "unauthorized" }, 401);
+  }
   if (!env.BUTTONDOWN_API_KEY) return json({ ok: false, error: "BUTTONDOWN_API_KEY not set" }, 500);
 
   const url = new URL(request.url);
@@ -37,7 +40,9 @@ export const onRequestGet: PagesFunction<NewsletterEnv> = async (ctx) => {
 
 export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
   const { request, env } = ctx;
-  if (!authorize(request, env)) return json({ ok: false, error: "unauthorized" }, 401);
+  if (!(await verifyCronSecret(request, env.CRON_WEBHOOK_SECRET))) {
+    return json({ ok: false, error: "unauthorized" }, 401);
+  }
   if (!env.BUTTONDOWN_API_KEY) return json({ ok: false, error: "BUTTONDOWN_API_KEY not set" }, 500);
 
   let body: Record<string, unknown>;
@@ -93,19 +98,6 @@ export const onRequestPost: PagesFunction<NewsletterEnv> = async (ctx) => {
 
   return json({ ok: false, error: 'action must be "create" or "send"' }, 400);
 };
-
-function authorize(request: Request, env: NewsletterEnv): boolean {
-  const secret = request.headers.get("x-cron-secret");
-  if (!secret || !env.CRON_WEBHOOK_SECRET) return false;
-  return timingSafeEqual(secret, env.CRON_WEBHOOK_SECRET);
-}
-
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  return diff === 0;
-}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

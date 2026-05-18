@@ -7,6 +7,7 @@ export type Outcome = "success" | "skipped" | "error";
 export type AgentName =
   | "notion-to-blog"
   | "weekly-digest"
+  | "newsletter-drafter"
   | "sunday-ping"
   | "pr-reviewer"
   | "manual-chatbot";
@@ -55,6 +56,13 @@ export const AGENT_META: Record<
     trigger: "time",
     blurb: "Searches the web + Reddit for proactive-agent mentions; files one rolling issue.",
     accent: "butter",
+    status: "live",
+  },
+  "newsletter-drafter": {
+    title: "Newsletter drafter",
+    trigger: "time",
+    blurb: "Collects the week's essays, market updates, and web mentions; drafts a Buttondown newsletter.",
+    accent: "sky",
     status: "live",
   },
   "notion-to-blog": {

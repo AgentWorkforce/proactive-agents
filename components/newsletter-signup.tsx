@@ -22,11 +22,14 @@ export function NewsletterSignup({
     if (!email) return;
     setStatus("loading");
 
+    const form = e.target as HTMLFormElement;
+    const hp = (form.elements.namedItem("hp") as HTMLInputElement)?.value ?? "";
+
     try {
       const res = await fetch("/api/newsletter/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, hp }),
       });
       const data = (await res.json()) as {
         ok: boolean;
