@@ -65,26 +65,19 @@ export default async function AgentPage() {
   const log = await getAgentLog();
   const grouped = groupByDay(log);
 
-  // Stats: this calendar week (Sunday → today)
-  const now = new Date();
-  const weekStart = new Date(now);
-  weekStart.setDate(now.getDate() - now.getDay());
-  weekStart.setHours(0, 0, 0, 0);
-  const thisWeek = log.filter((e) => new Date(e.timestamp) >= weekStart);
-
   const stats = [
-    { label: thisWeek.length === 1 ? "Action this week" : "Actions this week", value: thisWeek.length },
+    { label: log.length === 1 ? "Total action" : "Total actions", value: log.length },
     {
       label: "Time-triggered",
-      value: thisWeek.filter((e) => e.trigger === "time").length,
+      value: log.filter((e) => e.trigger === "time").length,
     },
     {
       label: "Change-triggered",
-      value: thisWeek.filter((e) => e.trigger === "change").length,
+      value: log.filter((e) => e.trigger === "change").length,
     },
     {
       label: "Message-triggered",
-      value: thisWeek.filter((e) => e.trigger === "message").length,
+      value: log.filter((e) => e.trigger === "message").length,
     },
   ];
 
