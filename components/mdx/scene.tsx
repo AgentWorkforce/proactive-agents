@@ -37,10 +37,12 @@ export function Scene({
       >
         <div className="lg:sticky lg:top-24">
           <div
-            className="group cursor-pointer rounded-3xl border border-rule bg-paper-deep/40 p-6 transition-shadow hover:shadow-lg"
+            className="group cursor-pointer overflow-hidden rounded-3xl border border-rule bg-paper-deep/40 p-6 transition-shadow hover:shadow-lg"
             onClick={() => dialogRef.current?.showModal()}
           >
-            {FigureComponent ? <FigureComponent /> : null}
+            <div className="mx-auto max-w-[280px] sm:max-w-xs lg:max-w-none">
+              {FigureComponent ? <FigureComponent /> : null}
+            </div>
             {caption && (
               <p className="mt-4 border-t border-rule/60 pt-3 font-display text-xs uppercase tracking-[0.22em] text-ink-faint">
                 {caption}

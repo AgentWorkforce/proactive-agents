@@ -66,6 +66,12 @@ import {
   RemyComparisonFigure,
   HermesCronFigure,
   HermesGapFigure,
+  TriageSignalFigure,
+  TriageManagerFigure,
+  TriagePlaybookFigure,
+  JuniorIdentityFigure,
+  JuniorSurveillanceFigure,
+  JuniorMemoryFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -137,6 +143,12 @@ export const mdxComponents = {
   RemyComparisonFigure,
   HermesCronFigure,
   HermesGapFigure,
+  TriageSignalFigure,
+  TriageManagerFigure,
+  TriagePlaybookFigure,
+  JuniorIdentityFigure,
+  JuniorSurveillanceFigure,
+  JuniorMemoryFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"
