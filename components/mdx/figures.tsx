@@ -3242,6 +3242,304 @@ export function HermesCronFigure() {
   );
 }
 
+export function TriageSignalFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="triage-signal-title">
+      <title id="triage-signal-title">Seven signal sources converging into an investigation pipeline</title>
+      <defs>
+        <radialGradient id="tsgrad" cx="50%" cy="45%" r="50%">
+          <stop offset="0%" stopColor={C.rose} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={C.peach} stopOpacity="0.15" />
+        </radialGradient>
+      </defs>
+      {/* Central investigation node */}
+      <circle cx="160" cy="160" r="36" fill="url(#tsgrad)" stroke={C.ink} strokeWidth="1.5" />
+      <circle cx="160" cy="160" r="18" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="164" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>triage</text>
+      {/* Signal sources arranged in a semicircle above */}
+      {[
+        { label: "Slack", angle: -140 },
+        { label: "Linear", angle: -110 },
+        { label: "GitHub", angle: -80 },
+        { label: "Sentry", angle: -50 },
+        { label: "Datadog", angle: -20 },
+        { label: "PD", angle: 10 },
+        { label: "hooks", angle: 40 },
+      ].map(({ label, angle }, i) => {
+        const rad = (angle * Math.PI) / 180;
+        const r = 110;
+        const cx = 160 + Math.cos(rad) * r;
+        const cy = 160 + Math.sin(rad) * r;
+        const ix = 160 + Math.cos(rad) * 38;
+        const iy = 160 + Math.sin(rad) * 38;
+        return (
+          <g key={i}>
+            <line x1={cx} y1={cy} x2={ix} y2={iy} stroke={C.faint} strokeWidth="1" strokeDasharray="3 3" />
+            <circle cx={cx} cy={cy} r="14" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+            <text x={cx} y={cy + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{label}</text>
+          </g>
+        );
+      })}
+      {/* Output arrows below */}
+      <g stroke={C.terracotta} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="140" y1="198" x2="110" y2="250" />
+        <path d="M106 242 L110 252 L118 246" />
+        <line x1="180" y1="198" x2="210" y2="250" />
+        <path d="M202 246 L210 252 L214 242" />
+      </g>
+      <text x="110" y="268" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>PR</text>
+      <text x="210" y="268" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>summary</text>
+      <text x="160" y="305" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        seven sources → one pipeline
+      </text>
+    </svg>
+  );
+}
+
+export function TriageManagerFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="triage-manager-title">
+      <title id="triage-manager-title">Manager agent holds context while spawning sub-agents for parallel investigation</title>
+      <defs>
+        <radialGradient id="tmgrad" cx="50%" cy="35%" r="50%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.4" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.15" />
+        </radialGradient>
+      </defs>
+      {/* Manager agent — top */}
+      <circle cx="160" cy="80" r="34" fill="url(#tmgrad)" stroke={C.ink} strokeWidth="1.5" />
+      <circle cx="160" cy="80" r="18" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="76" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>manager</text>
+      <text x="160" y="86" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>memory</text>
+      {/* Memory ring */}
+      <circle cx="160" cy="80" r="28" fill="none" stroke={C.plum} strokeWidth="0.8" strokeDasharray="4 3" opacity="0.6" />
+      {/* Sub-agents below */}
+      {[
+        { x: 70, label: "sub-1" },
+        { x: 160, label: "sub-2" },
+        { x: 250, label: "sub-3" },
+      ].map(({ x, label }, i) => (
+        <g key={i}>
+          <line x1="160" y1="114" x2={x} y2="180" stroke={C.faint} strokeWidth="1" strokeDasharray="4 3" />
+          <circle cx={x} cy="200" r="22" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+          <text x={x} y="203" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{label}</text>
+          {/* Sandboxed env indicator */}
+          <rect x={x - 16} y={225} width="32" height="14" rx="3" fill="none" stroke={C.rule} strokeWidth="0.8" />
+          <text x={x} y={235} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5.5" fill={C.faint}>sandbox</text>
+        </g>
+      ))}
+      {/* Arrow tips on manager → sub-agent lines */}
+      <g stroke={C.terracotta} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M78 172 L70 182 L80 180" />
+        <path d="M158 172 L160 182 L162 172" />
+        <path d="M242 172 L250 182 L240 180" />
+      </g>
+      <text x="160" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        coordinate once, investigate in parallel
+      </text>
+    </svg>
+  );
+}
+
+export function TriagePlaybookFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="triage-playbook-title">
+      <title id="triage-playbook-title">A triage playbook encodes investigation steps that bound the agent's judgment</title>
+      {/* Playbook document */}
+      <rect x="40" y="30" width="140" height="180" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+      <rect x="40" y="30" width="140" height="26" rx="6" fill={C.rose} opacity="0.25" stroke="none" />
+      <text x="110" y="47" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>playbook</text>
+      {/* Steps inside the playbook */}
+      {[
+        { y: 72, text: "1. search codebase", w: 95 },
+        { y: 92, text: "2. check git history", w: 100 },
+        { y: 112, text: "3. pull error logs", w: 88 },
+        { y: 132, text: "4. verify data state", w: 96 },
+        { y: 152, text: "5. trace breaking commit", w: 110 },
+        { y: 172, text: "6. write fix + test", w: 90 },
+      ].map(({ y, text, w }, i) => (
+        <g key={i}>
+          <rect x="55" y={y - 8} width={w} height="14" rx="2" fill={i < 5 ? C.sage : C.butter} opacity="0.2" stroke="none" />
+          <text x="60" y={y + 2} fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{text}</text>
+        </g>
+      ))}
+      {/* Arrow from playbook to agent */}
+      <g stroke={C.terracotta} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="180" y1="120" x2="220" y2="120" />
+        <path d="M214 114 L222 120 L214 126" />
+      </g>
+      {/* Agent circle */}
+      <circle cx="260" cy="120" r="30" fill={C.sky} opacity="0.2" stroke={C.ink} strokeWidth="1.2" />
+      <text x="260" y="116" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>agent</text>
+      <text x="260" y="128" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>bounded</text>
+      {/* Result outputs */}
+      <g stroke={C.faint} strokeWidth="1" strokeDasharray="3 3">
+        <line x1="260" y1="152" x2="230" y2="230" />
+        <line x1="260" y1="152" x2="260" y2="230" />
+        <line x1="260" y1="152" x2="290" y2="230" />
+      </g>
+      <circle cx="230" cy="240" r="10" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+      <text x="230" y="243" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5.5" fill={C.ink}>PR</text>
+      <circle cx="260" cy="240" r="10" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+      <text x="260" y="243" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5" fill={C.ink}>assign</text>
+      <circle cx="290" cy="240" r="10" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+      <text x="290" y="243" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5" fill={C.ink}>report</text>
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        judgment bounded by process
+      </text>
+    </svg>
+  );
+}
+
+export function JuniorIdentityFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="junior-id-title">
+      <title id="junior-id-title">An AI employee with full organizational identity: email, calendar, phone, and chat profile</title>
+      <defs>
+        <radialGradient id="jigrad" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={C.rose} stopOpacity="0.15" />
+        </radialGradient>
+      </defs>
+      {/* Central employee node */}
+      <circle cx="160" cy="140" r="44" fill="url(#jigrad)" stroke={C.ink} strokeWidth="1.5" />
+      <circle cx="160" cy="140" r="22" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+      <text x="160" y="136" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>AI</text>
+      <text x="160" y="147" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>employee</text>
+      {/* Identity attributes radiating outward */}
+      {[
+        { label: "email", angle: -90, icon: "✉" },
+        { label: "calendar", angle: -30, icon: "📅" },
+        { label: "phone", angle: 30, icon: "☎" },
+        { label: "Slack", angle: 90, icon: "💬" },
+        { label: "memory", angle: 150, icon: "🧠" },
+        { label: "roles", angle: 210, icon: "⚙" },
+      ].map(({ label, angle }, i) => {
+        const rad = (angle * Math.PI) / 180;
+        const r = 85;
+        const cx = 160 + Math.cos(rad) * r;
+        const cy = 140 + Math.sin(rad) * r;
+        const ix = 160 + Math.cos(rad) * 46;
+        const iy = 140 + Math.sin(rad) * 46;
+        return (
+          <g key={i}>
+            <line x1={ix} y1={iy} x2={cx} y2={cy} stroke={C.faint} strokeWidth="0.8" strokeDasharray="3 3" />
+            <circle cx={cx} cy={cy} r="18" fill={C.paper} stroke={C.ink} strokeWidth="1" />
+            <text x={cx} y={cy + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{label}</text>
+          </g>
+        );
+      })}
+      <text x="160" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        identity is the product
+      </text>
+    </svg>
+  );
+}
+
+export function JuniorSurveillanceFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="junior-surv-title">
+      <title id="junior-surv-title">The gap between proactive monitoring and organizational surveillance</title>
+      {/* Spectrum bar */}
+      <rect x="40" y="60" width="240" height="8" rx="4" fill={C.rule} />
+      <rect x="40" y="60" width="240" height="8" rx="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+      {/* Gradient fill from sage (helpful) to rose (surveillance) */}
+      <defs>
+        <linearGradient id="survgrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.rose} stopOpacity="0.8" />
+        </linearGradient>
+      </defs>
+      <rect x="40" y="60" width="240" height="8" rx="4" fill="url(#survgrad)" />
+      <text x="40" y="52" fontFamily="var(--font-mono)" fontSize="7" fill={C.moss}>helpful</text>
+      <text x="280" y="52" textAnchor="end" fontFamily="var(--font-mono)" fontSize="7" fill={C.plum}>surveillance</text>
+      {/* Product positions on the spectrum */}
+      {[
+        { label: "auto-triage", x: 90, desc: "bounded by\nplaybooks" },
+        { label: "Remy", x: 160, desc: "tiered\nautonomy" },
+        { label: "Junior", x: 240, desc: "broad\nautonomy" },
+      ].map(({ label, x, desc }, i) => (
+        <g key={i}>
+          <line x1={x} y1="68" x2={x} y2="100" stroke={C.ink} strokeWidth="1" />
+          <circle cx={x} cy="64" r="4" fill={C.ink} />
+          <text x={x} y="115" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>{label}</text>
+          {desc.split("\n").map((line, j) => (
+            <text key={j} x={x} y={130 + j * 11} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>{line}</text>
+          ))}
+        </g>
+      ))}
+      {/* The human-only channel illustration */}
+      <g transform="translate(160, 210)">
+        <rect x="-80" y="-20" width="160" height="50" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+        <text x="0" y="-5" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>#human-only</text>
+        <text x="0" y="8" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>no AI access</text>
+        {/* X mark for Junior */}
+        <g transform="translate(60, -10)" stroke={C.plum} strokeWidth="1.5" strokeLinecap="round">
+          <line x1="-5" y1="-5" x2="5" y2="5" />
+          <line x1="5" y1="-5" x2="-5" y2="5" />
+        </g>
+        {/* People dots */}
+        {[-40, -20, 0, 20].map((dx, i) => (
+          <circle key={i} cx={dx} cy="20" r="3" fill={C.ink} opacity="0.4" />
+        ))}
+      </g>
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        the team adapted around the agent
+      </text>
+    </svg>
+  );
+}
+
+export function JuniorMemoryFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="junior-mem-title">
+      <title id="junior-mem-title">Persistent organizational memory that spans every conversation, team, and project</title>
+      <defs>
+        <radialGradient id="jmgrad" cx="50%" cy="45%" r="50%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.15" />
+        </radialGradient>
+      </defs>
+      {/* Memory store — large rounded rect */}
+      <rect x="30" y="40" width="260" height="200" rx="12" fill="url(#jmgrad)" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="65" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>organizational memory</text>
+      <line x1="50" y1="75" x2="270" y2="75" stroke={C.rule} strokeWidth="0.8" />
+      {/* Team channels feeding into memory */}
+      {[
+        { label: "#sales", x: 80, y: 105 },
+        { label: "#eng", x: 160, y: 105 },
+        { label: "#ops", x: 240, y: 105 },
+      ].map(({ label, x, y }, i) => (
+        <g key={i}>
+          <rect x={x - 28} y={y - 10} width="56" height="20" rx="4" fill={C.paper} stroke={C.ink} strokeWidth="0.8" />
+          <text x={x} y={y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{label}</text>
+        </g>
+      ))}
+      {/* Cross-links between channels */}
+      <g stroke={C.terracotta} strokeWidth="0.8" strokeDasharray="3 3" opacity="0.6">
+        <path d="M108 105 Q 120 140 152 105" fill="none" />
+        <path d="M188 105 Q 200 140 232 105" fill="none" />
+        <path d="M108 115 Q 160 165 232 115" fill="none" />
+      </g>
+      {/* Decisions / knowledge nodes */}
+      {[
+        { label: "decision: Q1 pricing", x: 110, y: 165 },
+        { label: "owner: billing → eng", x: 210, y: 165 },
+        { label: "blocker: API migration", x: 140, y: 195 },
+        { label: "contact: new lead", x: 220, y: 195 },
+      ].map(({ label, x, y }, i) => (
+        <g key={i}>
+          <rect x={x - 50} y={y - 8} width="100" height="16" rx="3" fill={C.paper} stroke={C.rule} strokeWidth="0.6" />
+          <text x={x} y={y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5.5" fill={C.faint}>{label}</text>
+        </g>
+      ))}
+      <text x="160" y="275" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>
+        every conversation becomes context
+      </text>
+    </svg>
+  );
+}
+
 export function HermesGapFigure() {
   return (
     <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="hermes-gap-title">

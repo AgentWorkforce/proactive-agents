@@ -33,6 +33,8 @@ const SLUGS: Record<string, React.ComponentType> = {
   "every-tool-ships-an-agent": EveryToolAgentArt,
   "google-remy-background-agent": RemyBackgroundArt,
   "making-hermes-proactive": HermesProactiveArt,
+  "devin-auto-triage": DevinTriageArt,
+  "junior-so-ai-employee": JuniorEmployeeArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -1111,6 +1113,91 @@ function RemyBackgroundArt() {
           <circle r="52" strokeWidth="0.8" strokeDasharray="4 4" />
           {/* 24/7 label */}
           <text y="2" textAnchor="middle" fontFamily="inherit" fontSize="8" fill={C.ink} strokeWidth="0">24/7</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function JuniorEmployeeArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Central person-like node */}
+          <circle r="14" strokeWidth="1.8" />
+          <circle r="2" fill={C.ink} stroke="none" />
+          {/* Identity lines radiating out */}
+          {[-90, -30, 30, 90, 150, 210].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const x1 = Math.cos(rad) * 16;
+            const y1 = Math.sin(rad) * 16;
+            const x2 = Math.cos(rad) * 42;
+            const y2 = Math.sin(rad) * 42;
+            return (
+              <g key={i}>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth="0.8" strokeDasharray="2 3" />
+                <circle cx={x2} cy={y2} r="6" fill={C.ink} stroke="none" opacity="0.3" />
+              </g>
+            );
+          })}
+          {/* Eye / watching indicator */}
+          <ellipse cx="0" cy="-1" rx="5" ry="3" strokeWidth="1.2" />
+          <circle cx="0" cy="-1" r="1.2" fill={C.ink} stroke="none" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function DevinTriageArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Central triage node */}
+          <circle r="18" strokeWidth="1.8" />
+          <circle r="2.5" fill={C.ink} stroke="none" />
+          {/* Signal lines converging from left */}
+          {[-35, -15, 5, 25, 45].map((y, i) => (
+            <g key={i}>
+              <line x1={-70} y1={y - 15} x2={-20} y2={0} strokeWidth="1" />
+              <circle cx={-70} cy={y - 15} r="3" fill={C.ink} stroke="none" />
+            </g>
+          ))}
+          {/* Output arrows to the right */}
+          <line x1="20" y1="-8" x2="55" y2="-20" strokeWidth="1.4" />
+          <line x1="20" y1="8" x2="55" y2="20" strokeWidth="1.4" />
+          {/* PR rectangle */}
+          <rect x="55" y="-30" width="24" height="18" rx="3" strokeWidth="1.3" />
+          <line x1="60" y1="-24" x2="74" y2="-24" strokeWidth="0.7" />
+          <line x1="60" y1="-18" x2="70" y2="-18" strokeWidth="0.7" />
+          {/* Summary rectangle */}
+          <rect x="55" y="12" width="24" height="18" rx="3" strokeWidth="1.3" />
+          <line x1="60" y1="18" x2="74" y2="18" strokeWidth="0.7" />
+          <line x1="60" y1="24" x2="70" y2="24" strokeWidth="0.7" />
+          {/* Memory ring */}
+          <circle r="26" strokeWidth="0.8" strokeDasharray="3 3" />
         </g>
       </g>
     </svg>
