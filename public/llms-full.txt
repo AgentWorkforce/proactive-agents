@@ -59,7 +59,171 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
+
+---
+
+## Essay: MCP notifications and the listener that isn't listening yet
+
+Published: 2026-05-20
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/mcp-notifications/
+
+MCP has over 9,400 servers now. [Google adopted it for Gemini Spark](/posts/google-spark-io-2026/). [Anthropic](https://anthropic.com), [Figma](https://figma.com), [Supabase](https://supabase.com), [Linear](https://linear.app), and [Sentry](https://sentry.io) all run production servers. If you look at what those servers actually expose, the answer is almost always tools. MCP has become a tool registry. A good one, but still just a tool registry.
+
+The spec also defines a notification layer. Resource subscriptions, change alerts, progress tracking, server-initiated push. The kind of infrastructure that would let an MCP server tap a connected agent and say "something changed" without the agent having to poll for it. This is the [listener primitive](/posts/three-primitives/) that proactive agents need, and it's sitting right there in the protocol definition, barely touched.
+
+I spent the last few days reading through GitHub issues, SDK source code, and community discussions trying to figure out how much of this actually works in the wild. Less than I expected.
+
+## What the spec defines
+
+The [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18) defines notifications as one-way JSON-RPC 2.0 messages. No `id` field, no reply expected. Fire and forget. There are five categories.
+
+**Resource notifications** matter most for proactive workflows. A client subscribes to a specific resource URI. When that resource changes, the server sends `notifications/resources/updated` with the URI that changed, but not the new content. The client decides whether and when to re-read. Servers can also send `notifications/resources/list_changed` when their set of available resources shifts.
+
+**Tool and prompt notifications** follow a similar list-changed pattern. A server adds or removes a tool, it sends `notifications/tools/list_changed`. Same for prompts. The tools available to an agent can change based on server-side state without the client needing to re-discover them.
+
+**Progress notifications** track long-running operations. The client sends a progress token with a request, the server emits `notifications/progress` messages with percentages as work proceeds. Of all the notification types, this one sees the most real-world use.
+
+**Logging notifications** send structured log messages from server to client. Eight severity levels from RFC 5424, a logger name, and arbitrary JSON data. Clients can filter by calling `logging/setLevel`.
+
+None of this happens automatically. Capability negotiation during initialization determines what flows where. A server declares `"resources": {"subscribe": true, "listChanged": true}` if it supports subscriptions, and clients that don't declare matching capabilities won't receive them.
+
+The resource notification pattern is deliberately lightweight. The `updated` notification says "this URI changed" but doesn't include the new content. The client decides whether and when to re-read. This decouples change detection from data transfer, which is efficient for large resources but adds a round trip for every update.
+
+## Who's actually using them
+
+According to [ecosystem statistics from mid-2026](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol), 80% of public MCP servers expose only tools. About 11% add resources, 4% add prompts. Notification support doesn't show up in any published breakdown because the numbers are too small to register.
+
+The servers that do implement notifications are almost all demos. [prakharbanka/mcp-server-notifications](https://github.com/prakharbanka/mcp-server-notifications) shows progress notifications over Streamable HTTP. [hesreallyhim/mcp-observer-server](https://github.com/hesreallyhim/mcp-observer-server) watches file system changes and sends `resources/updated` notifications. You can learn from them, but nobody's running them in production.
+
+The bigger problem is the client side. You can build a server that sends notifications perfectly and still have nothing on the receiving end:
+
+<table>
+  <thead>
+    <tr><th>Client</th><th>Tools</th><th>Resources</th><th>Subscribe</th><th>list_changed</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Claude Desktop</td><td>Yes</td><td>Lists only</td><td>No</td><td>Limited</td></tr>
+    <tr><td>Claude Code</td><td>Yes</td><td>Partial</td><td>No</td><td>Tools only</td></tr>
+    <tr><td>VS Code Copilot</td><td>Yes</td><td>Yes</td><td>Unknown</td><td>Unknown</td></tr>
+    <tr><td>Cursor</td><td>Yes</td><td>Limited</td><td>No</td><td>Unknown</td></tr>
+    <tr><td>Windsurf</td><td>Yes</td><td>Limited</td><td>No</td><td>Unknown</td></tr>
+    <tr><td>MCP Inspector</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+  </tbody>
+</table>
+
+The only client with full subscription support is the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is a dev tool. Claude Desktop [closed a feature request](https://github.com/modelcontextprotocol/typescript-sdk/issues/686) for proper resource handling as "not planned." People on the [Python SDK](https://github.com/modelcontextprotocol/python-sdk/issues/527) struggle to wire up `subscribe_resource` because the client-side API is barely documented. A [community discussion](https://github.com/orgs/modelcontextprotocol/discussions/337) sums it up: "very few servers pay any attention to client subscription requests."
+
+The SDKs themselves do implement the wire protocol. The [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) has `sendResourceUpdated()`, `sendResourceListChanged()`, `sendToolListChanged()`. [FastMCP](https://gofastmcp.com/clients/notifications) (Python, v2.9.1) added `MessageHandler` subclasses with typed methods like `on_tool_list_changed()`. All the building blocks are there. Nobody picked them up.
+
+## The gap that matters most
+
+Everything above is about notifications for internal state changes. The server knows a file was modified or a tool was added, and it passes the word along.
+
+But proactive agents mostly need to react to things that happen outside the server. A [Slack](https://slack.com) message arrives. A [JIRA](https://www.atlassian.com/software/jira) ticket gets updated. A [Stripe](https://stripe.com) payment fails. A [GitHub](https://github.com) PR picks up a review. These events show up as webhooks, HTTP POST requests from third-party services to a URL you control, and MCP has no way to receive them.
+
+The protocol's two transports, stdio and [Streamable HTTP](https://modelcontextprotocol.io/docs/concepts/transports), handle client-to-server requests with optional server-push responses. Neither accepts incoming HTTP from arbitrary external services. [Hookdeck's analysis](https://hookdeck.com/blog/mcp-event-gateway) puts it well: "MCP assumes the world is synchronous."
+
+The experimental [Tasks primitive](https://modelcontextprotocol.io/specification/2025-06-18) covers one piece. A tool call that starts a long-running operation gets back a task ID immediately. The client polls with `tasks/get` until it completes. Five states: `working`, `input_required`, `completed`, `failed`, `cancelled`. There's even an optional `notifications/tasks/status` notification, but the spec says explicitly: "Requestors MUST NOT rely on receiving this notification, as it is optional." Polling is the primary model.
+
+Tasks answer the question "I started something, when will it finish?" They don't help with "something happened in the world that I didn't initiate." Hookdeck's phrasing is useful here: "Tasks give you the envelope. They don't give you the mailroom."
+
+The MCP project is aware of the gap. In March 2026, they [chartered a Triggers and Events Working Group](https://modelcontextprotocol.io/community/triggers-events/charter) co-led by engineers from [AWS](https://aws.amazon.com) and Anthropic, with the goal of defining "a standardized callback mechanism — webhooks or similar — that lets servers push notifications when new data is available, with defined ordering guarantees." The charter targeted an initial RFC by end of April 2026. That deadline has passed.
+
+Teams building event-driven MCP servers today use an event gateway: a separate service that receives webhooks from third-party providers, handles deduplication and retries, and translates inbound events into MCP-compatible state changes. [Cloudflare Workers](https://developers.cloudflare.com/agents/guides/remote-mcp-server/) with Durable Objects, or standalone webhook infrastructure like [Hookdeck](https://hookdeck.com), provide the "mailroom" that MCP doesn't have natively. The approach works but requires building and maintaining infrastructure that sits entirely outside the MCP spec.
+
+## What this means for proactive agents
+
+Map MCP's notification system against the [three-primitives framework](/posts/three-primitives/) and you can see where each piece stands.
+
+Scheduling is fine. MCP doesn't define cron natively, but nothing stops a server from running jobs on a timer. The protocol doesn't need to own this part.
+
+Delivery partially works. Notifications flow from server to client over both transports, and progress tracking, logging, and list-changed alerts all function as specified when the client supports them. The channel is narrow, agent-only with no routing to Slack or email, but it's there.
+
+Change detection is where things fall apart. Resource subscriptions are the spec's version of a listener: watch a URI, get told when it changes. But almost no server or client actually implements them. And even with full adoption, subscriptions can only cover resources the server already manages. Events from third-party services, which account for most of the proactive workflows people want to build, have no entry point.
+
+The Triggers and Events WG is working on this. A webhook-like callback mechanism with ordering guarantees would make MCP viable for event-driven agents. Until the RFC lands, anyone building proactive workflows on MCP has to bring their own [webhook infrastructure](/posts/the-webhook-tax/).
+
+Google picking MCP as the third-party integration layer for [Gemini Spark](/posts/google-spark-io-2026/) adds real pressure. Spark is supposed to be a 24/7 proactive agent connecting to services through MCP, and Google will need the event ingestion layer to work at scale. Whether that results in upstream spec improvements or proprietary extensions inside Spark's Antigravity harness is worth watching closely.
+
+The [Triggers and Events Working Group charter](https://modelcontextprotocol.io/community/triggers-events/charter) lists weekly 30-minute sessions and an RFC target that's already past due. We'll track its output alongside the rest of the [proactive agent landscape](/market/proactive-agent-landscape/).
+
+---
+
+## Essay: Gemini Spark: what Google shipped at I/O
+
+Published: 2026-05-20
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/google-spark-io-2026/
+
+Two days ago I wrote about [Remy](/posts/google-remy-background-agent/), the leaked Google agent that looked like the most ambitious proactive assistant anyone had announced. Then I/O happened, and Google filled in most of the blanks. Remy is now Gemini Spark. The architecture is real, the scope is even broader than the leaks suggested, and one specific technical choice surprised me enough that I want to talk about it first.
+
+## The stack underneath
+
+The rebranding tells you something. "Remy" was an internal codename, reportedly a Ratatouille reference that [felt too informal](https://pasqualepillitteri.it/en/news/2624/gemini-spark-google-remy-rebrand-ai-agent-2026) for a consumer product. "Gemini Spark" aligns with Google's existing spark icon across the Gemini product line. Short, optimistic, and built to last as a brand for years. The name changed between internal beta versions 17.22 and 17.23, with no capability changes underneath.
+
+Under the hood, Spark runs on dedicated [Google Cloud](https://cloud.google.com) virtual machines, powered by Gemini 3.5 and orchestrated by something Google calls the "Antigravity" harness. The model is a dedicated variant optimized for extended tool use and multi-step reasoning. Internal beta code references it as "Spark Robin." This is a purpose-built runtime designed to keep tasks alive for hours or days, not a general-purpose chatbot with agent features bolted on.
+
+[Gemini 3.5 Flash](https://blog.google/innovation-and-ai/sundar-pichai-io-2026/) also shipped at I/O as the backbone. Google claims it's four times faster than other frontier models at roughly half the cost. Whether those benchmarks hold under real workloads, the speed matters for a 24/7 agent: every millisecond of inference latency multiplies across a day of continuous background operations.
+
+Availability is tighter than the leaked docs implied. Trusted testers got access this week. Beta opens next week for [Google AI](https://ai.google) Ultra subscribers in the US only. No global rollout timeline yet.
+
+The Antigravity harness also powers "Antigravity 2.0," a desktop platform for developing autonomous agent cohorts. Google is shipping the agentic runtime and the developer tools for it simultaneously, similar to how they release Android features alongside Android Studio updates. If Antigravity becomes the default orchestration layer for Google's agent products, the platform advantage compounds.
+
+## The MCP surprise
+
+In the [Remy article](/posts/google-remy-background-agent/), I flagged one specific question: how would Google handle external providers like GitHub, WhatsApp, and Spotify? Would they build bespoke adapters for each one, or find some standardized path?
+
+Google chose [MCP](https://modelcontextprotocol.io/).
+
+Model Context Protocol is [Anthropic's](https://anthropic.com) open standard for connecting AI models to external tools and data sources. Google adopting it for Spark is significant. The biggest consumer AI platform on earth just validated a protocol designed by a direct competitor. Beta code from the Gemini app already includes "MCP Tool Testing" category entries.
+
+For Google's own services ([Gmail](https://mail.google.com), [Calendar](https://calendar.google.com), [Drive](https://drive.google.com), [Photos](https://photos.google.com), [Maps](https://maps.google.com), Chrome), Spark connects through internal APIs. Those connections are native: shared auth, shared infrastructure, no webhook overhead. This is the ecosystem advantage I described in the Remy piece, and it's exactly as strong as expected.
+
+For everything else, MCP provides the bridge. This is where it gets interesting for anyone building proactive agents. MCP means third-party developers can write a single connector that works across Spark, Claude, and any other MCP-compatible system. The [webhook tax](/posts/the-webhook-tax/) we wrote about (eight weeks per provider, signature verification, queue infrastructure, payload normalization) doesn't disappear, but it concentrates in the MCP server implementation instead of spreading across every client.
+
+Connected services are enabled by default. Users can selectively disable them through a settings panel, but the default position is all-access across Google's ecosystem, including login information from browser sessions. For a product that can make purchases and share documents without explicit per-action confirmation, that's an aggressive posture. Privacy teams are going to have opinions.
+
+## Surfaces everywhere
+
+The leaked Remy docs described an agent inside the Gemini app. Spark goes wider. [Google announced](https://blog.google/innovation-and-ai/sundar-pichai-io-2026/) five distinct surfaces where the agent can show up:
+
+The **Gemini app** remains the primary interface, but Spark is also reachable through **email** and **chat**. You can assign it work without opening a dedicated app. **[Android](https://www.android.com) Halo** is a new UI layer that shows agent progress at the OS level, letting you see what Spark is working on without switching contexts. And the **Chrome agentic browser**, coming this summer, lets Spark navigate the web directly: filling forms, reading pages, interpreting screenshots and PDFs.
+
+Alongside Spark itself, Google announced **Daily Brief**: a synthesized digest pulling from inbox, calendar, and tasks. And **Information Agents in Search**, which monitor the web 24/7 for topics you specify and deliver results proactively (available to AI Pro and Ultra subscribers this summer). These aren't inside Spark exactly, but they share the same architectural DNA of background processing and triggered delivery.
+
+**Google Flow** handles the planning layer. Complex multi-step tasks with creative collaboration, the orchestration surface for work that's too involved for a single prompt.
+
+Run all of this through the [three-primitives framework](/posts/three-primitives/) and Spark now scores higher than any proactive agent on the market:
+
+<table>
+  <thead>
+    <tr><th></th><th>Pulse</th><th>Orbit</th><th>Spark</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Clock</td><td>Overnight batch</td><td>Timezone-aware schedule</td><td>24/7 continuous on dedicated VMs</td></tr>
+    <tr><td>Listener</td><td>Gmail + Calendar (snapshot)</td><td>Gmail, Slack, GitHub, Figma, Calendar, Drive</td><td>Google services native + third-party via MCP</td></tr>
+    <tr><td>Inbox</td><td>Cards in ChatGPT</td><td>Claude web + mobile + Orbit apps</td><td>Gemini app, email, chat, Android Halo, Chrome</td></tr>
+    <tr><td>Can act</td><td>No</td><td>Unclear</td><td>Yes (purchases, messages, docs, web navigation)</td></tr>
+    <tr><td>Model</td><td>GPT-4o</td><td>Claude</td><td>Gemini 3.5 (Spark Robin variant)</td></tr>
+    <tr><td>Audience</td><td>ChatGPT Pro</td><td>Claude users</td><td>AI Ultra subscribers (US first)</td></tr>
+  </tbody>
+</table>
+
+## What we got right, what we missed
+
+The [pre-I/O analysis](/posts/google-remy-background-agent/) predicted three things to watch. Here's how they landed.
+
+**The approval model**: still vague. Spark announced five core capabilities (inbox management, meeting briefings, information digests, web automation, custom skills), and each implies a different risk level. Google's own documentation warns that Spark can "autonomously handle purchases and share information without asking." But the granular policies I was hoping to see (auto-approve calendar changes, always confirm purchases over $50) weren't part of the keynote. The tiered system is presumably still there under the surface. We just haven't seen it demonstrated.
+
+**External provider depth**: MCP answers the "how" but not yet the "how deep." Spark inherits Gmail, Calendar, Drive, Photos, Maps, Chrome, and Android by default. Third-party MCP integrations launch this summer. Whether Spark can watch a GitHub repo for new issues and draft a response, or just read your notifications, depends on how ambitious those MCP servers turn out to be. The protocol is capable of rich bidirectional interaction. The question is whether anyone builds servers at that depth in the first months.
+
+**State and memory**: Spark stores data from remote browser sessions, including login information, in a dedicated settings panel. That suggests durable state beyond session boundaries. The custom skills feature, which lets you write reusable instructions for weekly tasks via markdown-style commands, also implies persistent configuration. But nothing about learning from corrections over time. Does Spark remember that you overrode a purchase recommendation last Tuesday? Google hasn't said.
+
+The biggest thing that the pre-I/O leaks got wrong was scope. I wrote about Remy as a single agent inside the Gemini app. Spark turned out to be a family of agent capabilities spread across five surfaces, with Daily Brief, Information Agents, and Flow all drawing from the same runtime infrastructure. Google isn't shipping one proactive agent. They're shipping a proactive layer across their entire product stack.
+
+We'll update the [proactive agent landscape](/market/proactive-agent-landscape/) with Spark's public details this week. The comparison table above reflects what shipped at I/O, not what's been verified in hands-on testing.
 
 ---
 
@@ -296,6 +460,8 @@ For the fuller pattern, agents that live in a system rather than being called by
 Published: 2026-05-18
 Author: Khaliq Gant
 URL: https://proactiveagents.dev/posts/google-remy-background-agent/
+
+*Update, May 20: [Google I/O 2026](https://blog.google/inside-google/message-ceo/google-io-2026-keynote-sundar-pichai/) happened. Remy is now Gemini Spark, powered by [Gemini 3.5](https://blog.google/technology/google-deepmind/gemini-3-5/) and using Anthropic's [Model Context Protocol](https://modelcontextprotocol.io) for third-party integrations. Read the full follow-up: [Gemini Spark: what Google shipped at I/O](/posts/google-spark-io-2026/).*
 
 I've been poking at leaked Google docs all week. An internal document describes something called Remy: "your 24/7 personal agent for work, school, and daily life, powered by Gemini." Employees are already dogfooding it inside a staff-only version of the Gemini app. Google I/O starts tomorrow, and Remy is expected to be part of the keynote.
 

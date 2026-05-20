@@ -1,0 +1,106 @@
+---
+title: "MCP notifications and the listener that isn't listening yet"
+summary: "MCP has 9,400 servers and all the big AI companies behind it. The notification layer that would enable server-initiated push is in the spec but almost nobody uses it. The gap between what the protocol defines and what the ecosystem supports matters for anyone building proactive agents."
+date: "2026-05-20"
+lastModified: "2026-05-20"
+accent: "lavender"
+dropcap: true
+---
+
+MCP has over 9,400 servers now. [Google adopted it for Gemini Spark](/posts/google-spark-io-2026/). [Anthropic](https://anthropic.com), [Figma](https://figma.com), [Supabase](https://supabase.com), [Linear](https://linear.app), and [Sentry](https://sentry.io) all run production servers. If you look at what those servers actually expose, the answer is almost always tools. MCP has become a tool registry. A good one, but still just a tool registry.
+
+The spec also defines a notification layer. Resource subscriptions, change alerts, progress tracking, server-initiated push. The kind of infrastructure that would let an MCP server tap a connected agent and say "something changed" without the agent having to poll for it. This is the [listener primitive](/posts/three-primitives/) that proactive agents need, and it's sitting right there in the protocol definition, barely touched.
+
+I spent the last few days reading through GitHub issues, SDK source code, and community discussions trying to figure out how much of this actually works in the wild. Less than I expected.
+
+<Scene figure="MCPNotifTaxonomyFigure" caption="Five categories of notifications in the MCP spec.">
+
+## What the spec defines
+
+The [MCP specification](https://modelcontextprotocol.io/specification/2025-06-18) defines notifications as one-way JSON-RPC 2.0 messages. No `id` field, no reply expected. Fire and forget. There are five categories.
+
+**Resource notifications** matter most for proactive workflows. A client subscribes to a specific resource URI. When that resource changes, the server sends `notifications/resources/updated` with the URI that changed, but not the new content. The client decides whether and when to re-read. Servers can also send `notifications/resources/list_changed` when their set of available resources shifts.
+
+**Tool and prompt notifications** follow a similar list-changed pattern. A server adds or removes a tool, it sends `notifications/tools/list_changed`. Same for prompts. The tools available to an agent can change based on server-side state without the client needing to re-discover them.
+
+**Progress notifications** track long-running operations. The client sends a progress token with a request, the server emits `notifications/progress` messages with percentages as work proceeds. Of all the notification types, this one sees the most real-world use.
+
+**Logging notifications** send structured log messages from server to client. Eight severity levels from RFC 5424, a logger name, and arbitrary JSON data. Clients can filter by calling `logging/setLevel`.
+
+None of this happens automatically. Capability negotiation during initialization determines what flows where. A server declares `"resources": {"subscribe": true, "listChanged": true}` if it supports subscriptions, and clients that don't declare matching capabilities won't receive them.
+
+<Callout tone="thought" label="Notify-then-fetch">
+The resource notification pattern is deliberately lightweight. The `updated` notification says "this URI changed" but doesn't include the new content. The client decides whether and when to re-read. This decouples change detection from data transfer, which is efficient for large resources but adds a round trip for every update.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure="MCPAdoptionGapFigure" caption="Client support for MCP notifications is sparse.">
+
+## Who's actually using them
+
+According to [ecosystem statistics from mid-2026](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol), 80% of public MCP servers expose only tools. About 11% add resources, 4% add prompts. Notification support doesn't show up in any published breakdown because the numbers are too small to register.
+
+The servers that do implement notifications are almost all demos. [prakharbanka/mcp-server-notifications](https://github.com/prakharbanka/mcp-server-notifications) shows progress notifications over Streamable HTTP. [hesreallyhim/mcp-observer-server](https://github.com/hesreallyhim/mcp-observer-server) watches file system changes and sends `resources/updated` notifications. You can learn from them, but nobody's running them in production.
+
+The bigger problem is the client side. You can build a server that sends notifications perfectly and still have nothing on the receiving end:
+
+<table>
+  <thead>
+    <tr><th>Client</th><th>Tools</th><th>Resources</th><th>Subscribe</th><th>list_changed</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Claude Desktop</td><td>Yes</td><td>Lists only</td><td>No</td><td>Limited</td></tr>
+    <tr><td>Claude Code</td><td>Yes</td><td>Partial</td><td>No</td><td>Tools only</td></tr>
+    <tr><td>VS Code Copilot</td><td>Yes</td><td>Yes</td><td>Unknown</td><td>Unknown</td></tr>
+    <tr><td>Cursor</td><td>Yes</td><td>Limited</td><td>No</td><td>Unknown</td></tr>
+    <tr><td>Windsurf</td><td>Yes</td><td>Limited</td><td>No</td><td>Unknown</td></tr>
+    <tr><td>MCP Inspector</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+  </tbody>
+</table>
+
+The only client with full subscription support is the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is a dev tool. Claude Desktop [closed a feature request](https://github.com/modelcontextprotocol/typescript-sdk/issues/686) for proper resource handling as "not planned." People on the [Python SDK](https://github.com/modelcontextprotocol/python-sdk/issues/527) struggle to wire up `subscribe_resource` because the client-side API is barely documented. A [community discussion](https://github.com/orgs/modelcontextprotocol/discussions/337) sums it up: "very few servers pay any attention to client subscription requests."
+
+The SDKs themselves do implement the wire protocol. The [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) has `sendResourceUpdated()`, `sendResourceListChanged()`, `sendToolListChanged()`. [FastMCP](https://gofastmcp.com/clients/notifications) (Python, v2.9.1) added `MessageHandler` subclasses with typed methods like `on_tool_list_changed()`. All the building blocks are there. Nobody picked them up.
+
+</Scene>
+
+<Scene figure="MCPEventGapFigure" caption="External events have no path into MCP today.">
+
+## The gap that matters most
+
+Everything above is about notifications for internal state changes. The server knows a file was modified or a tool was added, and it passes the word along.
+
+But proactive agents mostly need to react to things that happen outside the server. A [Slack](https://slack.com) message arrives. A [JIRA](https://www.atlassian.com/software/jira) ticket gets updated. A [Stripe](https://stripe.com) payment fails. A [GitHub](https://github.com) PR picks up a review. These events show up as webhooks, HTTP POST requests from third-party services to a URL you control, and MCP has no way to receive them.
+
+The protocol's two transports, stdio and [Streamable HTTP](https://modelcontextprotocol.io/docs/concepts/transports), handle client-to-server requests with optional server-push responses. Neither accepts incoming HTTP from arbitrary external services. [Hookdeck's analysis](https://hookdeck.com/blog/mcp-event-gateway) puts it well: "MCP assumes the world is synchronous."
+
+The experimental [Tasks primitive](https://modelcontextprotocol.io/specification/2025-06-18) covers one piece. A tool call that starts a long-running operation gets back a task ID immediately. The client polls with `tasks/get` until it completes. Five states: `working`, `input_required`, `completed`, `failed`, `cancelled`. There's even an optional `notifications/tasks/status` notification, but the spec says explicitly: "Requestors MUST NOT rely on receiving this notification, as it is optional." Polling is the primary model.
+
+Tasks answer the question "I started something, when will it finish?" They don't help with "something happened in the world that I didn't initiate." Hookdeck's phrasing is useful here: "Tasks give you the envelope. They don't give you the mailroom."
+
+The MCP project is aware of the gap. In March 2026, they [chartered a Triggers and Events Working Group](https://modelcontextprotocol.io/community/triggers-events/charter) co-led by engineers from [AWS](https://aws.amazon.com) and Anthropic, with the goal of defining "a standardized callback mechanism — webhooks or similar — that lets servers push notifications when new data is available, with defined ordering guarantees." The charter targeted an initial RFC by end of April 2026. That deadline has passed.
+
+<Callout tone="warm" label="The stopgap pattern">
+Teams building event-driven MCP servers today use an event gateway: a separate service that receives webhooks from third-party providers, handles deduplication and retries, and translates inbound events into MCP-compatible state changes. [Cloudflare Workers](https://developers.cloudflare.com/agents/guides/remote-mcp-server/) with Durable Objects, or standalone webhook infrastructure like [Hookdeck](https://hookdeck.com), provide the "mailroom" that MCP doesn't have natively. The approach works but requires building and maintaining infrastructure that sits entirely outside the MCP spec.
+</Callout>
+
+</Scene>
+
+## What this means for proactive agents
+
+Map MCP's notification system against the [three-primitives framework](/posts/three-primitives/) and you can see where each piece stands.
+
+Scheduling is fine. MCP doesn't define cron natively, but nothing stops a server from running jobs on a timer. The protocol doesn't need to own this part.
+
+Delivery partially works. Notifications flow from server to client over both transports, and progress tracking, logging, and list-changed alerts all function as specified when the client supports them. The channel is narrow, agent-only with no routing to Slack or email, but it's there.
+
+Change detection is where things fall apart. Resource subscriptions are the spec's version of a listener: watch a URI, get told when it changes. But almost no server or client actually implements them. And even with full adoption, subscriptions can only cover resources the server already manages. Events from third-party services, which account for most of the proactive workflows people want to build, have no entry point.
+
+The Triggers and Events WG is working on this. A webhook-like callback mechanism with ordering guarantees would make MCP viable for event-driven agents. Until the RFC lands, anyone building proactive workflows on MCP has to bring their own [webhook infrastructure](/posts/the-webhook-tax/).
+
+Google picking MCP as the third-party integration layer for [Gemini Spark](/posts/google-spark-io-2026/) adds real pressure. Spark is supposed to be a 24/7 proactive agent connecting to services through MCP, and Google will need the event ingestion layer to work at scale. Whether that results in upstream spec improvements or proprietary extensions inside Spark's Antigravity harness is worth watching closely.
+
+<Callout tone="cool" label="Tracking the WG">
+The [Triggers and Events Working Group charter](https://modelcontextprotocol.io/community/triggers-events/charter) lists weekly 30-minute sessions and an RFC target that's already past due. We'll track its output alongside the rest of the [proactive agent landscape](/market/proactive-agent-landscape/).
+</Callout>
