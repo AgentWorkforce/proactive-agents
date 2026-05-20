@@ -3772,7 +3772,7 @@ export function SparkStackFigure() {
 export function SparkMCPBridgeFigure() {
   return (
     <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="spark-mcp-title">
-      <title id="spark-mcp-title">Spark connects to Google services natively and to third-party services through Anthropic's MCP protocol</title>
+      <title id="spark-mcp-title">Spark connects to Google services natively and to third-party services through Anthropic’s MCP protocol</title>
       <defs>
         <radialGradient id="mcpgrad" cx="50%" cy="50%" r="55%">
           <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />

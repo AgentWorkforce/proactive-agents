@@ -461,7 +461,7 @@ Published: 2026-05-18
 Author: Khaliq Gant
 URL: https://proactiveagents.dev/posts/google-remy-background-agent/
 
-*Update, May 20: Google I/O happened. Remy is now Gemini Spark, powered by Gemini 3.5 and using Anthropic's MCP for third-party integrations. Read the full follow-up: [Gemini Spark: what Google shipped at I/O](/posts/google-spark-io-2026/).*
+*Update, May 20: [Google I/O 2026](https://blog.google/inside-google/message-ceo/google-io-2026-keynote-sundar-pichai/) happened. Remy is now Gemini Spark, powered by [Gemini 3.5](https://blog.google/technology/google-deepmind/gemini-3-5/) and using Anthropic's [Model Context Protocol](https://modelcontextprotocol.io) for third-party integrations. Read the full follow-up: [Gemini Spark: what Google shipped at I/O](/posts/google-spark-io-2026/).*
 
 I've been poking at leaked Google docs all week. An internal document describes something called Remy: "your 24/7 personal agent for work, school, and daily life, powered by Gemini." Employees are already dogfooding it inside a staff-only version of the Gemini app. Google I/O starts tomorrow, and Remy is expected to be part of the keynote.
 

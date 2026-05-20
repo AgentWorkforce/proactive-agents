@@ -10,7 +10,7 @@ Six months ago, nobody was really shipping proactive agents. Now every major AI 
 
 This page maps the landscape through the [three-primitives framework](/posts/three-primitives/): does each product have a **clock** (scheduled execution), a **listener** (real-time change detection), and an **inbox** (multi-channel delivery)? That framework turns out to be a useful lens for separating marketing from architecture.
 
-*Last updated: May 15, 2026.*
+*Last updated: May 20, 2026.*
 
 <Scene figure={<LandscapeGridFigure />} caption="The landscape scored against three primitives.">
 
@@ -21,20 +21,20 @@ This page maps the landscape through the [three-primitives framework](/posts/thr
 <tr><th>Product</th><th>Company</th><th>Clock</th><th>Listener</th><th>Inbox</th><th>Stage</th></tr>
 </thead>
 <tbody>
-<tr><td>ChatGPT Pulse</td><td>OpenAI</td><td>&#10003;</td><td>&#10007;</td><td>&#10007;</td><td>Shipped (Pro)</td></tr>
-<tr><td>Orbit</td><td>Anthropic</td><td>&#10003;</td><td>&#10003;</td><td>Partial</td><td>Announced</td></tr>
-<tr><td>Gemini Spark</td><td>Google</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Beta (AI Ultra, US)</td></tr>
-<tr><td>Hatch</td><td>Meta</td><td>&#10003;</td><td>&#10003;</td><td>Partial</td><td>Internal testing</td></tr>
-<tr><td>Computer / Comet</td><td>Perplexity</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>Managerbot</td><td>Block (Square)</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Open beta</td></tr>
-<tr><td>Cody</td><td>CodeWords.ai</td><td>&#10003;</td><td>Partial</td><td>Partial</td><td>Beta</td></tr>
-<tr><td>Playbooks</td><td>Writer</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>Proactive AI Agents</td><td>Tonkean</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>AI Workers</td><td>MindStudio</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>Agency</td><td>Browser Use</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>Workers + Custom Agents</td><td>Notion</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>Proton / Offsite</td><td>Mercury</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipped</td></tr>
-<tr><td>Agent Relay</td><td>Agent Relay</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>Shipping</td></tr>
+<tr><td>ChatGPT Pulse</td><td>OpenAI</td><td>✓</td><td>✗</td><td>✗</td><td>Shipped (Pro)</td></tr>
+<tr><td>Orbit</td><td>Anthropic</td><td>✓</td><td>✓</td><td>Partial</td><td>Announced</td></tr>
+<tr><td>Gemini Spark</td><td>Google</td><td>✓</td><td>✓</td><td>✓</td><td>Beta (AI Ultra, US)</td></tr>
+<tr><td>Hatch</td><td>Meta</td><td>✓</td><td>✓</td><td>Partial</td><td>Internal testing</td></tr>
+<tr><td>Computer / Comet</td><td>Perplexity</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>Managerbot</td><td>Block (Square)</td><td>✓</td><td>✓</td><td>✓</td><td>Open beta</td></tr>
+<tr><td>Cody</td><td>CodeWords.ai</td><td>✓</td><td>Partial</td><td>Partial</td><td>Beta</td></tr>
+<tr><td>Playbooks</td><td>Writer</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>Proactive AI Agents</td><td>Tonkean</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>AI Workers</td><td>MindStudio</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>Agency</td><td>Browser Use</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>Workers + Custom Agents</td><td>Notion</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>Proton / Offsite</td><td>Mercury</td><td>✓</td><td>✓</td><td>✓</td><td>Shipped</td></tr>
+<tr><td>Agent Relay</td><td>Agent Relay</td><td>✓</td><td>✓</td><td>✓</td><td>Shipping</td></tr>
 </tbody>
 </table>
 
@@ -54,7 +54,7 @@ Every product on this list runs on a schedule. That's the easy primitive to buil
 
 **[Orbit](https://www.testingcatalog.com/anthropic-is-working-on-orbit-its-upcoming-proactive-assistant/) (Anthropic)** was unveiled at the Code with Claude conference in May 2026. It generates proactive briefings from connected tools (Gmail, Slack, GitHub, Calendar, Drive, Figma) on a timezone-aware schedule. "Orbit apps" let users pin specific insight views. It has the listener, which puts it ahead of Pulse architecturally, though the inbox is still limited to the Claude interface.
 
-**[Gemini Spark](/posts/google-spark-io-2026/) (Google)** launched at I/O 2026 (previously codenamed "Remy"). Powered by Gemini 3.5 on dedicated Cloud VMs with the "Antigravity" orchestration harness, it runs 24/7 across five surfaces: Gemini app, email, chat, Android Halo, and Chrome agentic browser. Google services connect natively; third-party tools connect via Anthropic's MCP. Beta is open to AI Ultra subscribers in the US. All three primitives are present, with the broadest surface area of any entrant.
+**[Gemini Spark](/posts/google-spark-io-2026/) (Google)** launched at [I/O 2026](https://blog.google/inside-google/message-ceo/google-io-2026-keynote-sundar-pichai/) (previously codenamed "Remy"). Powered by [Gemini 3.5](https://blog.google/technology/google-deepmind/gemini-3-5/) on dedicated [Google Cloud](https://cloud.google.com) VMs with the "Antigravity" orchestration harness, it runs 24/7 across five surfaces: Gemini app, email, chat, Android Halo, and Chrome agentic browser. Google services connect natively; third-party tools connect via Anthropic's [Model Context Protocol](https://modelcontextprotocol.io). Beta is open to [Google AI Ultra](https://one.google.com/about/google-ai-plans) subscribers in the US. All three primitives are present, with the broadest surface area of any entrant.
 
 **[Hatch](https://aiautomationglobal.com/blog/google-remy-meta-hatch-personal-ai-agents-race-2026) (Meta)** is a general-purpose consumer agent trained in practice environments that replicate DoorDash, Etsy, and Reddit. It learns preferences, persists memory across conversations, and decides when to act without prompting. A separate Instagram shopping agent is also in development. Internal testing targets end of June 2026. The proactive design is there, but the delivery channels are still Meta-surface-only.
 
@@ -98,7 +98,7 @@ Every product on this list arrived at roughly the same architecture independentl
 
 The differences are in coverage and depth:
 
-- **Coverage**: How many data sources can the agent watch? Google has a natural advantage with Remy because it already owns the data. Everyone else is integrating third-party APIs one at a time.
+- **Coverage**: How many data sources can the agent watch? Google has a natural advantage with Spark because it already owns the data. Everyone else is integrating third-party APIs one at a time.
 - **Depth**: Is the listener doing real-time event streaming or periodic polling? The user experience is completely different. A four-hour-old alert is not the same as a real-time notification.
 - **Delivery**: Can results go where the action is (Slack, email, tickets), or are they trapped in the product's own UI? Most horizontal assistants are still trapped.
 
@@ -106,7 +106,7 @@ I think the products that nail all three at depth are the ones people will actua
 
 ## What to watch next
 
-**Google I/O** (late May 2026) will likely show Remy publicly for the first time. If Google ships deep integration across its own ecosystem, the bar for everyone else goes up immediately.
+**Gemini Spark rollout.** Google [unveiled Spark at I/O 2026](/posts/google-spark-io-2026/) and opened a beta to AI Ultra subscribers in the US. Wider availability, pricing outside the Ultra tier, and the EU launch timeline are still unannounced. If integration depth matches the demo, the bar for everyone else goes up immediately.
 
 **Meta Hatch** targeting end of June means two billion Instagram users could have a proactive agent within months. The scale implications are hard to overstate, even if the initial capabilities are narrow.
 
