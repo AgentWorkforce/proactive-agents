@@ -35,6 +35,8 @@ const SLUGS: Record<string, React.ComponentType> = {
   "making-hermes-proactive": HermesProactiveArt,
   "devin-auto-triage": DevinTriageArt,
   "junior-so-ai-employee": JuniorEmployeeArt,
+  "google-spark-io-2026": SparkIOArt,
+  "mcp-notifications": MCPNotifArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
@@ -1242,6 +1244,95 @@ function HermesProactiveArt() {
             <line x1="5" y1="-5" x2="-5" y2="5" strokeWidth="1.2" />
           </g>
           <line x1="0" y1="22" x2="0" y2="28" strokeWidth="0.8" strokeDasharray="2 2" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function MCPNotifArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Bell / notification shape */}
+          <path
+            d="M0 -40 C-22 -40 -28 -20 -28 -8 L-28 8 L-36 16 L36 16 L28 8 L28 -8 C28 -20 22 -40 0 -40"
+            strokeWidth="1.8"
+          />
+          <line x1="-8" y1="16" x2="8" y2="16" strokeWidth="2.2" />
+          <circle cy="-42" r="3" fill={C.ink} stroke="none" />
+          {/* Dashed lines radiating out — signals that don't connect */}
+          <line x1="-40" y1="-20" x2="-55" y2="-30" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="40" y1="-20" x2="55" y2="-30" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="-38" y1="10" x2="-55" y2="15" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1="38" y1="10" x2="55" y2="15" strokeWidth="1" strokeDasharray="3 3" />
+          {/* X marks at ends — signals not received */}
+          {[
+            [-55, -30],
+            [55, -30],
+            [-55, 15],
+            [55, 15],
+          ].map(([x, y], i) => (
+            <g key={i}>
+              <line x1={x - 4} y1={y - 4} x2={x + 4} y2={y + 4} strokeWidth="1.2" />
+              <line x1={x + 4} y1={y - 4} x2={x - 4} y2={y + 4} strokeWidth="1.2" />
+            </g>
+          ))}
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function SparkIOArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Central spark/star shape */}
+          {[0, 72, 144, 216, 288].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const innerRad = ((angle + 36) * Math.PI) / 180;
+            const ox = Math.cos(rad) * 35;
+            const oy = Math.sin(rad) * 35;
+            const ix = Math.cos(innerRad) * 14;
+            const iy = Math.sin(innerRad) * 14;
+            return (
+              <g key={i}>
+                <line x1="0" y1="0" x2={ox} y2={oy} strokeWidth="1.6" />
+                <circle cx={ox} cy={oy} r="3" fill={C.ink} stroke="none" />
+              </g>
+            );
+          })}
+          {/* Center dot */}
+          <circle r="6" strokeWidth="1.8" />
+          <circle r="2" fill={C.ink} stroke="none" />
+          {/* MCP bridge bracket on right */}
+          <g transform="translate(55, 0)">
+            <path d="M0 -20 L8 -20 L8 20 L0 20" strokeWidth="1.4" />
+            <text x="14" y="4" fontFamily="inherit" fontSize="7" fill={C.ink} strokeWidth="0">MCP</text>
+          </g>
         </g>
       </g>
     </svg>

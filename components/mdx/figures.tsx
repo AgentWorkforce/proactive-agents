@@ -3582,3 +3582,292 @@ export function HermesGapFigure() {
     </svg>
   );
 }
+
+/** MCP notification taxonomy — five categories of notifications. */
+export function MCPNotifTaxonomyFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="mcp-notif-title">
+      <title id="mcp-notif-title">Five categories of MCP notifications: resource, tool/prompt, progress, logging, and lifecycle</title>
+      <defs>
+        <radialGradient id="notifgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.2" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="10" width="300" height="300" rx="14" fill="url(#notifgrad)" />
+      {/* Header */}
+      <text x="160" y="36" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>MCP Notifications</text>
+      <line x1="40" y1="46" x2="280" y2="46" stroke={C.rule} strokeWidth="1" />
+      {/* Five rows */}
+      {[
+        { label: "resources/updated", desc: "subscribed resource changed", color: C.sage, y: 70 },
+        { label: "tools/list_changed", desc: "available tools added/removed", color: C.peach, y: 120 },
+        { label: "progress", desc: "long-running operation update", color: C.butter, y: 170 },
+        { label: "message", desc: "structured log from server", color: C.sky, y: 220 },
+        { label: "tasks/status", desc: "task state transition (experimental)", color: C.rose, y: 270 },
+      ].map((row, i) => (
+        <g key={i}>
+          <rect x="30" y={row.y - 18} width="260" height="38" rx="6" fill={C.paper} stroke={C.rule} strokeWidth="1.2" />
+          <circle cx="50" cy={row.y} r="8" fill={row.color} opacity="0.7" />
+          <text x="66" y={row.y - 3} fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{row.label}</text>
+          <text x="66" y={row.y + 11} fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>{row.desc}</text>
+          {/* Arrow indicating fire-and-forget direction */}
+          <g stroke={C.inkSoft} strokeWidth="1" fill="none" strokeLinecap="round">
+            <line x1="265" y1={row.y - 4} x2="275" y2={row.y} />
+            <line x1="265" y1={row.y + 4} x2="275" y2={row.y} />
+          </g>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/** MCP adoption gap — client support visualization. */
+export function MCPAdoptionGapFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="mcp-adopt-title">
+      <title id="mcp-adopt-title">MCP feature adoption: tools widely supported, resources partially, subscriptions barely, tasks not at all</title>
+      <defs>
+        <radialGradient id="adoptgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.peach} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.rose} stopOpacity="0.2" />
+        </radialGradient>
+      </defs>
+      <rect x="10" y="10" width="300" height="300" rx="14" fill="url(#adoptgrad)" />
+      {/* Four horizontal bars showing adoption levels */}
+      <text x="160" y="36" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>Feature Adoption</text>
+      <line x1="40" y1="46" x2="280" y2="46" stroke={C.rule} strokeWidth="1" />
+      {[
+        { label: "Tools", pct: 95, color: C.sage, y: 80 },
+        { label: "Resources", pct: 15, color: C.butter, y: 135 },
+        { label: "Subscriptions", pct: 3, color: C.peach, y: 190 },
+        { label: "Tasks", pct: 0, color: C.rose, y: 245 },
+      ].map((bar, i) => {
+        const barWidth = Math.max(4, (bar.pct / 100) * 200);
+        return (
+          <g key={i}>
+            <text x="40" y={bar.y - 6} fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{bar.label}</text>
+            {/* Track */}
+            <rect x="40" y={bar.y + 2} width="200" height="20" rx="4" fill={C.paper} stroke={C.rule} strokeWidth="1" />
+            {/* Fill */}
+            <rect x="40" y={bar.y + 2} width={barWidth} height="20" rx="4" fill={bar.color} opacity="0.8" />
+            {/* Percentage label */}
+            <text x="248" y={bar.y + 16} fontFamily="var(--font-mono)" fontSize="8.5" fill={C.inkSoft}>
+              {bar.pct > 0 ? `~${bar.pct}%` : "0%"}
+            </text>
+          </g>
+        );
+      })}
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>
+        of 9,400+ public MCP servers
+      </text>
+    </svg>
+  );
+}
+
+/** MCP event gap — external webhooks have no path into MCP. */
+export function MCPEventGapFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="mcp-gap-title">
+      <title id="mcp-gap-title">External events from webhooks have no standardized path into MCP servers to reach connected agents</title>
+      <defs>
+        <radialGradient id="gapgrad" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.peach} stopOpacity="0.15" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="160" r="148" fill="url(#gapgrad)" />
+      {/* Left: External services sending webhooks */}
+      <text x="52" y="40" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>external events</text>
+      {[
+        { label: "Slack", y: 65 },
+        { label: "GitHub", y: 110 },
+        { label: "Stripe", y: 155 },
+        { label: "JIRA", y: 200 },
+      ].map((svc, i) => (
+        <g key={i}>
+          <rect x="14" y={svc.y - 12} width="50" height="24" rx="4" fill={C.paper} stroke={C.ink} strokeWidth="1" />
+          <text x="39" y={svc.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>{svc.label}</text>
+          {/* Webhook arrow */}
+          <line x1="64" y1={svc.y} x2="118" y2={svc.y} stroke={C.terracotta} strokeWidth="1.2" />
+          <path d={`M112 ${svc.y - 4} L120 ${svc.y} L112 ${svc.y + 4}`} fill="none" stroke={C.terracotta} strokeWidth="1.2" />
+        </g>
+      ))}
+      {/* Center: the gap */}
+      <rect x="120" y="50" width="80" height="180" rx="8" fill="none" stroke={C.terracotta} strokeWidth="2" strokeDasharray="6 4" />
+      <text x="160" y="135" textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.terracotta}>?</text>
+      <text x="160" y="155" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>no spec</text>
+      <text x="160" y="167" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>for this</text>
+      {/* Right: MCP Server → Agent */}
+      <rect x="214" y="100" width="56" height="40" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+      <text x="242" y="117" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>MCP</text>
+      <text x="242" y="130" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>server</text>
+      {/* MCP to Agent arrow */}
+      <line x1="242" y1="140" x2="242" y2="180" stroke={C.moss} strokeWidth="1.4" />
+      <path d="M237 175 L242 182 L247 175" fill="none" stroke={C.moss} strokeWidth="1.2" />
+      {/* Agent */}
+      <circle cx="242" cy="202" r="20" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+      <text x="242" y="200" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>agent</text>
+      <text x="242" y="212" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>waiting</text>
+      {/* Solid arrow label: "works" */}
+      <text x="262" y="165" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.moss}>works</text>
+      {/* Bottom: Triggers WG note */}
+      <text x="160" y="265" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>Triggers &amp; Events WG</text>
+      <text x="160" y="278" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>chartered March 2026</text>
+      <text x="160" y="291" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>RFC target: overdue</text>
+    </svg>
+  );
+}
+
+/** Spark architecture stack — Gemini 3.5 → Antigravity → Cloud VM → Surfaces. */
+export function SparkStackFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="spark-stack-title">
+      <title id="spark-stack-title">Gemini Spark architecture: Gemini 3.5 model, Antigravity harness, Cloud VM runtime, five delivery surfaces</title>
+      <defs>
+        <radialGradient id="sparkgrad" cx="50%" cy="35%" r="60%">
+          <stop offset="0%" stopColor={C.sky} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <rect x="20" y="10" width="280" height="300" rx="16" fill="url(#sparkgrad)" />
+      {/* Layer 1: Gemini 3.5 */}
+      <rect x="60" y="30" width="200" height="48" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.8" />
+      <text x="160" y="50" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>Gemini 3.5</text>
+      <text x="160" y="66" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>Spark Robin variant</text>
+      {/* Connector */}
+      <line x1="160" y1="78" x2="160" y2="98" stroke={C.inkSoft} strokeWidth="1.2" strokeDasharray="3 3" />
+      <path d="M155 93 L160 100 L165 93" fill="none" stroke={C.inkSoft} strokeWidth="1.2" />
+      {/* Layer 2: Antigravity */}
+      <rect x="60" y="100" width="200" height="48" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.8" />
+      <text x="160" y="120" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>Antigravity harness</text>
+      <text x="160" y="136" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>orchestration + tool routing</text>
+      {/* Connector */}
+      <line x1="160" y1="148" x2="160" y2="168" stroke={C.inkSoft} strokeWidth="1.2" strokeDasharray="3 3" />
+      <path d="M155 163 L160 170 L165 163" fill="none" stroke={C.inkSoft} strokeWidth="1.2" />
+      {/* Layer 3: Cloud VM */}
+      <rect x="60" y="170" width="200" height="48" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.8" />
+      <text x="160" y="190" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>Dedicated Cloud VM</text>
+      <text x="160" y="206" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>24/7 persistent runtime</text>
+      {/* Connectors to surfaces */}
+      {[80, 120, 160, 200, 240].map((x, i) => (
+        <line key={i} x1={x} y1="218" x2={x} y2="248" stroke={C.terracotta} strokeWidth="1" strokeDasharray="2 2" />
+      ))}
+      {/* Surface icons */}
+      {["app", "email", "chat", "halo", "chrome"].map((label, i) => {
+        const x = 80 + i * 40;
+        return (
+          <g key={i}>
+            <circle cx={x} cy="262" r="14" fill={C.paper} stroke={C.terracotta} strokeWidth="1.2" />
+            <text x={x} y="265" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{label}</text>
+          </g>
+        );
+      })}
+      <text x="160" y="298" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>five delivery surfaces</text>
+    </svg>
+  );
+}
+
+/** Spark MCP bridge — Google services natively, third-party via MCP. */
+export function SparkMCPBridgeFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="spark-mcp-title">
+      <title id="spark-mcp-title">Spark connects to Google services natively and to third-party services through Anthropic's MCP protocol</title>
+      <defs>
+        <radialGradient id="mcpgrad" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.2" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="160" r="145" fill="url(#mcpgrad)" />
+      {/* Central Spark node */}
+      <circle cx="160" cy="160" r="28" fill={C.paper} stroke={C.ink} strokeWidth="2" />
+      <text x="160" y="156" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>Spark</text>
+      <text x="160" y="168" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>agent</text>
+      {/* Left side: Google services (native, solid lines) */}
+      {[
+        { label: "Gmail", y: 70 },
+        { label: "Calendar", y: 120 },
+        { label: "Drive", y: 170 },
+        { label: "Photos", y: 220 },
+        { label: "Maps", y: 270 },
+      ].map((svc, i) => (
+        <g key={i}>
+          <rect x="14" y={svc.y - 14} width="62" height="28" rx="5" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+          <text x="45" y={svc.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{svc.label}</text>
+          <line x1="76" y1={svc.y} x2="132" y2="160" stroke={C.moss} strokeWidth="1.4" />
+        </g>
+      ))}
+      {/* "native" label */}
+      <text x="45" y="42" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.moss}>native APIs</text>
+      {/* Right side: third-party services (through MCP bridge) */}
+      {/* MCP bridge node */}
+      <rect x="220" y="142" width="42" height="36" rx="6" fill={C.butter} stroke={C.ink} strokeWidth="1.5" />
+      <text x="241" y="157" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fill={C.ink}>MCP</text>
+      <text x="241" y="170" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>bridge</text>
+      {/* Spark to MCP */}
+      <line x1="188" y1="160" x2="220" y2="160" stroke={C.ink} strokeWidth="1.4" />
+      <path d="M215 155 L222 160 L215 165" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      {/* Third-party services */}
+      {[
+        { label: "GitHub", y: 80 },
+        { label: "WhatsApp", y: 140 },
+        { label: "Spotify", y: 200 },
+        { label: "more…", y: 260 },
+      ].map((svc, i) => (
+        <g key={i}>
+          <rect x="274" y={svc.y - 12} width="38" height="24" rx="4" fill={C.paper} stroke={C.faint} strokeWidth="1" />
+          <text x="293" y={svc.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.inkSoft}>{svc.label}</text>
+          <line x1="262" y1={svc.y < 160 ? 148 : 172} x2="274" y2={svc.y} stroke={C.faint} strokeWidth="1" strokeDasharray="3 2" />
+        </g>
+      ))}
+      {/* "via MCP" label */}
+      <text x="293" y="52" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>via MCP</text>
+    </svg>
+  );
+}
+
+/** Spark surfaces — five places the agent shows up. */
+export function SparkSurfacesFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="spark-surfaces-title">
+      <title id="spark-surfaces-title">Gemini Spark appears across five surfaces: Gemini app, email, chat, Android Halo, and Chrome browser</title>
+      <defs>
+        <radialGradient id="surfgrad" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stopColor={C.peach} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.butter} stopOpacity="0.25" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="145" r="140" fill="url(#surfgrad)" />
+      {/* Central Spark circle */}
+      <circle cx="160" cy="145" r="32" fill={C.paper} stroke={C.ink} strokeWidth="2" />
+      <text x="160" y="141" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>Spark</text>
+      <text x="160" y="155" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>always on</text>
+      {/* Five surfaces radiating outward */}
+      {[
+        { label: "Gemini App", angle: -90, icon: "📱" },
+        { label: "Email", angle: -18, icon: "✉" },
+        { label: "Chat", angle: 54, icon: "💬" },
+        { label: "Halo", angle: 126, icon: "🔔" },
+        { label: "Chrome", angle: 198, icon: "🌐" },
+      ].map((surface, i) => {
+        const rad = (surface.angle * Math.PI) / 180;
+        const cx = 160 + Math.cos(rad) * 100;
+        const cy = 145 + Math.sin(rad) * 90;
+        const ix = 160 + Math.cos(rad) * 34;
+        const iy = 145 + Math.sin(rad) * 30;
+        return (
+          <g key={i}>
+            <line x1={ix} y1={iy} x2={cx} y2={cy} stroke={C.terracotta} strokeWidth="1.2" />
+            <circle cx={cx} cy={cy} r="22" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+            <text x={cx} y={cy + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>{surface.label}</text>
+          </g>
+        );
+      })}
+      {/* Also: Daily Brief, Info Agents, Flow — smaller, beneath */}
+      <text x="160" y="298" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>
+        + Daily Brief · Info Agents · Flow
+      </text>
+    </svg>
+  );
+}
