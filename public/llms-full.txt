@@ -59,7 +59,7 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
-Last updated: 2026-05-20
+Last updated: 2026-05-22
 
 ---
 
