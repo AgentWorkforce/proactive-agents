@@ -10,6 +10,54 @@ const C = {
   lavender: "#dccaee",
 };
 
+function AeonCronArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 112)">
+          {/* Clock with cron ticks */}
+          <circle r="28" strokeWidth="1.8" />
+          <circle r="2" fill={C.ink} stroke="none" />
+          <line x1="0" y1="0" x2="0" y2="-18" strokeWidth="1.8" />
+          <line x1="0" y1="0" x2="12" y2="6" strokeWidth="1.3" />
+          {/* Gear teeth around the clock */}
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+            const rad = (angle * Math.PI) / 180;
+            const x1 = Math.cos(rad) * 28;
+            const y1 = Math.sin(rad) * 28;
+            const x2 = Math.cos(rad) * 36;
+            const y2 = Math.sin(rad) * 36;
+            return (
+              <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth="1.4" />
+            );
+          })}
+          {/* Outer dashed orbit — self-healing loop */}
+          <circle r="48" strokeWidth="0.9" strokeDasharray="4 4" />
+          {/* Arrow on the orbit */}
+          <path d="M44 -18 L48 -10 L40 -12" strokeWidth="1.3" />
+          {/* Small skill boxes radiating */}
+          {[-50, -20, 10, 40].map((y, i) => (
+            <g key={i}>
+              <rect x={-80} y={y - 6} width="18" height="12" rx="2" strokeWidth="1.2" />
+              <line x1={-62} y1={y} x2={-48} y2={y > 0 ? 10 : y < -10 ? -10 : 0} strokeWidth="0.8" strokeDasharray="2 3" />
+            </g>
+          ))}
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 const SLUGS: Record<string, React.ComponentType> = {
   "three-primitives": PrimitivesArt,
   "reactive-vs-proactive": ReactivePushArt,
@@ -37,6 +85,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "junior-so-ai-employee": JuniorEmployeeArt,
   "google-spark-io-2026": SparkIOArt,
   "mcp-notifications": MCPNotifArt,
+  "aeon-cron-agent-framework": AeonCronArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {
