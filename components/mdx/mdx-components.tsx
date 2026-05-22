@@ -78,6 +78,9 @@ import {
   JuniorIdentityFigure,
   JuniorSurveillanceFigure,
   JuniorMemoryFigure,
+  AeonArchFigure,
+  AeonHealFigure,
+  AeonGapFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -161,6 +164,9 @@ export const mdxComponents = {
   JuniorIdentityFigure,
   JuniorSurveillanceFigure,
   JuniorMemoryFigure,
+  AeonArchFigure,
+  AeonHealFigure,
+  AeonGapFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"

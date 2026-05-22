@@ -3871,3 +3871,170 @@ export function SparkSurfacesFigure() {
     </svg>
   );
 }
+
+/** Aeon architecture — GitHub Actions cron → skill dispatch → output → commit. */
+export function AeonArchFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="aeon-arch-title">
+      <title id="aeon-arch-title">Aeon architecture: GitHub Actions cron dispatches skills, scores output, commits results back to the repo</title>
+      <defs>
+        <radialGradient id="aeongrad" cx="50%" cy="35%" r="60%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.butter} stopOpacity="0.2" />
+        </radialGradient>
+      </defs>
+      <rect x="20" y="10" width="280" height="300" rx="16" fill="url(#aeongrad)" />
+      {/* Layer 1: GitHub Actions cron */}
+      <rect x="55" y="30" width="210" height="42" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.6" />
+      <text x="160" y="48" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>GitHub Actions</text>
+      <text x="160" y="62" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>cron every 5 min</text>
+      {/* Connector */}
+      <line x1="160" y1="72" x2="160" y2="90" stroke={C.inkSoft} strokeWidth="1.2" strokeDasharray="3 3" />
+      <path d="M155 85 L160 92 L165 85" fill="none" stroke={C.inkSoft} strokeWidth="1.2" />
+      {/* Layer 2: aeon.yml dispatcher */}
+      <rect x="55" y="94" width="210" height="42" rx="8" fill={C.paper} stroke={C.ink} strokeWidth="1.6" />
+      <text x="160" y="112" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>aeon.yml dispatcher</text>
+      <text x="160" y="126" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>match cron → dispatch skill</text>
+      {/* Fan-out to skills */}
+      {[80, 130, 180, 230].map((x, i) => (
+        <line key={i} x1={x} y1="136" x2={x} y2="162" stroke={C.terracotta} strokeWidth="1" strokeDasharray="2 2" />
+      ))}
+      {/* Skill boxes */}
+      {[
+        { label: "brief", x: 80 },
+        { label: "review", x: 130 },
+        { label: "digest", x: 180 },
+        { label: "monitor", x: 230 },
+      ].map(({ label, x }, i) => (
+        <g key={i}>
+          <rect x={x - 22} y={164} width="44" height="28" rx="5" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+          <text x={x} y={181} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{label}</text>
+        </g>
+      ))}
+      {/* Converge to scoring */}
+      {[80, 130, 180, 230].map((x, i) => (
+        <line key={i} x1={x} y1="192" x2="160" y2="216" stroke={C.rule} strokeWidth="0.8" />
+      ))}
+      {/* Score + commit */}
+      <rect x="100" y="218" width="120" height="32" rx="6" fill={C.paper} stroke={C.terracotta} strokeWidth="1.4" />
+      <text x="160" y="233" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>score → commit</text>
+      <text x="160" y="244" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>Haiku 1–5 · git push</text>
+      {/* Loop back arrow */}
+      <path d="M220 234 Q260 234 260 180 Q260 50 220 50" fill="none" stroke={C.moss} strokeWidth="1.2" strokeDasharray="4 3" />
+      <path d="M224 46 L218 50 L224 54" fill="none" stroke={C.moss} strokeWidth="1.2" />
+      <text x="272" y="140" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.moss} transform="rotate(90, 272, 140)">state persists</text>
+      <text x="160" y="278" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>zero infrastructure, git is the database</text>
+    </svg>
+  );
+}
+
+/** Aeon self-healing loop — quality scoring drives repair. */
+export function AeonHealFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="aeon-heal-title">
+      <title id="aeon-heal-title">Aeon self-healing: skill runs are scored, health tracked over 30 runs, and repair dispatched on degradation</title>
+      <defs>
+        <radialGradient id="healgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.sage} stopOpacity="0.2" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="145" fill="url(#healgrad)" />
+      {/* Central skill execution */}
+      <circle cx="160" cy="100" r="30" fill={C.paper} stroke={C.ink} strokeWidth="1.8" />
+      <text x="160" y="96" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>skill</text>
+      <text x="160" y="108" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>runs</text>
+      {/* Arrow down to scoring */}
+      <line x1="160" y1="130" x2="160" y2="155" stroke={C.ink} strokeWidth="1.2" />
+      <path d="M155 150 L160 158 L165 150" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      {/* Quality score box */}
+      <rect x="115" y="160" width="90" height="36" rx="6" fill={C.paper} stroke={C.terracotta} strokeWidth="1.6" />
+      <text x="160" y="176" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>score: 1–5</text>
+      <text x="160" y="190" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>Haiku evaluates</text>
+      {/* Arrow down to health history */}
+      <line x1="160" y1="196" x2="160" y2="218" stroke={C.ink} strokeWidth="1.0" />
+      <path d="M155 213 L160 220 L165 213" fill="none" stroke={C.ink} strokeWidth="1.0" />
+      {/* Health history bar */}
+      <rect x="80" y="222" width="160" height="30" rx="5" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="237" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>30-run health history</text>
+      <text x="160" y="248" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>trend detection · API flags</text>
+      {/* Repair branch — left side */}
+      <line x1="80" y1="237" x2="40" y2="237" stroke={C.terracotta} strokeWidth="1.2" />
+      <line x1="40" y1="237" x2="40" y2="130" stroke={C.terracotta} strokeWidth="1.2" />
+      <line x1="40" y1="130" x2="128" y2="100" stroke={C.terracotta} strokeWidth="1.2" />
+      <path d="M122 96 L130 100 L124 106" fill="none" stroke={C.terracotta} strokeWidth="1.2" />
+      {/* Repair label */}
+      <rect x="12" y="165" width="56" height="24" rx="4" fill={C.paper} stroke={C.terracotta} strokeWidth="1" />
+      <text x="40" y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>repair</text>
+      <text x="40" y="186" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5.5" fill={C.faint}>≥3 failures</text>
+      {/* Score indicators — mini bars on right */}
+      {[
+        { score: 5, w: 24 },
+        { score: 4, w: 20 },
+        { score: 3, w: 14 },
+        { score: 2, w: 8 },
+        { score: 1, w: 4 },
+      ].map((s, i) => (
+        <g key={i}>
+          <rect x={258} y={80 + i * 16} width={s.w} height="10" rx="2" fill={C.sage} opacity="0.7" stroke={C.ink} strokeWidth="0.6" />
+          <text x={252} y={88 + i * 16} textAnchor="end" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>{s.score}</text>
+        </g>
+      ))}
+      <text x="270" y="165" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>quality</text>
+      <text x="270" y="174" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>gradient</text>
+      <text x="160" y="285" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>failure is the steady state</text>
+    </svg>
+  );
+}
+
+/** Aeon primitive gap map — clock solid, listener missing, inbox partial. */
+export function AeonGapFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="aeon-gap-title">
+      <title id="aeon-gap-title">Aeon primitive coverage: strong clock, absent listener, partial inbox, strong memory</title>
+      {/* Clock — strong */}
+      <g transform="translate(70, 100)">
+        <circle r="38" fill={C.sage} opacity="0.35" />
+        <circle r="38" fill="none" stroke={C.ink} strokeWidth="1.5" />
+        <path d="M-8 2 L-2 8 L10 -6" fill="none" stroke={C.moss} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
+      <text x="70" y="154" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>clock</text>
+      <text x="70" y="168" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.moss}>strong</text>
+      {/* Listener — absent */}
+      <g transform="translate(160, 100)">
+        <circle r="38" fill="none" stroke={C.rule} strokeWidth="1.5" strokeDasharray="5 4" />
+        <g stroke={C.rule} strokeWidth="2" strokeLinecap="round">
+          <line x1="-7" y1="-7" x2="7" y2="7" />
+          <line x1="7" y1="-7" x2="-7" y2="7" />
+        </g>
+      </g>
+      <text x="160" y="154" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>listener</text>
+      <text x="160" y="168" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>absent</text>
+      {/* Inbox — partial */}
+      <g transform="translate(250, 100)">
+        <circle r="38" fill={C.sage} opacity="0.12" />
+        <circle r="38" fill="none" stroke={C.ink} strokeWidth="1.5" strokeDasharray="6 3" />
+        <path d="M-8 0 Q-3 -6 0 0 Q3 6 8 0" fill="none" stroke={C.faint} strokeWidth="2" strokeLinecap="round" />
+      </g>
+      <text x="250" y="154" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>inbox</text>
+      <text x="250" y="168" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>partial</text>
+      {/* Memory — strong */}
+      <rect x="40" y="195" width="110" height="36" rx="5" fill={C.sage} opacity="0.2" />
+      <rect x="40" y="195" width="110" height="36" rx="5" fill="none" stroke={C.ink} strokeWidth="1.5" />
+      <path d="M78 207 L84 213 L96 201" fill="none" stroke={C.moss} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="95" y="225" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>memory</text>
+      {/* Durability — strong */}
+      <rect x="170" y="195" width="110" height="36" rx="5" fill={C.sage} opacity="0.2" />
+      <rect x="170" y="195" width="110" height="36" rx="5" fill="none" stroke={C.ink} strokeWidth="1.5" />
+      <path d="M208 207 L214 213 L226 201" fill="none" stroke={C.moss} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="225" y="225" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>durability</text>
+      {/* Dashed lines connecting rows */}
+      <line x1="70" y1="140" x2="70" y2="195" stroke={C.rule} strokeWidth="0.8" strokeDasharray="3 3" />
+      <line x1="160" y1="140" x2="160" y2="195" stroke={C.rule} strokeWidth="0.8" strokeDasharray="3 3" />
+      <line x1="250" y1="140" x2="250" y2="195" stroke={C.rule} strokeWidth="0.8" strokeDasharray="3 3" />
+      <text x="160" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        strong foundation, missing the listener
+      </text>
+    </svg>
+  );
+}

@@ -63,6 +63,84 @@ Last updated: 2026-05-20
 
 ---
 
+## Essay: Aeon and the ceiling of cron
+
+Published: 2026-05-22
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/aeon-cron-agent-framework/
+
+There is a GitHub repo called [Aeon](https://github.com/aaronjmars/aeon) that has been making the rounds in agent-builder communities. It's a self-contained autonomous agent framework: you fork a repo, configure some YAML, and suddenly you have a fleet of LLM-powered skills running unattended on [GitHub Actions](https://github.com/features/actions). Morning briefings, PR reviews, market monitoring, research digests, cost reports. 121 built-in skills across six categories. No servers, no containers, no queue infrastructure. The whole thing runs on free Actions minutes for public repos.
+
+I spent some time digging through the architecture, and my read is that Aeon represents two things at once: a genuinely well-executed answer to "how do I run scheduled LLM tasks without infrastructure," and a clear example of where that approach runs into a wall.
+
+## The architecture
+
+Aeon's core loop is straightforward. A GitHub Actions cron job runs every five minutes, parses an `aeon.yml` configuration file, matches each enabled skill against the current time, and dispatches the ones whose cron expressions match. Each skill is a markdown file with a system prompt. The dispatcher invokes Claude Code CLI with that prompt, restricted tool permissions, and whatever variables the skill needs. The output gets scored, logged, and committed back to the repo.
+
+The skill system is where the design shows care. Skills are composable through chains: you can run `token-movers` and `hacker-news-digest` in parallel at 7am, then feed both outputs into `morning-brief` for synthesis. The chain abstraction handles execution ordering, output propagation between steps, and parallel dispatch for independent skills. Reactive triggers add another layer, firing skills based on conditions rather than schedules: "when any skill fails three consecutive times, dispatch `skill-repair`."
+
+The configuration surface is clean. Each skill gets its own model selection (use Haiku for scoring, Opus for research), and an optional gateway routes calls through cheaper inference providers for roughly 67% cost reduction on high-volume deployments. Token usage gets tracked per skill with attribution, so you know exactly what your morning pipeline costs versus your evening recap.
+
+The zero-infrastructure angle is the real selling point. GitHub Actions provides the compute, the repo provides the state store, and Actions secrets provide the credential management. For someone who wants to run a dozen scheduled LLM tasks without provisioning anything, the fork-and-go experience is hard to beat.
+
+Aeon calls them "skills." [MindStudio](https://www.mindstudio.ai/) calls them "AI Workers." [Notion](/posts/notion-ships-the-primitives/) calls them "Workers" and "Custom Agents." The vocabulary is converging on units of autonomous work rather than conversational turns.
+
+## The part that's genuinely novel
+
+Most agent frameworks treat reliability as retry logic. A task fails, you retry it, maybe with exponential backoff. If it keeps failing, you log an error and move on. Aeon treats reliability as a feedback loop, and the implementation is more sophisticated than anything else I've seen in this space.
+
+Every skill execution gets scored 1 through 5 by a lightweight model (Haiku). Not just pass/fail, but a quality gradient: did the output contain the right information? Was it well-structured? Did it degrade from previous runs? These scores accumulate into a rolling 30-run health history per skill, stored as JSON in the repo.
+
+When the health metrics detect a pattern (three consecutive failures, a quality trend below threshold, recurring API errors), the system dispatches `skill-repair` automatically. The repair skill analyzes failure patterns, diagnoses root causes, and attempts remediation. A separate `self-improve` skill can evolve prompts and configuration based on performance data. And a `skill-health` audit runs three times daily to catch degradation before it compounds.
+
+This is the [durability primitive](/posts/why-proactive-is-hard/) taken seriously. The essay on hard problems argued that always-on agents need to "assume failure is the steady state." Aeon's architecture embodies that assumption. The agent doesn't just run. It monitors whether running well, and intervenes on itself when it isn't.
+
+The practical question is whether LLM-scored quality is reliable enough to drive automated remediation. A score of 3 versus 4 from Haiku is a judgment call, and judgment calls compound when they trigger repair workflows. But the direction is right: quality as a continuous signal rather than a binary gate is how you build systems that stay healthy over weeks and months of unattended operation.
+
+## Where cron hits its ceiling
+
+The [three-primitives framework](/posts/three-primitives/) makes the gaps in Aeon's architecture visible.
+
+The clock is solid. GitHub Actions cron expressions, reactive triggers, chain scheduling, and deduplication logic that prevents duplicate dispatches within calculated windows. For scheduled work, it covers the cases well.
+
+The listener is absent. Aeon has no mechanism to receive webhooks from external systems. It can't know that a GitHub issue was just created, a Stripe payment failed, or a Notion page changed — not until the next cron tick arrives and the skill polls for it. The `github-monitor` skill that runs at 9am catches issues created at 8:01am an hour late. A `token-movers` skill at noon misses market moves at 11:15. The blog's essay on [polling versus push](/posts/reactive-vs-proactive/) quantified this: roughly 4,600 API calls per day to watch four providers, mostly returning "nothing changed."
+
+The inbox is partial. Aeon can send messages to Telegram, Discord, and Slack, and receive commands back through bidirectional integrations. But this is notification, not coordination. There's no concept of "assign this task to agent X with these constraints and route the result to Slack channel Y." Skills communicate through `.outputs/` files committed to git, which works for chains but not for the kind of ad-hoc multi-agent coordination that the [inbox primitive](/posts/three-primitives/) describes.
+
+More fundamentally, without push-based change events, Aeon can't see transitions. It sees snapshots. A ticket that went from "in progress" back to "open" tells a different story than a ticket that was just created, and reconstructing that transition from memory is fragile when it's possible at all. The [push-breaks-too](/posts/push-breaks-too/) essay covered this: knowing what changed *from* matters as much as knowing what changed *to*.
+
+Adding a listener would require infrastructure beyond GitHub Actions: a webhook receiver, a queue, persistent state outside of git. That would undermine the zero-infrastructure value proposition that makes Aeon compelling. The ceiling isn't a bug. It's a consequence of the architecture's strongest feature.
+
+## The security boundary
+
+One area where the framework's simplicity creates real risk is authentication scoping. Aeon uses repo-level GitHub secrets shared across all 121 skills. The `GITHUB_TOKEN` that the `pr-review` skill uses is the same token available to `auto-merge`. A `GH_GLOBAL` personal access token for multi-repo skills is a broad-permission credential by design.
+
+The [durability essay](/posts/why-proactive-is-hard/) argued for per-agent, per-provider, per-workspace auth scoping as a security primitive. An agent that monitors your GitHub repos should not have write access to your production infrastructure. Aeon's shared-secret model works at hobby scale, but for the kind of always-on, unattended operation the framework is designed for, a credential compromise in one skill means every skill is exposed.
+
+## Through the framework
+
+<table>
+  <thead>
+    <tr><th></th><th>Aeon</th><th>ChatGPT Pulse</th><th>Junior.so</th><th>Notion</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Clock</td><td>Cron + reactive triggers + chains</td><td>Overnight batch</td><td>Always-on in Slack</td><td>Syncs + schedules + event triggers</td></tr>
+    <tr><td>Listener</td><td>Absent (polling only)</td><td>Absent</td><td>Slack channels, 3000+ apps</td><td>Webhooks + event triggers</td></tr>
+    <tr><td>Inbox</td><td>Telegram/Discord/Slack notifications</td><td>Cards in app only</td><td>Slack, email, calendar</td><td>Slack + pages + External Agents API</td></tr>
+    <tr><td>Memory</td><td>Multi-layer git-based state</td><td>Chat history + connected apps</td><td>Full organizational memory</td><td>Workspace-native</td></tr>
+    <tr><td>Durability</td><td>Self-healing quality loops</td><td>Minimal</td><td>Kubernetes isolation</td><td>Managed infrastructure</td></tr>
+    <tr><td>Auth model</td><td>Shared repo secrets</td><td>OAuth per service</td><td>Role-based per Junior</td><td>Per-Worker scoping</td></tr>
+  </tbody>
+</table>
+
+Aeon's row tells an interesting story. Strong clock, strong memory, strong durability, weak everything else. Compared to [Pulse](/posts/chatgpt-pulse/), it has the same listener gap but much better state management. Compared to [Junior.so](/posts/junior-so-ai-employee/), it trades organizational awareness for operational self-repair. Compared to [Notion](/posts/notion-ships-the-primitives/), it trades platform reach for zero-infrastructure simplicity.
+
+The self-healing loop is the piece that other products should study. Most of the agents on the [landscape](/market/proactive-agent-landscape/) treat reliability as someone else's problem. Aeon treats it as a feature, and the implementation, rolling quality scores, trend detection, automated repair, is more mature than what companies with actual infrastructure budgets have shipped.
+
+But the ceiling is real. Five-minute cron granularity, no webhook ingestion, no scoped auth, notification-only delivery. For morning briefings and research digests, these constraints don't matter. For the use cases where responsiveness is the whole value — triage a support ticket before the customer follows up, catch a deployment failure before it pages — cron-with-quality-scoring is still cron. The gap between "runs on a schedule" and "responds when the world changes" is exactly where infrastructure becomes unavoidable.
+
+---
+
 ## Essay: MCP notifications and the listener that isn't listening yet
 
 Published: 2026-05-20
