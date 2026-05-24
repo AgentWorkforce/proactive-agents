@@ -16,7 +16,7 @@ import { octokitFor, REPO, type CfEnv } from "../shared/runtime/cloudflare-conte
 
 const BUTTONDOWN_API = "https://api.buttondown.com/v1";
 const ISSUE_LABEL = "newsletter-draft";
-const SITE_URL = "https://proactiveagents.com";
+const SITE_URL = "https://proactiveagents.dev";
 
 let runtimeEnv: CfEnv | null = null;
 export function setEnv(env: CfEnv) {
