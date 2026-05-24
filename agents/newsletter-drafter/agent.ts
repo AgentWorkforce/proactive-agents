@@ -346,7 +346,7 @@ function renderEmailBody(
   }
 
   sections.push("---\n");
-  sections.push(`Read more at [proactiveagents.com](${SITE_URL})`);
+  sections.push(`Read more at [proactiveagents.dev](${SITE_URL})`);
 
   return sections.join("\n");
 }
@@ -413,7 +413,7 @@ async function createReviewIssue(
     "- [ ] Hit send (or discard if it's a quiet week)",
     "- [ ] Close this issue",
     "",
-    "_Filed by the newsletter-drafter agent — see [/agent](https://proactiveagents.com/agent) for the live log._",
+    "_Filed by the newsletter-drafter agent — see [/agent](https://proactiveagents.dev/agent) for the live log._",
   ].join("\n");
 
   const created = await octokit.rest.issues.create({
