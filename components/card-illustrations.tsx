@@ -58,6 +58,52 @@ function AeonCronArt() {
   );
 }
 
+function LindyAssistantArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 108)">
+          {/* Central inbox — the strongest primitive */}
+          <rect x="-22" y="-18" width="44" height="36" rx="4" strokeWidth="1.8" />
+          <polyline points="-22,-18 0,-2 22,-18" strokeWidth="1.6" />
+          {/* Push arrow from left (email/real-time) */}
+          <line x1="-65" y1="0" x2="-28" y2="0" strokeWidth="1.6" />
+          <polyline points="-34,5 -28,0 -34,-5" strokeWidth="1.4" fill="none" />
+          <circle cx="-72" cy="0" r="7" strokeWidth="1.4" />
+          <text x="-72" y="3" textAnchor="middle" fontSize="7" fill={C.ink} stroke="none">@</text>
+          {/* Poll loop from right (other integrations) */}
+          <path d="M28,0 L52,0" strokeWidth="1.2" strokeDasharray="3 3" />
+          <circle cx="64" cy="0" r="12" strokeWidth="1.2" />
+          {/* Clock hands inside poll circle */}
+          <line x1="64" y1="0" x2="64" y2="-7" strokeWidth="1.1" />
+          <line x1="64" y1="0" x2="69" y2="3" strokeWidth="0.9" />
+          <circle cx="64" cy="0" r="1.5" fill={C.ink} stroke="none" />
+          {/* Curved refresh arrow around poll circle */}
+          <path d="M76,0 A12,12 0 0,1 64,12" strokeWidth="1" />
+          <polyline points="66,10 64,12 66,14" strokeWidth="1" />
+          {/* iMessage bubble below */}
+          <rect x="-16" y="30" width="32" height="18" rx="8" strokeWidth="1.2" />
+          <path d="M4,48 L8,54 L12,48" strokeWidth="1" />
+          <line x1="-6" y1="38" x2="6" y2="38" strokeWidth="1" />
+          <line x1="-4" y1="42" x2="4" y2="42" strokeWidth="0.8" />
+          {/* Dashed delivery lines */}
+          <line x1="0" y1="18" x2="0" y2="30" strokeWidth="0.9" strokeDasharray="2 2" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 const SLUGS: Record<string, React.ComponentType> = {
   "three-primitives": PrimitivesArt,
   "reactive-vs-proactive": ReactivePushArt,
@@ -86,6 +132,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "google-spark-io-2026": SparkIOArt,
   "mcp-notifications": MCPNotifArt,
   "aeon-cron-agent-framework": AeonCronArt,
+  "lindy-ai-personal-assistant": LindyAssistantArt,
 };
 
 export function CardArt({ slug }: { slug: string }) {

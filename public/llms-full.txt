@@ -93,7 +93,7 @@ The Notion integration is similar. Lindy's own documentation confirms that all s
 
 This isn't a Lindy-specific problem. Confluence doesn't offer webhooks in all deployment configurations. Notion's API has rate limits that make aggressive polling impractical. Many of the 2,500+ integrations Lindy gained through its [Pipedream partnership](https://pipedream.com/blog/lindy/) inherit Pipedream's trigger model, which uses polling for providers that don't support webhooks natively.
 
-The result is a product where the user experience feels uniform, but the underlying architecture isn't. Your email agent reacts in seconds. Your Confluence watcher reacts in minutes. Your Notion monitor might miss a rapid sequence of changes between polling intervals. None of this is surfaced to the user in a way that sets expectations. The agent builder doesn't distinguish between "this trigger fires in real time" and "this trigger checks every N seconds."
+The result is a product where the user experience feels uniform, but the underlying architecture isn't. The email agent reacts in seconds while the Confluence watcher takes minutes, and a Notion monitor might miss a rapid sequence of changes between polling intervals entirely. None of this is surfaced to the user in a way that sets expectations. The agent builder doesn't distinguish between "this trigger fires in real time" and "this trigger checks every N seconds."
 
 For a morning briefing workflow, the distinction barely matters. For an agent that's supposed to catch a production incident summary the moment it's posted to a Confluence page, 15 minutes is a long time.
 
@@ -121,7 +121,7 @@ Clock: solid. Listener: strong where it counts, poll-based everywhere else. Inbo
 
 Lindy made a product bet that's worth naming: optimize the consumer experience first, build the infrastructure as needed. This is the opposite of the approach Notion took when it [shipped composable building blocks](/posts/notion-ships-the-primitives/) and let developers wire their own proactive behavior. Lindy gives you a polished agent that works today for the use cases most people care about.
 
-That bet has real strengths. The onboarding is fast. The iMessage integration means adoption doesn't require changing your workflow. The agent builder lets non-technical users create sophisticated automations. For someone who wants an AI that handles their email and calendar without requiring them to understand webhooks, triggers, or polling intervals, Lindy is one of the best options available. The [Zapier review](https://zapier.com/blog/lindy-review/) captures this well: "you'll probably like Lindy if your life is mostly email, calendar, and meetings, and you'd rather delegate via text than learn another dashboard."
+That bet has real strengths. Onboarding is fast, the iMessage integration means adoption doesn't require changing your workflow, and the agent builder lets non-technical users create sophisticated automations without ever thinking about webhooks or polling intervals. For that audience, Lindy is one of the best options available. The [Zapier review](https://zapier.com/blog/lindy-review/) captures this well: "you'll probably like Lindy if your life is mostly email, calendar, and meetings, and you'd rather delegate via text than learn another dashboard."
 
 The trade is in the infrastructure layer. Lindy's state management between agent runs is opaque to users. You can't inspect what an agent remembers from its last execution, and the persistence model isn't documented in a way that lets you reason about it. When agents fail mid-execution, the recovery behavior varies by integration. The credit-based pricing means an agent that polls aggressively or triggers frequently can run up costs in ways that are hard to predict. [G2 reviewers](https://www.g2.com/products/lindy-ai/reviews) cite cost unpredictability as the top concern, with 42 mentions of "expensive" and 35 of "high subscription cost."
 
@@ -137,7 +137,7 @@ It works less well for teams building operational workflows where every integrat
 
 The interesting question is whether the architecture evolves. Lindy already has the right instincts. Push for email was the correct priority. The Pipedream partnership gives them integration breadth that would take years to build in-house. The agent builder is flexible enough to handle complex workflows. If they close the listener gap for their most-used integrations (even getting Notion and Slack to push instead of poll would cover a lot of ground), the scorecard tilts from "two and a half" to a genuine three out of three.
 
-For now, Lindy is one of the more honest products in the proactive agent space. It does a lot, it does the core things well, and the places where it compromises are defensible engineering decisions, not marketing misdirection. Most products in this space don't earn that description.
+For now, Lindy covers more ground than most products in the proactive agent space, and the places where it compromises are defensible engineering decisions rather than marketing misdirection. If you're evaluating tools in this space, it's a useful reference point for what "consumer-first proactive" looks like in practice.
 
 ---
 
