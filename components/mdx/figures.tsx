@@ -4038,3 +4038,183 @@ export function AeonGapFigure() {
     </svg>
   );
 }
+
+/** Lindy architecture — push email core surrounded by polling integrations. */
+export function LindyArchFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="lindy-arch-title">
+      <title id="lindy-arch-title">Lindy architecture: push-based email core with polling integrations around it</title>
+      <defs>
+        <radialGradient id="lindy-core-grad" cx="50%" cy="45%" r="30%">
+          <stop offset="0%" stopColor={C.rose} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.rose} stopOpacity="0.1" />
+        </radialGradient>
+      </defs>
+      {/* Central push core */}
+      <circle cx="160" cy="145" r="55" fill="url(#lindy-core-grad)" />
+      <circle cx="160" cy="145" r="55" fill="none" stroke={C.ink} strokeWidth="1.5" />
+      {/* Envelope icon */}
+      <rect x="140" y="130" width="40" height="28" rx="3" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <path d="M140 130 L160 148 L200 130" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinejoin="round" />
+      <text x="160" y="175" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>push</text>
+      {/* Lightning bolt for real-time */}
+      <path d="M155 118 L159 126 L153 126 L157 134" fill="none" stroke={C.terracotta} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      {/* Outer polling ring */}
+      <circle cx="160" cy="145" r="110" fill="none" stroke={C.rule} strokeWidth="1" strokeDasharray="6 4" />
+      {/* Polling integration nodes */}
+      {[
+        { label: "Notion", angle: -60 },
+        { label: "Confluence", angle: -20 },
+        { label: "Slack", angle: 20 },
+        { label: "HubSpot", angle: 60 },
+      ].map(({ label, angle }, i) => {
+        const rad = ((angle - 90) * Math.PI) / 180;
+        const x = 160 + Math.cos(rad) * 110;
+        const y = 145 + Math.sin(rad) * 110;
+        return (
+          <g key={i}>
+            <circle cx={x} cy={y} r="18" fill={C.butter} opacity="0.4" />
+            <circle cx={x} cy={y} r="18" fill="none" stroke={C.ink} strokeWidth="1.2" />
+            <text x={x} y={y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{label}</text>
+            {/* Dashed line to core — poll */}
+            <line x1={x + (160 - x) * 0.18} y1={y + (145 - y) * 0.18} x2={160 + (x - 160) * 0.5} y2={145 + (y - 145) * 0.5} stroke={C.faint} strokeWidth="0.9" strokeDasharray="3 3" />
+          </g>
+        );
+      })}
+      {/* iMessage delivery arrow going down */}
+      <path d="M160 200 L160 265" stroke={C.ink} strokeWidth="1.4" fill="none" />
+      <path d="M155 260 L160 268 L165 260" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinejoin="round" />
+      {/* Phone icon */}
+      <rect x="148" y="270" width="24" height="36" rx="4" fill="none" stroke={C.ink} strokeWidth="1.3" />
+      <line x1="155" y1="298" x2="165" y2="298" stroke={C.ink} strokeWidth="1" strokeLinecap="round" />
+      <text x="160" y="318" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>iMessage</text>
+      <text x="280" y="50" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>poll every 10–15 min</text>
+      <path d="M265 53 L275 60" stroke={C.faint} strokeWidth="0.7" strokeDasharray="2 2" />
+    </svg>
+  );
+}
+
+/** Lindy polling trigger — clock ticking with a configurable interval field. */
+export function LindyPollFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="lindy-poll-title">
+      <title id="lindy-poll-title">Lindy polling triggers: configurable intervals mask a poll-based architecture</title>
+      {/* Two trigger cards side by side */}
+      {/* Left card: Email — push */}
+      <rect x="20" y="30" width="125" height="140" rx="8" fill={C.sage} opacity="0.15" />
+      <rect x="20" y="30" width="125" height="140" rx="8" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="82" y="55" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>Gmail trigger</text>
+      {/* Lightning bolt */}
+      <path d="M75 70 L82 85 L72 85 L79 100" fill="none" stroke={C.moss} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="82" y="120" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>push-based</text>
+      <text x="82" y="135" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>Pub/Sub</text>
+      <text x="82" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>fires instantly</text>
+      {/* Right card: Confluence — poll */}
+      <rect x="175" y="30" width="125" height="140" rx="8" fill={C.butter} opacity="0.15" />
+      <rect x="175" y="30" width="125" height="140" rx="8" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="237" y="55" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>Confluence trigger</text>
+      {/* Clock icon */}
+      <circle cx="237" cy="82" r="14" fill="none" stroke={C.terracotta} strokeWidth="1.5" />
+      <line x1="237" y1="82" x2="237" y2="73" stroke={C.terracotta} strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="237" y1="82" x2="244" y2="85" stroke={C.terracotta} strokeWidth="1.2" strokeLinecap="round" />
+      <text x="237" y="120" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>poll-based</text>
+      <text x="237" y="135" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>every 900s</text>
+      <text x="237" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>≈ 15 min delay</text>
+      {/* Divider */}
+      <line x1="160" y1="45" x2="160" y2="155" stroke={C.rule} strokeWidth="1" strokeDasharray="4 3" />
+      {/* Bottom: same UI, different architecture */}
+      <rect x="40" y="200" width="240" height="65" rx="6" fill={C.paper} stroke={C.rule} strokeWidth="1" />
+      <text x="160" y="222" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.ink}>Agent Builder UI</text>
+      <text x="160" y="238" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>same interface, different latency</text>
+      <text x="160" y="252" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>user sees no distinction</text>
+      {/* Arrows from cards to UI */}
+      <path d="M82 170 L82 200" stroke={C.ink} strokeWidth="0.9" strokeDasharray="3 3" />
+      <path d="M237 170 L237 200" stroke={C.ink} strokeWidth="0.9" strokeDasharray="3 3" />
+      <text x="160" y="292" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        uniform UX hides the latency gap
+      </text>
+    </svg>
+  );
+}
+
+/** Lindy scorecard — three primitives with fill levels. */
+export function LindyScorecardFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="lindy-score-title">
+      <title id="lindy-score-title">Lindy scorecard: clock full, listener half, inbox full</title>
+      {/* Three vertical bars */}
+      {[
+        { label: "clock", fill: 1.0, color: C.sage, status: "✓" },
+        { label: "listener", fill: 0.55, color: C.butter, status: "~" },
+        { label: "inbox", fill: 1.0, color: C.rose, status: "✓" },
+      ].map(({ label, fill, color, status }, i) => {
+        const x = 55 + i * 90;
+        const barH = 160;
+        const barY = 60;
+        const fillH = barH * fill;
+        return (
+          <g key={i}>
+            {/* Bar background */}
+            <rect x={x} y={barY} width="50" height={barH} rx="6" fill={C.rule} opacity="0.3" />
+            <rect x={x} y={barY} width="50" height={barH} rx="6" fill="none" stroke={C.ink} strokeWidth="1.3" />
+            {/* Fill from bottom */}
+            <rect x={x + 3} y={barY + barH - fillH + 3} width="44" height={fillH - 6} rx="4" fill={color} opacity="0.5" />
+            {/* Status badge */}
+            <circle cx={x + 25} cy={barY + 20} r="10" fill={fill >= 1 ? C.sage : C.butter} opacity="0.6" />
+            <text x={x + 25} y={barY + 24} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="11" fill={C.ink}>{status}</text>
+            {/* Label */}
+            <text x={x + 25} y={barY + barH + 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{label}</text>
+          </g>
+        );
+      })}
+      {/* Annotation for listener */}
+      <text x="160" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>
+        email: push · everything else: poll
+      </text>
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        ≈ 2.5 / 3
+      </text>
+    </svg>
+  );
+}
+
+/** Lindy tradeoff — consumer polish on one side, infrastructure depth on the other. */
+export function LindyTradeoffFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="lindy-trade-title">
+      <title id="lindy-trade-title">Lindy tradeoff: consumer polish versus infrastructure depth</title>
+      {/* Balance beam */}
+      <circle cx="160" cy="170" r="6" fill={C.ink} />
+      <line x1="160" y1="170" x2="160" y2="240" stroke={C.ink} strokeWidth="2" />
+      <rect x="130" y="240" width="60" height="8" rx="3" fill={C.ink} />
+      {/* Beam — tilted left (consumer polish heavier) */}
+      <line x1="50" y1="140" x2="270" y2="160" stroke={C.ink} strokeWidth="2" strokeLinecap="round" />
+      {/* Left pan — Consumer polish (lower = heavier) */}
+      <line x1="50" y1="140" x2="50" y2="145" stroke={C.ink} strokeWidth="1.2" />
+      <path d="M20 145 Q50 160 80 145" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <rect x="22" y="105" width="56" height="32" rx="5" fill={C.rose} opacity="0.3" />
+      <rect x="22" y="105" width="56" height="32" rx="5" fill="none" stroke={C.ink} strokeWidth="1" />
+      <text x="50" y="118" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>consumer</text>
+      <text x="50" y="130" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>polish</text>
+      {/* Right pan — Infrastructure depth (higher = lighter) */}
+      <line x1="270" y1="160" x2="270" y2="165" stroke={C.ink} strokeWidth="1.2" />
+      <path d="M240 165 Q270 180 300 165" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <rect x="242" y="125" width="56" height="32" rx="5" fill={C.lavender} opacity="0.3" />
+      <rect x="242" y="125" width="56" height="32" rx="5" fill="none" stroke={C.ink} strokeWidth="1" />
+      <text x="270" y="138" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>infra</text>
+      <text x="270" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>depth</text>
+      {/* Annotations */}
+      <text x="50" y="80" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>iMessage, onboarding</text>
+      <text x="50" y="91" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>2,500 integrations</text>
+      <text x="270" y="105" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>state opacity</text>
+      <text x="270" y="116" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>scoped auth gap</text>
+      {/* Bottom label */}
+      <text x="160" y="280" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        Lindy chose polish first, infrastructure second
+      </text>
+      <text x="160" y="296" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>
+        right call for the target user
+      </text>
+    </svg>
+  );
+}

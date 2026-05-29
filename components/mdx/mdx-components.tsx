@@ -81,6 +81,10 @@ import {
   AeonArchFigure,
   AeonHealFigure,
   AeonGapFigure,
+  LindyArchFigure,
+  LindyPollFigure,
+  LindyScorecardFigure,
+  LindyTradeoffFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -167,6 +171,10 @@ export const mdxComponents = {
   AeonArchFigure,
   AeonHealFigure,
   AeonGapFigure,
+  LindyArchFigure,
+  LindyPollFigure,
+  LindyScorecardFigure,
+  LindyTradeoffFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"
