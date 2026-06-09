@@ -1,0 +1,101 @@
+---
+title: "Claude Code routines and the managed runtime"
+summary: "Anthropic shipped routines for Claude Code — scheduled, API-triggered, and GitHub-triggered agents running on managed cloud infrastructure. It's the closest any product in this series has come to shipping all three primitives."
+date: "2026-06-09"
+accent: "lavender"
+dropcap: true
+---
+
+[Anthropic](https://anthropic.com) recently shipped something called [routines](https://claude.com/blog/introducing-routines-in-claude-code) for [Claude Code](https://code.claude.com). The feature reads like a wish list from half the essays in this series: define a prompt, point it at a repo, attach connectors for Slack and Linear and Google Drive, then set it to run on a schedule, or in response to a GitHub event, or when an external system hits an API endpoint. It runs on Anthropic's cloud infrastructure. You close your laptop and it keeps going.
+
+Most products in this space get the clock right and stop there. A few add webhook endpoints. Almost none solve the infrastructure problem, the [eight-week tax](/posts/the-webhook-tax/) of building reliable integrations and managed compute underneath. Routines take a different approach: Anthropic absorbs the infrastructure entirely. You write a prompt. They run it.
+
+The question is whether that managed runtime fills the gaps this series has been tracking, or whether it just makes the clock really, really convenient.
+
+<Scene figure="RoutineCloudFigure" caption="Define once, run unattended.">
+
+## The architecture
+
+A routine is a saved configuration: a prompt, one or more GitHub repositories, a cloud environment, and a set of [MCP connectors](https://code.claude.com/docs/en/mcp). When a trigger fires, Anthropic spins up a cloud session, clones the repos, and runs Claude Code with the saved prompt. The session has access to every tool the prompt needs: shell commands, skills committed to the repo, and whatever external services are wired through connectors.
+
+The zero-infrastructure angle is the headline. [Aeon](/posts/aeon-cron-agent-framework/) used GitHub Actions as free compute. [Hermes](/posts/making-hermes-proactive/) requires a self-hosted gateway. Routines use Anthropic's own cloud, which means no Actions minutes to manage, no YAML to maintain, no repo-as-state-store workarounds. You create a routine from the [web UI](https://claude.ai/code/routines), from the desktop app, or from the CLI with `/schedule`. All three surfaces write to the same account.
+
+Each run creates a session you can inspect after the fact. You see what Claude did, review the changes, continue the conversation, or open a pull request. The session is a full transcript, not a log file. If something went wrong, you read the reasoning, not just the output.
+
+Environments add another layer. Each routine runs inside a cloud environment that controls network access, environment variables, and setup scripts. The default environment allows package registries and common development domains but blocks arbitrary outbound traffic. If your routine needs to reach an internal API, you whitelist the domain. Environment setup scripts are cached, so dependency installation doesn't repeat on every session.
+
+<Callout tone="warm" label="The identity trade-off">
+Routines act as you. Commits carry your GitHub user. Slack messages through connectors come from your linked account. There's no separate "agent identity," so a routine that triages support tickets and a routine that refactors code both operate under the same credentials. The [durability essay](/posts/why-proactive-is-hard/) argued for per-agent, per-workspace auth scoping. Routines trade that granularity for setup simplicity.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure="RoutineTriggersFigure" caption="Three triggers, three primitives.">
+
+## Three triggers
+
+Routines support three trigger types, and they map, imperfectly, to the three primitives this series has been tracking.
+
+**Schedule triggers** are the clock. Hourly, daily, weekdays, weekly, or custom cron expressions via the CLI. One-off runs are also supported: `/schedule in 2 weeks, clean up the feature flag` fires once and auto-disables. The minimum interval is one hour, coarser than [Aeon's](/posts/aeon-cron-agent-framework/) five-minute cron but fine for the use cases routines target: nightly PR reviews, weekly documentation audits, overnight backlog grooming.
+
+**GitHub event triggers** are a partial listener. When a pull request opens, closes, gets labeled, or syncs, or when a release is created or published, the routine wakes up. You can filter by author, title, base branch, labels, draft state. Each matching event starts its own session. This is real push-based change detection for one provider. The [Claude GitHub App](https://github.com/apps/claude) delivers webhook events directly to the routine. No endpoint to manage, no signature verification, no queue infrastructure on your end.
+
+**API triggers** are the inbox, or at least a doorway to one. Each routine gets a unique HTTPS endpoint with a bearer token. POST to it and a new session starts, with an optional `text` field for run-specific context like an alert body or a failing log. Your monitoring system can call the routine when an error threshold crosses. Your deploy pipeline can trigger a smoke test after each push. The routine doesn't poll for these events. It waits to be called.
+
+The combination is the interesting part. A PR review routine can fire on every new pull request (GitHub trigger), run nightly to catch stale PRs (schedule trigger), and accept ad-hoc invocations from a deploy script (API trigger). Same prompt, same repos, same connectors, three ways to wake up.
+
+</Scene>
+
+<Scene figure="RoutineGapFigure" caption="Strong clock, partial listener, flexible inbox.">
+
+## Where the gaps remain
+
+The clock is solid. No argument.
+
+The listener is GitHub-only. Two event categories: pull requests and releases. No Slack message events, no Linear issue transitions, no Notion page changes, no Sentry alerts as native triggers. If your routine needs to react to something outside GitHub, you either use the API trigger and wire the integration yourself, or you run a scheduled routine that polls through MCP connectors.
+
+This is a real limitation for several of the use cases routines describe in their own documentation. "Alert triage" assumes a monitoring tool calls the API endpoint, which works, but means the monitoring tool has to know about the routine. The routine can't subscribe to events from [Sentry](https://sentry.io) or [PagerDuty](https://pagerduty.com) natively. The [three-primitives framework](/posts/three-primitives/) drew a clear distinction between a listener (the agent subscribes to changes) and an API endpoint (external systems push to the agent). Both are useful, but they place different burdens on the developer.
+
+MCP connectors partially close the gap at run time. A routine can use connectors to read from Slack, query Linear, search Google Drive during execution. But connectors are tools the routine invokes when running, not event sources that trigger execution. The difference is latency: a scheduled routine that checks Slack every hour through a connector catches messages an hour late. A real listener would catch them when they arrive.
+
+The inbox story is stronger than it first appears. MCP connectors let routines write to external services during a run: post to Slack, create [Linear](https://linear.app) tickets, update Google Drive. The API trigger lets external services write to the routine. Combined, you get bidirectional communication between the routine and the outside world. It's tool-use rather than native messaging, but for most workflows the practical result is close enough.
+
+Branch-push scoping deserves a mention. By default, routines can only push to `claude/`-prefixed branches. A runaway routine can't force-push to main or overwrite protected branches. You can opt out per repository, but the default leans toward safety. The series has argued for narrow auth scoping at the [durability layer](/posts/why-proactive-is-hard/), and this is one concrete example of it shipping in production.
+
+<Callout tone="thought" label="The one-off pattern">
+One-off runs (`/schedule tomorrow at 9am, summarize yesterday's merged PRs`) are a feature no other product in this series has shipped. They're temporal bookmarks: set a reminder that runs with full agent capabilities, then auto-disables. It sits somewhere between a calendar reminder and a cron job, and it turns out to be useful for the kind of cleanup tasks that developers forget about three days after a merge.
+</Callout>
+
+</Scene>
+
+## Through the framework
+
+<table>
+  <thead>
+    <tr><th></th><th>Routines</th><th>Aeon</th><th>Pulse</th><th>Hermes</th><th>Notion</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Clock</td><td>Schedule triggers + cron + one-offs</td><td>Cron + reactive triggers</td><td>Overnight batch</td><td>Cron tasks</td><td>Syncs + schedules</td></tr>
+    <tr><td>Listener</td><td>GitHub events (PR + release)</td><td>Absent (polling only)</td><td>Absent</td><td>Basic webhooks</td><td>Webhooks + event triggers</td></tr>
+    <tr><td>Inbox</td><td>API endpoint + MCP connectors</td><td>Telegram/Discord/Slack</td><td>Cards in app only</td><td>Slack + CLI</td><td>Slack + pages + API</td></tr>
+    <tr><td>Durability</td><td>Managed cloud + session transcripts</td><td>Self-healing quality loops</td><td>Minimal</td><td>Session memory</td><td>Managed infrastructure</td></tr>
+    <tr><td>Auth model</td><td>User identity, branch-scoped pushes</td><td>Shared repo secrets</td><td>OAuth per service</td><td>Per-session</td><td>Per-Worker scoping</td></tr>
+    <tr><td>Infrastructure</td><td>Fully managed (Anthropic cloud)</td><td>GitHub Actions</td><td>OpenAI cloud</td><td>Self-hosted gateway</td><td>Notion-managed</td></tr>
+  </tbody>
+</table>
+
+Routines land in an interesting position. Stronger clock than [Pulse](/posts/chatgpt-pulse/), broader listener than [Aeon](/posts/aeon-cron-agent-framework/), more flexible inbox than [Hermes](/posts/making-hermes-proactive/). The managed infrastructure removes the setup burden that makes Aeon's fork-and-go appealing and Hermes's gateway work to maintain. The MCP connector system gives routines reach into services that other products either can't access or require custom webhook plumbing to connect.
+
+The comparison with [Notion's approach](/posts/notion-ships-the-primitives/) is instructive. Notion built composable primitives into a platform where the data already lives. Routines built a managed runtime around Claude Code's existing capabilities. Both solve the infrastructure problem in different ways: Notion by owning the workspace, Anthropic by owning the compute.
+
+<Callout tone="cool" label="The daily limits">
+Pro accounts get 5 routine runs per day. Max gets 15. Team and Enterprise get 25. One-off runs are exempt from the cap. For teams running dozens of agents, the daily limit means choosing carefully which workflows earn a routine versus a manual session. Usage credits can extend the cap, but this is a product that nudges you toward fewer, well-defined automations rather than sprawling agent fleets.
+</Callout>
+
+## What comes next
+
+Routines are the first product in this series where a major AI lab absorbed the entire infrastructure layer. You don't manage servers, queues, webhook endpoints, or credential rotation. You write a prompt, connect your repos and services, and the runtime handles the rest.
+
+The gap is the listener. GitHub events are a start, but most of the proactive use cases this series has explored need change detection across Slack, Linear, Notion, Sentry, and dozens of other services. Until routines can wake up when something changes in those systems, scheduled runs through MCP connectors are the workaround, with the latency penalty this series has been measuring since the [polling versus push](/posts/reactive-vs-proactive/) essay.
+
+The most likely path forward is expanding the GitHub trigger model to more event sources. MCP connectors already provide the authentication and tool surface for dozens of services. Adding event-trigger support for those same connectors would close the listener gap without requiring a fundamentally different architecture. Whether Anthropic builds that natively, or whether the [MCP protocol itself grows server-initiated events](/posts/mcp-notifications/), is the question worth watching.
