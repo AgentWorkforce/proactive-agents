@@ -4178,6 +4178,162 @@ export function LindyScorecardFigure() {
   );
 }
 
+/** Routine cloud — prompt + repo + connectors → managed cloud → session output. */
+export function RoutineCloudFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="routine-cloud-title">
+      <title id="routine-cloud-title">Routine architecture: prompt, repo, and connectors feed into Anthropic's managed cloud</title>
+      <defs>
+        <radialGradient id="rcgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.lavender} stopOpacity="0.8" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#rcgrad)" />
+      {/* Config inputs — left column */}
+      {[
+        { y: 72, label: "prompt" },
+        { y: 112, label: "repo" },
+        { y: 152, label: "connectors" },
+      ].map((item) => (
+        <g key={item.label}>
+          <rect x="20" y={item.y - 14} width="72" height="28" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+          <text x="56" y={item.y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>{item.label}</text>
+        </g>
+      ))}
+      {/* Arrows from config to cloud */}
+      <g stroke={C.terracotta} strokeWidth="1.4" fill="none" strokeLinecap="round">
+        {[72, 112, 152].map((y) => (
+          <g key={y}>
+            <line x1="92" y1={y} x2="124" y2={y > 112 ? 140 : y < 112 ? 120 : 130} />
+          </g>
+        ))}
+      </g>
+      {/* Cloud shape — managed infrastructure */}
+      <g transform="translate(180, 118)">
+        <path
+          d="M-30 22 Q-48 22 -48 6 Q-48 -10 -30 -14 Q-26 -32 -6 -32 Q10 -32 18 -20 Q22 -24 30 -24 Q44 -24 44 -10 Q52 -8 52 4 Q52 22 36 22 Z"
+          fill={C.paper} stroke={C.ink} strokeWidth="1.8"
+        />
+        <text x="2" y="4" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>cloud</text>
+        <text x="2" y="16" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>managed</text>
+      </g>
+      {/* Arrow from cloud to session */}
+      <g stroke={C.terracotta} strokeWidth="1.6" fill="none" strokeLinecap="round">
+        <path d="M215 150 L250 180" />
+        <path d="M244 174 L250 180 L243 182" />
+      </g>
+      {/* Session output */}
+      <g transform="translate(260, 210)">
+        <rect x="-32" y="-22" width="64" height="44" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+        <text x="0" y="-4" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fill={C.ink}>session</text>
+        <line x1="-18" y1="6" x2="18" y2="6" stroke={C.faint} strokeWidth="0.8" />
+        <line x1="-18" y1="14" x2="12" y2="14" stroke={C.faint} strokeWidth="0.8" />
+      </g>
+      {/* Bottom label */}
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.terracotta}>
+        configure once, run unattended
+      </text>
+    </svg>
+  );
+}
+
+/** Routine triggers — three trigger types mapped to three primitives. */
+export function RoutineTriggersFigure() {
+  const triggers = [
+    { x: 60, y: 80, label: "schedule", prim: "clock", fill: C.butter },
+    { x: 60, y: 155, label: "github", prim: "listener", fill: C.sage },
+    { x: 60, y: 230, label: "api", prim: "inbox", fill: C.lavender },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="routine-trig-title">
+      <title id="routine-trig-title">Three routine trigger types mapped to three proactive primitives</title>
+      <defs>
+        <radialGradient id="rtgrad" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#rtgrad)" />
+      {triggers.map((t) => (
+        <g key={t.label}>
+          {/* Trigger box — left */}
+          <rect x={t.x - 38} y={t.y - 16} width="76" height="32" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.4" />
+          <text x={t.x} y={t.y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fill={C.ink}>{t.label}</text>
+          {/* Connecting line */}
+          <line x1={t.x + 40} y1={t.y} x2={220 - 34} y2={t.y} stroke={C.faint} strokeWidth="1.2" strokeDasharray="4 3" />
+          <path d={`M${220 - 40} ${t.y - 5} L${220 - 32} ${t.y} L${220 - 40} ${t.y + 5}`} stroke={C.terracotta} strokeWidth="1.4" fill="none" />
+          {/* Primitive circle — right */}
+          <circle cx="220" cy={t.y} r="30" fill={t.fill} stroke={C.ink} strokeWidth="1.5" />
+          <text x="220" y={t.y - 2} textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>{t.prim}</text>
+          <text x="220" y={t.y + 12} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>primitive</text>
+        </g>
+      ))}
+      {/* Connecting dashes between primitives */}
+      <g stroke={C.faint} strokeWidth="1" strokeDasharray="3 3">
+        <line x1="220" y1="110" x2="220" y2="125" />
+        <line x1="220" y1="185" x2="220" y2="200" />
+      </g>
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.terracotta}>
+        three triggers, one routine
+      </text>
+    </svg>
+  );
+}
+
+/** Routine gap — primitives coverage with GitHub-only listener limitation. */
+export function RoutineGapFigure() {
+  const items = [
+    { y: 90, label: "clock", fill: C.butter, status: "solid", note: "schedule + cron" },
+    { y: 155, label: "listener", fill: C.sage, status: "partial", note: "GitHub only" },
+    { y: 220, label: "inbox", fill: C.lavender, status: "solid", note: "API + connectors" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="routine-gap-title">
+      <title id="routine-gap-title">Routines gap analysis: strong clock and inbox, partial listener limited to GitHub</title>
+      <defs>
+        <radialGradient id="rggrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#rggrad)" />
+      {items.map((item) => (
+        <g key={item.label}>
+          {/* Primitive circle */}
+          <circle
+            cx="100"
+            cy={item.y}
+            r="32"
+            fill={item.status === "solid" ? item.fill : "none"}
+            stroke={C.ink}
+            strokeWidth={item.status === "solid" ? "1.8" : "1.4"}
+            strokeDasharray={item.status === "partial" ? "6 4" : "none"}
+          />
+          {item.status === "partial" && (
+            <path
+              d={`M100 ${item.y - 32} A32 32 0 0 1 100 ${item.y + 32}`}
+              fill={item.fill}
+              opacity="0.5"
+            />
+          )}
+          <text x="100" y={item.y - 4} textAnchor="middle" fontFamily="var(--font-display)" fontSize="12" fill={C.ink}>{item.label}</text>
+          <text x="100" y={item.y + 10} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>
+            {item.status === "solid" ? "✓" : "~"}
+          </text>
+          {/* Status label — right */}
+          <line x1="134" y1={item.y} x2="155" y2={item.y} stroke={C.faint} strokeWidth="1" />
+          <rect x="158" y={item.y - 12} width="110" height="24" rx="5" fill={C.paper} stroke={item.status === "partial" ? C.terracotta : C.ink} strokeWidth={item.status === "partial" ? "1.6" : "1"} />
+          <text x="213" y={item.y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={item.status === "partial" ? C.terracotta : C.ink}>{item.note}</text>
+        </g>
+      ))}
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="12" fill={C.terracotta}>
+        two solid, one partial
+      </text>
+    </svg>
+  );
+}
+
 /** Lindy tradeoff — consumer polish on one side, infrastructure depth on the other. */
 export function LindyTradeoffFigure() {
   return (

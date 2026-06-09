@@ -133,7 +133,50 @@ const SLUGS: Record<string, React.ComponentType> = {
   "mcp-notifications": MCPNotifArt,
   "aeon-cron-agent-framework": AeonCronArt,
   "lindy-ai-personal-assistant": LindyAssistantArt,
+  "claude-code-routines": ClaudeRoutinesArt,
 };
+
+function ClaudeRoutinesArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 108)">
+          {/* Cloud shape — managed runtime */}
+          <path
+            d="M-35 18 Q-52 18 -52 4 Q-52 -12 -35 -15 Q-30 -34 -8 -34 Q10 -34 18 -22 Q22 -26 32 -26 Q48 -26 48 -12 Q56 -10 56 2 Q56 18 40 18 Z"
+            strokeWidth="1.8"
+          />
+          {/* Three trigger arrows entering from left */}
+          {[-25, 0, 25].map((y, i) => (
+            <g key={i}>
+              <circle cx={-70} cy={y - 5} r="4" fill={C.ink} stroke="none" />
+              <line x1={-65} y1={y - 5} x2={-52} y2={y > 0 ? 8 : y < 0 ? -8 : 0} strokeWidth="1.2" />
+            </g>
+          ))}
+          {/* Session output arrow to right */}
+          <line x1="56" y1="4" x2="72" y2="4" strokeWidth="1.6" />
+          <polyline points="66,-1 72,4 66,9" strokeWidth="1.4" fill="none" />
+          {/* Small session rectangle */}
+          <rect x="75" y="-8" width="22" height="24" rx="3" strokeWidth="1.2" />
+          <line x1="80" y1="0" x2="92" y2="0" strokeWidth="0.7" />
+          <line x1="80" y1="6" x2="90" y2="6" strokeWidth="0.7" />
+          {/* Dashed orbit — always running */}
+          <circle cx="0" cy="-2" r="52" strokeWidth="0.8" strokeDasharray="4 4" />
+        </g>
+      </g>
+    </svg>
+  );
+}
 
 export function CardArt({ slug }: { slug: string }) {
   const Art = SLUGS[slug];
