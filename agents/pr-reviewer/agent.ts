@@ -32,7 +32,7 @@ export default agent({
       return;
     }
 
-    const pr = (await event.expand("full")) as PrExpansion;
+    const pr = (await event.expand("full")) as unknown as PrExpansion;
     const mdxChanged = pr.data.changed_files.filter((f) => f.filename.endsWith(".mdx"));
     const codeChanged = pr.data.changed_files.filter(
       (f) => f.filename.startsWith("app/") || f.filename.startsWith("components/"),

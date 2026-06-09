@@ -46,6 +46,9 @@ export async function makeCloudflareContext(args: {
   const octokit = await getOctokit(env);
 
   const logger: Logger = {
+    debug(msg, meta) {
+      console.debug(`[${agentId}] ${msg}`, meta ?? "");
+    },
     info(msg, meta) {
       console.log(`[${agentId}] ${msg}`, meta ?? "");
     },
@@ -63,6 +66,21 @@ export async function makeCloudflareContext(args: {
     logger,
     signal,
 
+    // Burn tagging is a no-op here: this adapter talks to GitHub/Notion
+    // directly rather than through the metered relay primitives.
+    tagged: <T>(value: T): T => value,
+
+    // The relay primitive clients (relayfile/relaycron/relaycast) are not
+    // available in the Pages-Functions adapter — it uses GitHub/Notion APIs
+    // directly. No handler touches `ctx.raw`; fail loudly if one ever does.
+    raw: new Proxy({} as Context["raw"], {
+      get(_target, prop) {
+        throw new Error(
+          `ctx.raw.${String(prop)} is unavailable in the Pages-Functions context`,
+        );
+      },
+    }),
+
     files: {
       async read(path) {
         const repoPath = vfsToRepoPath(path);
@@ -72,12 +90,17 @@ export async function makeCloudflareContext(args: {
           path: repoPath,
           ref: REPO_BRANCH,
         });
-        return result ? { body: result.data, meta: { sha: result.sha } } : null;
+        // Map GitHub's content sha onto WorkspaceFile.revision (the SDK's
+        // relayfile revision channel) so writers can use it for compare-and-swap.
+        return result ? { path, body: result.data, revision: result.sha } : null;
       },
       async write(path, body, meta) {
         const repoPath = vfsToRepoPath(path);
-        const message =
-          (meta as { message?: string } | undefined)?.message ?? `[${agentId}] write ${path}`;
+        // WriteMeta has no free-form commit message; callers pass one via the
+        // SDK-sanctioned `semantics` extension point (`semantics.commitMessage`).
+        const commitMessage = (meta?.semantics as { commitMessage?: string } | undefined)
+          ?.commitMessage;
+        const message = commitMessage ?? `[${agentId}] write ${path}`;
         await writeRepoJson(octokit, {
           owner: REPO_OWNER,
           repo: REPO_NAME,

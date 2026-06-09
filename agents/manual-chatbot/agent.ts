@@ -31,7 +31,7 @@ export default agent({
   async onEvent(ctx: Context, event: AgentEvent) {
     if (event.type !== "relaycast.message") return;
 
-    const msg = (await event.expand("full")) as MessageExpansion;
+    const msg = (await event.expand("full")) as unknown as MessageExpansion;
     const question = msg.data.text;
 
     // 1. Cheap intent classification: is this about proactive agents?

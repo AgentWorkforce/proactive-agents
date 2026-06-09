@@ -183,10 +183,13 @@ export default agent({
 
     // ── 7. Open PR (idempotent — skips if one already exists) ───────────
     const octokit = await octokitFor(e);
+    // `ctx.once` returns undefined when this page revision was already
+    // published (deduped) — skip the Notion update + log on a repeat delivery.
     const prUrl = await ctx.once(
       `notion-pr:${pageId}:${page.last_edited_time}`,
       () => openPr(octokit, slug, frontmatter.title, mdx, page.url ?? ""),
     );
+    if (!prUrl) return;
 
     // ── 8. Update Notion: Status → Published, Published URL → PR URL ────
     await client.request("PATCH", `/pages/${pageId}`, {

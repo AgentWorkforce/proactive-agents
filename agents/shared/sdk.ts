@@ -1,125 +1,52 @@
 /**
- * Local mirror of the proactive-runtime SDK contract.
+ * The proactive-runtime SDK contract for these agents.
  *
- * Once `@agent-relay/agent` is published, replace this whole file with:
- *   export { agent, type AgentDefinition, type AgentEvent, type Context } from "@agent-relay/agent";
+ * The TYPES below are the published `@agent-relay/agent` contract — the package
+ * shipped, so the local mirror that used to live here is gone and handlers now
+ * type-check against the real SDK (`AgentDefinition`, `AgentEvent`, `Context`,
+ * `ScheduleSpec`).
  *
- * Until then we keep the types here so the handlers type-check, and `agent()`
- * runs as a no-op shim in local dev (registers the definition, doesn't dispatch).
+ * `agent()`, however, stays a LOCAL registrar rather than the SDK's hosted
+ * runtime. These agents dispatch from Cloudflare Pages Functions
+ * (`functions/api/...`) — request-scoped Workers that cannot hold the SDK's
+ * long-lived broker connection. The Pages Function reaches into
+ * `handle.definition.onEvent(ctx, event)` directly, so we expose `.definition`,
+ * which the hosted `agent()` (a connection-backed handle) does not. Move to the
+ * hosted runtime only if these ever run on a long-lived host instead of Pages
+ * Functions.
  */
+export type {
+  AgentDefinition,
+  AgentEvent,
+  AgentHandle,
+  Context,
+  EventType,
+  Logger,
+  ScheduleSpec
+} from "@agent-relay/agent";
 
+import type { AgentDefinition, AgentHandle, Context } from "@agent-relay/agent";
+
+/** Local trigger taxonomy used by the activity log; not part of the SDK. */
 export type Trigger = "time" | "change" | "message";
 
-export type ScheduleSpec =
-  | string
-  | { cron: string; tz?: string }
-  | { at: string | Date };
-
-export type EventType =
-  | "startup"
-  | "cron.tick"
-  | "relayfile.changed"
-  | "relaycast.message"
-  | (string & {}); // provider events: "github.pull_request.opened", "notion.page.updated", etc.
-
-export type AgentEvent<T extends EventType = EventType> = {
-  id: string;
-  workspace: string;
-  type: T;
-  occurredAt: string;
-  attempt: number;
-  resource: {
-    path: string;
-    kind: string;
-    id: string;
-    provider: string;
-  };
-  summary: {
-    title?: string;
-    status?: string;
-    priority?: string;
-    labels?: string[];
-    actor?: { id: string; displayName?: string };
-    fieldsChanged?: string[];
-    tags?: string[];
-  };
-  expand: <L extends "summary" | "full" | "diff" | "thread">(level?: L) => Promise<unknown>;
-  digest?: string;
-};
-
-export type Logger = {
-  info(msg: string, meta?: Record<string, unknown>): void;
-  warn(msg: string, meta?: Record<string, unknown>): void;
-  error(msg: string, meta?: Record<string, unknown>): void;
-};
-
-export type Context = {
-  workspace: string;
-  agentId: string;
-  logger: Logger;
-  signal: AbortSignal;
-  files: {
-    read(path: string): Promise<{ body: unknown; meta?: unknown } | null>;
-    write(path: string, body: unknown, meta?: Record<string, unknown>): Promise<void>;
-    delete(path: string): Promise<void>;
-    list(glob: string): Promise<{ path: string }[]>;
-  };
-  messages: {
-    post(channel: string, text: string, opts?: Record<string, unknown>): Promise<{ id: string }>;
-    reply(threadId: string, text: string, opts?: Record<string, unknown>): Promise<{ id: string }>;
-    dm(agentOrUser: string, text: string): Promise<{ id: string }>;
-  };
-  schedule: {
-    at(when: string | Date, payload?: unknown): Promise<{ id: string }>;
-    every(cron: string, payload?: unknown, opts?: { tz?: string }): Promise<{ id: string }>;
-    cancel(id: string): Promise<void>;
-  };
-  once<T>(key: string, fn: () => Promise<T>): Promise<T>;
-};
-
-export type AgentDefinition = {
-  workspace: string;
-  name?: string;
-  schedule?: ScheduleSpec | ScheduleSpec[];
-  watch?: string | string[];
-  inbox?: string | string[];
-  onEvent: (ctx: Context, event: AgentEvent) => Promise<void> | void;
-  onStart?: (ctx: Context) => Promise<void> | void;
-  onError?: (ctx: Context, error: Error, event: AgentEvent) => Promise<void> | void;
-  options?: {
-    concurrency?: number;
-    handlerTimeoutMs?: number;
-    replayOnStart?: "none" | string;
-  };
-};
-
-export type AgentHandle = {
-  ready: Promise<void>;
-  stop: () => Promise<void>;
-  trigger: (event: Partial<AgentEvent>) => Promise<void>;
-  ctx: Context;
-};
-
 /**
- * Local shim. When @agent-relay/agent ships, replace this whole module with:
- *   export { agent, type AgentDefinition, ... } from "@agent-relay/agent";
- *
- * Until then `agent()` returns a handle whose `trigger()` invokes the
- * registered `onEvent` synchronously with whatever event you pass it. This
- * is exactly the spec's "imperative trigger — useful in tests" semantic, and
- * it's how the Pages Function (functions/api/cron/[agent].ts) dispatches
- * cron.tick events until the real runtime takes over.
+ * Local handle shape. Extends the SDK {@link AgentHandle} with the original
+ * `definition` so the Pages Function dispatch can invoke `onEvent` directly
+ * (see the module comment).
  */
 export type AgentHandleWithDef = AgentHandle & {
   /** The original definition. Lets the Pages Function reach `onEvent`. */
   definition: AgentDefinition;
 };
 
+/**
+ * Register a proactive agent. In the Pages-Functions deployment this records
+ * the definition and returns a handle whose `definition` the entry-point
+ * dispatches against; it does not open a broker connection. `trigger()` throws
+ * — callers invoke `handle.definition.onEvent(ctx, event)` directly.
+ */
 export function agent(definition: AgentDefinition): AgentHandleWithDef {
-  // No real-time dispatch in the shim — schedules / watches / inbox are not
-  // wired to anything. The runtime takes that over. Until then, callers
-  // (e.g. functions/api/cron/[agent].ts) reach into `handle.definition` and
-  // invoke `onEvent(realCtx, event)` directly.
   return {
     definition,
     ready: Promise.resolve(),
@@ -127,7 +54,7 @@ export function agent(definition: AgentDefinition): AgentHandleWithDef {
     ctx: {} as Context,
     trigger: async () => {
       throw new Error(
-        "shim: handle.trigger() not implemented — invoke handle.definition.onEvent(ctx, event) directly",
+        "local registrar: invoke handle.definition.onEvent(ctx, event) directly",
       );
     },
   };
