@@ -5,14 +5,15 @@
  * Route: POST /api/notion-webhook
  *
  * Until M2 data triggers ship, this endpoint receives requests and
- * synthesizes relayfile.changed events for the notion-to-blog agent.
- * When the runtime handles this natively, this file gets deleted.
+ * synthesizes relayfile.changed events (via the SDK's `createAgentEvent`) for
+ * the notion-to-blog agent. The dispatch stays HTTP because Pages Functions
+ * can't host the SDK's long-lived broker runtime.
  *
  * Also accepts GET for manual trigger: GET /api/notion-webhook?page_id=<id>&secret=<s>
  */
+import { createAgentEvent } from "@agent-relay/events";
 import notionToBlog, { setEnv as setNotionToBlogEnv } from "../../agents/notion-to-blog/agent";
 import { makeCloudflareContext, type CfEnv } from "../../agents/shared/runtime/cloudflare-context";
-import type { AgentEvent } from "../../agents/shared/sdk";
 import {
   NotionApiClient,
   serializePropertyMap,
@@ -73,24 +74,23 @@ async function dispatchForPage(env: CfEnv, pageId: string): Promise<Response> {
   });
 
   const occurredAt = new Date().toISOString();
-  const event: AgentEvent<"relayfile.changed"> = {
-    id: `notion-${pageId}-${occurredAt}`,
-    workspace: "proactive-agents",
-    type: "relayfile.changed",
-    occurredAt,
-    attempt: 1,
-    resource: {
-      path: `/notion/databases/drafts/pages/${pageId}`,
-      kind: "page",
-      id: pageId,
-      provider: "notion",
+  const path = `/notion/databases/drafts/pages/${pageId}`;
+  const event = createAgentEvent(
+    {
+      id: `notion-${pageId}-${occurredAt}`,
+      workspace: "proactive-agents",
+      type: "relayfile.changed",
+      occurredAt,
+      path,
+      action: "updated",
+      resource: { path, kind: "page", id: pageId, provider: "notion" },
+      summary: {
+        title: propValue(props.Title),
+        status: propValue(props.Status)?.toLowerCase(),
+      },
     },
-    summary: {
-      title: propValue(props.Title),
-      status: propValue(props.Status)?.toLowerCase(),
-    },
-    expand: async () => page,
-  };
+    { loadFull: async () => ({ level: "full", path, data: page as unknown as Record<string, unknown> }) }
+  );
 
   try {
     await notionToBlog.definition.onEvent(agentCtx, event);

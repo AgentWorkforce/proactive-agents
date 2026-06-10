@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@agent-relay/agent": "^6.3.3",
+    "@agent-relay/events": "^6.3.3",
     "@cloudflare/workers-types": "^4.20260511.1",
     "@gsap/react": "^2.1.2",
     "@nangohq/node": "^0.70.1",

@@ -78,10 +78,14 @@ export default agent({
     const clusters = await clusterByTopic(ctx, fresh);
 
     // 4. Upsert the rolling issue.
-    const { issueUrl, issueNumber } = await ctx.once(
+    // `ctx.once` returns undefined when the keyed work was already done this
+    // period (deduped) — nothing more to do on a repeat tick.
+    const digestResult = await ctx.once(
       `digest:${weekKey(event.occurredAt)}`,
       () => upsertDigestIssue(ctx, clusters, event.occurredAt),
     );
+    if (!digestResult) return;
+    const { issueUrl, issueNumber } = digestResult;
 
     // 5. Persist seen URLs so next week dedupes against them.
     await ctx.files.write(

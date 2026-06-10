@@ -8,14 +8,18 @@
  * look up the named agent, build a real Context, and invoke its `onEvent`
  * with a synthesised cron.tick event.
  *
- * When @agent-relay/agent ships, the runtime dispatches events directly
- * without going through HTTP and this whole file disappears.
+ * This HTTP entry point stays even though `@agent-relay/agent` has shipped:
+ * these agents run on Cloudflare Pages Functions (request-scoped Workers),
+ * which can't hold the SDK's long-lived broker connection, so we dispatch by
+ * calling `handle.definition.onEvent` directly. The event itself is built with
+ * the real SDK constructor (`createCronTickEvent`).
  */
+import { createCronTickEvent } from "@agent-relay/events";
 import weeklyDigest, { setEnv as setWeeklyDigestEnv } from "../../../agents/weekly-digest/agent";
 import notionToBlog, { setEnv as setNotionToBlogEnv } from "../../../agents/notion-to-blog/agent";
 import newsletterDrafter, { setEnv as setNewsletterDrafterEnv } from "../../../agents/newsletter-drafter/agent";
 import { makeCloudflareContext, type CfEnv } from "../../../agents/shared/runtime/cloudflare-context";
-import type { AgentEvent, AgentHandleWithDef } from "../../../agents/shared/sdk";
+import type { AgentHandleWithDef } from "../../../agents/shared/sdk";
 
 type Params = { agent: string };
 
@@ -67,21 +71,13 @@ export const onRequestPost: PagesFunction<CfEnv, "agent"> = async (ctx) => {
   });
 
   const occurredAt = new Date().toISOString();
-  const event: AgentEvent<"cron.tick"> = {
-    id: `cron-${occurredAt}-${agentName}`,
+  const event = createCronTickEvent({
     workspace: entry.workspace,
-    type: "cron.tick",
+    schedule: agentName,
+    id: `cron-${occurredAt}-${agentName}`,
     occurredAt,
-    attempt: 1,
-    resource: {
-      path: `/_internal/cron/${agentName}`,
-      kind: "cron.tick",
-      id: agentName,
-      provider: "internal",
-    },
     summary: { title: `${agentName} cron tick` },
-    expand: async () => ({}),
-  };
+  });
 
   try {
     await entry.handle.definition.onEvent(agentCtx, event);

@@ -38,7 +38,7 @@ export async function writeLogEntry(ctx: Context, input: LogInput): Promise<Agen
   const next = [entry, ...without];
 
   await ctx.files.write(LOG_VFS_PATH, next, {
-    message: `[${entry.agent}] ${entry.action}`,
+    semantics: { commitMessage: `[${entry.agent}] ${entry.action}` },
   });
 
   return entry;
