@@ -4374,3 +4374,218 @@ export function LindyTradeoffFigure() {
     </svg>
   );
 }
+
+/** Tasklet inversion — traditional workflow vs. AI-planned execution. */
+export function TaskletInversionFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="tkinv-title">
+      <title id="tkinv-title">Traditional automation: human defines steps. Tasklet: AI plans the workflow from a prompt.</title>
+      <defs>
+        <radialGradient id="tkinvgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.7" />
+          <stop offset="100%" stopColor={C.peach} stopOpacity="0.4" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#tkinvgrad)" />
+      {/* Top row: traditional — human-defined boxes */}
+      <text x="160" y="50" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.faint}>traditional</text>
+      {["trigger", "step 1", "step 2", "action"].map((label, i) => (
+        <g key={label}>
+          <rect x={30 + i * 70} y={60} width="58" height="24" rx="4" fill={C.paper} stroke={C.faint} strokeWidth="1.2" />
+          <text x={59 + i * 70} y={76} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>{label}</text>
+          {i < 3 && <line x1={88 + i * 70} y1={72} x2={100 + i * 70} y2={72} stroke={C.faint} strokeWidth="1" />}
+        </g>
+      ))}
+      <text x="160" y="105" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>human designs each step</text>
+      {/* Divider */}
+      <line x1="60" y1="118" x2="260" y2="118" stroke={C.rule} strokeWidth="1" />
+      {/* Bottom: Tasklet — prompt → AI → fan-out */}
+      <text x="160" y="140" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>tasklet</text>
+      {/* Prompt box */}
+      <rect x="40" y="152" width="80" height="28" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.5" />
+      <text x="80" y="167" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>"cancel unused</text>
+      <text x="80" y="176" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>subscriptions"</text>
+      {/* Arrow to AI */}
+      <g stroke={C.terracotta} strokeWidth="1.6" fill="none" strokeLinecap="round">
+        <path d="M120 166 L148 166" />
+        <path d="M142 161 L148 166 L142 171" />
+      </g>
+      {/* AI circle */}
+      <circle cx="172" cy="166" r="18" fill={C.butter} stroke={C.ink} strokeWidth="1.5" />
+      <text x="172" y="163" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.ink}>AI</text>
+      <text x="172" y="174" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.inkSoft}>plans</text>
+      {/* Fan-out arrows to actions */}
+      {[
+        { x: 240, y: 148, label: "gmail" },
+        { x: 260, y: 170, label: "stripe" },
+        { x: 240, y: 192, label: "browser" },
+      ].map((target) => (
+        <g key={target.label}>
+          <line x1="190" y1="166" x2={target.x - 22} y2={target.y} stroke={C.terracotta} strokeWidth="1.2" />
+          <rect x={target.x - 22} y={target.y - 10} width="44" height="20" rx="4" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+          <text x={target.x} y={target.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{target.label}</text>
+        </g>
+      ))}
+      {/* Bottom label */}
+      <text x="160" y="235" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        AI decides the steps at runtime
+      </text>
+      <text x="160" y="250" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>
+        two-tier agents: planner + executor
+      </text>
+    </svg>
+  );
+}
+
+/** Tasklet trigger map — trigger types organized by primitive. */
+export function TaskletTriggerMapFigure() {
+  const clockItems = ["schedule"];
+  const listenerItems = ["gmail", "slack", "github", "rss", "youtube", "calendar", "drive", "webhook", "hubspot"];
+  const inboxItems = ["iMessage", "email", "shortcuts", "telegram"];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="tktrig-title">
+      <title id="tktrig-title">Tasklet trigger types mapped to clock, listener, and inbox primitives</title>
+      <defs>
+        <radialGradient id="tktriggrad" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.sage} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.sky} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#tktriggrad)" />
+      {/* Clock column */}
+      <circle cx="55" cy="62" r="20" fill={C.butter} stroke={C.ink} strokeWidth="1.4" />
+      <text x="55" y="60" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fill={C.ink}>clock</text>
+      <text x="55" y="70" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.inkSoft}>1 type</text>
+      {clockItems.map((item, i) => (
+        <g key={item}>
+          <rect x="30" y={92 + i * 22} width="50" height="16" rx="3" fill={C.paper} stroke={C.faint} strokeWidth="0.8" />
+          <text x="55" y={103 + i * 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{item}</text>
+        </g>
+      ))}
+      {/* Listener column */}
+      <circle cx="160" cy="62" r="20" fill={C.sage} stroke={C.ink} strokeWidth="1.4" />
+      <text x="160" y="60" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fill={C.ink}>listener</text>
+      <text x="160" y="70" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.inkSoft}>9 types</text>
+      {listenerItems.map((item, i) => (
+        <g key={item}>
+          <rect x="130" y={92 + i * 22} width="60" height="16" rx="3" fill={C.paper} stroke={C.ink} strokeWidth={i < 3 ? "1.2" : "0.8"} />
+          <text x="160" y={103 + i * 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{item}</text>
+        </g>
+      ))}
+      {/* Inbox column */}
+      <circle cx="265" cy="62" r="20" fill={C.lavender} stroke={C.ink} strokeWidth="1.4" />
+      <text x="265" y="60" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fill={C.ink}>inbox</text>
+      <text x="265" y="70" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.inkSoft}>4 types</text>
+      {inboxItems.map((item, i) => (
+        <g key={item}>
+          <rect x="240" y={92 + i * 22} width="50" height="16" rx="3" fill={C.paper} stroke={C.ink} strokeWidth="1" />
+          <text x="265" y={103 + i * 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{item}</text>
+        </g>
+      ))}
+      {/* Bottom label */}
+      <text x="160" y="305" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>
+        14 trigger types across all three
+      </text>
+    </svg>
+  );
+}
+
+/** Tasklet integration layers — four-tier fallback strategy. */
+export function TaskletIntegrationLayersFigure() {
+  const tiers = [
+    { y: 65, label: "OAuth Apps", sub: "gmail, slack, stripe…", fill: C.sage, w: 200, solid: true },
+    { y: 115, label: "HTTP API", sub: "model calls any endpoint", fill: C.sky, w: 180, solid: true },
+    { y: 165, label: "MCP Servers", sub: "standard protocol bridge", fill: C.lavender, w: 160, solid: false },
+    { y: 215, label: "Browser", sub: "last resort: click + type", fill: C.rose, w: 140, solid: false },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="tkint-title">
+      <title id="tkint-title">Tasklet four-tier integration strategy: OAuth, HTTP API, MCP, browser automation</title>
+      <defs>
+        <radialGradient id="tkintgrad" cx="50%" cy="40%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.6" />
+          <stop offset="100%" stopColor={C.lavender} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#tkintgrad)" />
+      <text x="160" y="48" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>integration tiers</text>
+      {tiers.map((tier, i) => (
+        <g key={tier.label}>
+          <rect
+            x={160 - tier.w / 2}
+            y={tier.y}
+            width={tier.w}
+            height={36}
+            rx="6"
+            fill={tier.fill}
+            fillOpacity="0.3"
+            stroke={C.ink}
+            strokeWidth={tier.solid ? "1.5" : "1.2"}
+            strokeDasharray={tier.solid ? "none" : "4 3"}
+          />
+          <text x="160" y={tier.y + 16} textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>{tier.label}</text>
+          <text x="160" y={tier.y + 28} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>{tier.sub}</text>
+          {i < tiers.length - 1 && (
+            <g stroke={C.faint} strokeWidth="1" fill="none" strokeLinecap="round">
+              <path d={`M160 ${tier.y + 36} L160 ${tiers[i + 1].y}`} />
+              <path d={`M156 ${tiers[i + 1].y - 4} L160 ${tiers[i + 1].y} L164 ${tiers[i + 1].y - 4}`} />
+            </g>
+          )}
+        </g>
+      ))}
+      {/* Reliability arrow */}
+      <text x="42" y="70" fontFamily="var(--font-mono)" fontSize="7" fill={C.moss}>reliable</text>
+      <text x="42" y="228" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>fallback</text>
+      <line x1="42" y1="78" x2="42" y2="218" stroke={C.faint} strokeWidth="1" />
+      <path d="M38 212 L42 220 L46 212" stroke={C.faint} strokeWidth="1" fill="none" />
+      {/* Count label */}
+      <text x="160" y="280" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.terracotta}>
+        3,000+ integrations across all four
+      </text>
+      <text x="160" y="296" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>
+        model intelligence as the integration layer
+      </text>
+    </svg>
+  );
+}
+
+/** Tasklet scorecard — three primitives evaluation. */
+export function TaskletScorecardFigure() {
+  const items = [
+    { x: 80, y: 90, label: "clock", sub: "schedule + cron", fill: C.butter, score: "yes" },
+    { x: 240, y: 90, label: "listener", sub: "14 trigger types", fill: C.sage, score: "yes*" },
+    { x: 160, y: 220, label: "inbox", sub: "text + email + siri", fill: C.lavender, score: "yes" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="tksc-title">
+      <title id="tksc-title">Tasklet scorecard: all three primitives present with broad coverage</title>
+      <defs>
+        <radialGradient id="tkscgrad" cx="50%" cy="50%" r="55%">
+          <stop offset="0%" stopColor={C.butter} stopOpacity="0.5" />
+          <stop offset="100%" stopColor={C.sage} stopOpacity="0.3" />
+        </radialGradient>
+      </defs>
+      <circle cx="160" cy="155" r="105" fill="url(#tkscgrad)" />
+      {/* Connecting lines */}
+      <g stroke={C.terracotta} strokeWidth="1.6" strokeDasharray="4 4">
+        <line x1="80" y1="90" x2="240" y2="90" />
+        <line x1="80" y1="90" x2="160" y2="220" />
+        <line x1="240" y1="90" x2="160" y2="220" />
+      </g>
+      {/* Center label */}
+      <text x="160" y="148" textAnchor="middle" fontFamily="var(--font-display)" fontSize="10" fill={C.terracotta}>tasklet</text>
+      <text x="160" y="162" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>9 months old</text>
+      {items.map((it) => (
+        <g key={it.label}>
+          <circle cx={it.x} cy={it.y} r="38" fill={it.fill} stroke={C.ink} strokeWidth="1.8" />
+          <text x={it.x} y={it.y - 8} textAnchor="middle" fontFamily="var(--font-display)" fontSize="13" fill={C.ink}>{it.label}</text>
+          <text x={it.x} y={it.y + 6} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.inkSoft}>{it.sub}</text>
+          <text x={it.x} y={it.y + 20} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.moss}>{it.score}</text>
+        </g>
+      ))}
+      <text x="160" y="300" textAnchor="middle" fontFamily="var(--font-display)" fontStyle="italic" fontSize="11" fill={C.terracotta}>
+        three for three, with asterisks
+      </text>
+    </svg>
+  );
+}
