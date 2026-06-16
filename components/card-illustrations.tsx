@@ -104,48 +104,6 @@ function LindyAssistantArt() {
   );
 }
 
-function BackgroundAgentsArt() {
-  return (
-    <svg
-      viewBox="0 0 500 300"
-      className="pointer-events-none absolute inset-0 h-full w-full"
-      aria-hidden
-    >
-      <g
-        opacity="0.14"
-        stroke={C.ink}
-        fill="none"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <g transform="translate(250, 108)">
-          {/* Factory conveyor belt */}
-          <line x1="-70" y1="10" x2="70" y2="10" strokeWidth="1.8" />
-          <line x1="-70" y1="22" x2="70" y2="22" strokeWidth="1.8" />
-          {/* Conveyor rollers */}
-          {[-55, -30, -5, 20, 45].map((x, i) => (
-            <circle key={i} cx={x} cy="16" r="5" strokeWidth="1.2" />
-          ))}
-          {/* Items on the belt */}
-          <rect x="-48" y="-4" width="16" height="12" rx="2" strokeWidth="1.3" />
-          <rect x="-12" y="-4" width="16" height="12" rx="2" strokeWidth="1.3" />
-          <rect x="24" y="-4" width="16" height="12" rx="2" strokeWidth="1.3" />
-          {/* Agent arm above */}
-          <line x1="0" y1="-30" x2="0" y2="-8" strokeWidth="1.4" />
-          <circle cx="0" cy="-34" r="8" strokeWidth="1.6" />
-          <circle cx="0" cy="-34" r="2" fill={C.ink} stroke="none" />
-          {/* Signal waves entering from left */}
-          <path d="M-78 -20 Q-72 -15 -78 -10" strokeWidth="1" />
-          <path d="M-82 -24 Q-72 -15 -82 -6" strokeWidth="0.8" />
-          {/* Output arrow to right */}
-          <line x1="70" y1="16" x2="85" y2="16" strokeWidth="1.4" />
-          <polyline points="80,11 86,16 80,21" strokeWidth="1.3" fill="none" />
-        </g>
-      </g>
-    </svg>
-  );
-}
-
 const SLUGS: Record<string, React.ComponentType> = {
   "three-primitives": PrimitivesArt,
   "reactive-vs-proactive": ReactivePushArt,
@@ -176,8 +134,57 @@ const SLUGS: Record<string, React.ComponentType> = {
   "aeon-cron-agent-framework": AeonCronArt,
   "lindy-ai-personal-assistant": LindyAssistantArt,
   "claude-code-routines": ClaudeRoutinesArt,
+  "tasklet-ai-agent-platform": TaskletAgentArt,
   "background-agents": BackgroundAgentsArt,
 };
+
+function TaskletAgentArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 108)">
+          {/* Central prompt box */}
+          <rect x="-30" y="-14" width="60" height="28" rx="5" strokeWidth="1.8" />
+          <line x1="-18" y1="-4" x2="18" y2="-4" strokeWidth="0.8" />
+          <line x1="-18" y1="4" x2="12" y2="4" strokeWidth="0.8" />
+          {/* Fan-out arrows to action nodes */}
+          {[-45, -15, 15, 45].map((angle, i) => {
+            const rad = ((angle - 90) * Math.PI) / 180;
+            const x = Math.cos(rad) * 58;
+            const y = Math.sin(rad) * 58;
+            return (
+              <g key={i}>
+                <line x1={x * 0.35} y1={14 + y * 0.35} x2={x * 0.8} y2={14 + y * 0.8} strokeWidth="1.2" />
+                <rect x={x - 10} y={14 + y - 8} width="20" height="16" rx="3" strokeWidth="1.3" />
+              </g>
+            );
+          })}
+          {/* Small trigger icons on top */}
+          <circle cx="-40" cy="-30" r="5" strokeWidth="1.2" />
+          <line x1="-40" y1="-30" x2="-40" y2="-34" strokeWidth="0.8" />
+          <circle cx="0" cy="-38" r="5" strokeWidth="1.2" />
+          <path d="M-2,-40 L0,-36 L2,-40" strokeWidth="0.8" />
+          <circle cx="40" cy="-30" r="5" strokeWidth="1.2" />
+          <line x1="38" y1="-30" x2="42" y2="-30" strokeWidth="0.8" />
+          {/* Dashed connections from triggers to prompt */}
+          <line x1="-40" y1="-25" x2="-20" y2="-14" strokeWidth="0.8" strokeDasharray="2 3" />
+          <line x1="0" y1="-33" x2="0" y2="-14" strokeWidth="0.8" strokeDasharray="2 3" />
+          <line x1="40" y1="-25" x2="20" y2="-14" strokeWidth="0.8" strokeDasharray="2 3" />
+        </g>
+      </g>
+    </svg>
+  );
+}
 
 function ClaudeRoutinesArt() {
   return (
@@ -1515,6 +1522,48 @@ function SparkIOArt() {
             <path d="M0 -20 L8 -20 L8 20 L0 20" strokeWidth="1.4" />
             <text x="14" y="4" fontFamily="inherit" fontSize="7" fill={C.ink} strokeWidth="0">MCP</text>
           </g>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function BackgroundAgentsArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 108)">
+          {/* Factory conveyor belt */}
+          <line x1="-70" y1="10" x2="70" y2="10" strokeWidth="1.8" />
+          <line x1="-70" y1="22" x2="70" y2="22" strokeWidth="1.8" />
+          {/* Conveyor rollers */}
+          {[-55, -30, -5, 20, 45].map((x, i) => (
+            <circle key={i} cx={x} cy="16" r="5" strokeWidth="1.2" />
+          ))}
+          {/* Items on the belt */}
+          <rect x="-48" y="-4" width="16" height="12" rx="2" strokeWidth="1.3" />
+          <rect x="-12" y="-4" width="16" height="12" rx="2" strokeWidth="1.3" />
+          <rect x="24" y="-4" width="16" height="12" rx="2" strokeWidth="1.3" />
+          {/* Agent arm above */}
+          <line x1="0" y1="-30" x2="0" y2="-8" strokeWidth="1.4" />
+          <circle cx="0" cy="-34" r="8" strokeWidth="1.6" />
+          <circle cx="0" cy="-34" r="2" fill={C.ink} stroke="none" />
+          {/* Signal waves entering from left */}
+          <path d="M-78 -20 Q-72 -15 -78 -10" strokeWidth="1" />
+          <path d="M-82 -24 Q-72 -15 -82 -6" strokeWidth="0.8" />
+          {/* Output arrow to right */}
+          <line x1="70" y1="16" x2="85" y2="16" strokeWidth="1.4" />
+          <polyline points="80,11 86,16 80,21" strokeWidth="1.3" fill="none" />
         </g>
       </g>
     </svg>

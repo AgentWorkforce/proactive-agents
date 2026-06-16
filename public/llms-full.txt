@@ -63,6 +63,84 @@ Last updated: 2026-06-16
 
 ---
 
+## Essay: Tasklet skips the workflow builder
+
+Published: 2026-06-16
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/tasklet-ai-agent-platform/
+
+[Tasklet](https://tasklet.ai/) gives you a text box. "Describe your goal," it says. No canvas. No drag-and-drop nodes. No if-then-else branches to wire up. You type what you want done, something like "review all my subscriptions across email receipts and bank statements, identify unused ones, and cancel them using the browser," and the agent figures out how to do it.
+
+This is a different bet from what most of the products in this series have made. [Lindy](/posts/lindy-ai-personal-assistant/) gives you a visual agent builder with trigger nodes and action steps. [Claude Code routines](/posts/claude-code-routines/) give you a prompt-plus-triggers model anchored to code repos. [Zapier](https://zapier.com) and [Make](https://www.make.com/) give you the workflow canvas that defined the automation category for a decade. Tasklet skips all of it. The founding team, [Andrew Lee](https://x.com/anthropic) and Jonny Dimond, previously built [Firebase](https://firebase.google.com/) and then [Shortwave](https://www.shortwave.com/). They call this philosophy "always bet on the models." Let the AI plan the whole thing.
+
+The bet has traction behind it. Tasklet launched in October 2025, crossed $5 million in annual recurring revenue by early 2026, and raised [$20 million](https://blog.usv.com/tasklet) from [Union Square Ventures](https://www.usv.com/) and [Lightspeed](https://lsvp.com/) at a $175 million valuation. USV's blog post about the investment includes a detail that says more than the numbers: the firm signed an enterprise contract and rebuilt their own operating system on Tasklet before the round even closed.
+
+## The inversion
+
+Traditional automation platforms work on a model where humans define the workflow and AI fills specific boxes. You build the pipeline: "when this happens in Gmail, extract this field, look it up in Salesforce, format the result, post it to Slack." The logic is yours. The execution is deterministic. If the pipeline breaks, you know exactly which step failed and why.
+
+Tasklet inverts this. You describe the outcome, and the AI decides what steps to take, which integrations to call, and how to handle edge cases along the way. Under the hood, Tasklet runs a two-tier agent architecture: a persistent high-level agent that maintains instructions, memory, and user context across sessions, and sub-agents that spin up for individual task executions with scoped permissions. The high-level agent remembers what worked last time. The sub-agent handles this particular run.
+
+The system routes tasks across multiple frontier models: [Claude](https://anthropic.com) from Anthropic, GPT from [OpenAI](https://openai.com), and Gemini from [Google](https://deepmind.google/). Context management uses SQL databases rather than stuffing everything into system prompts, with a file-system-based approach that compresses older history into summaries while keeping recent interactions at full fidelity. An agent that handles thousands of triggers per year can still maintain coherent context without regenerating it from scratch on each run.
+
+The trade-off is legibility. When a Zapier workflow fails at step 4, you can see step 4 and fix it. When a Tasklet agent takes an unexpected path, you're reading a conversation transcript to understand what happened. For teams that need deterministic behavior, that's a real cost. For teams that are tired of maintaining brittle workflows that break every time an API changes, it's the whole point.
+
+Tasklet exists because of a product pivot. The team spent years building Shortwave, an AI email client. When they added an agent to Shortwave in late 2024, users started asking for the agent without the email client. By January 2026, Tasklet alone was adding more monthly revenue than Shortwave had generated in four years. The founding team includes engineers who built Google Cloud Firestore and Firebase's real-time infrastructure, which helps explain why the trigger and state management architecture feels more mature than a nine-month-old product usually does.
+
+## The trigger ecosystem
+
+Tasklet's trigger menu includes: schedules (daily, weekly, custom cron), webhooks, email (Gmail with filters), Slack messages, Google Calendar events, Google Drive uploads, Outlook events, Telegram messages, YouTube uploads, GitHub events, [HubSpot](https://www.hubspot.com/) changes, RSS feeds, Apple Shortcuts, and text messages over iMessage and RCS.
+
+Fourteen distinct trigger types. [Claude Code routines](/posts/claude-code-routines/) ship three (schedule, GitHub events, API endpoint). [Lindy](/posts/lindy-ai-personal-assistant/) has broad trigger coverage but many of them are polling-based underneath. [Aeon](/posts/aeon-cron-agent-framework/) has one (cron via GitHub Actions).
+
+Mapped against the [three primitives](/posts/three-primitives/):
+
+**Clock.** Schedule triggers handle the basics. Daily briefings, weekly reports, custom cron intervals. Nothing novel here, but the execution is clean. Agents run in cloud sandboxes on Tasklet's infrastructure with 2 vCPUs and persistent filesystems, so there's no laptop-open requirement.
+
+**Listener.** This is where Tasklet's breadth stands out. Gmail triggers use [Google's push notifications](https://developers.google.com/gmail/api/guides/push). Slack triggers fire on new messages. RSS feeds push on new items. GitHub events arrive via webhooks. YouTube channel triggers run on new videos. The question with any product that claims this many event-driven integrations is how many are genuinely push-based vs. polling underneath. Tasklet's documentation doesn't always make the distinction explicit, but the latency on email and Slack triggers suggests real push delivery for the core integrations.
+
+**Inbox.** Two-way communication through iMessage, RCS text messages, email replies, and Apple Shortcuts. You can text your agent while walking to a meeting and get a response. The Apple Shortcuts integration means you can trigger agents from Siri, CarPlay, or location-based automations on your phone. The inbox here isn't just "the agent can reach you." You can reach the agent from wherever you already are.
+
+The combination of all three is what makes Tasklet interesting from an architecture standpoint. Most products in this series are strong in one primitive and weak in the others. Tasklet covers more surface area across all three than anything else we've evaluated so far.
+
+## The integration strategy
+
+Tasklet claims 3,000+ integrations, a number that deserves unpacking. The system uses a four-tier strategy:
+
+**Tier 1: Pre-built OAuth integrations.** These are the named integrations, around 15 with first-class OAuth flows: Gmail, Slack, Salesforce, HubSpot, Stripe, [Airtable](https://airtable.com), [Linear](https://linear.app), and others. Credentials are encrypted and never exposed to Tasklet's own systems.
+
+**Tier 2: HTTP API fallback.** For services without pre-built integrations, the agent can call any HTTP API directly. Lee has described how the models generate their own tool descriptions from web-scraped API documentation. You tell the agent "look up this company in our CRM," and it figures out which endpoints to call. The reliability here scales with model capability, which is the "always bet on the models" philosophy put to work.
+
+**Tier 3: MCP servers.** Tasklet supports connecting to any [Model Context Protocol](https://modelcontextprotocol.io/) server, including private ones your company built internally. Lee's public take on MCP is notably measured: he argues that direct API connections outperform MCP in most real-world usage because modern models can reason about HTTP APIs independently. MCP's remaining value, in his view, is in OAuth authentication flows and edge cases where a standardized abstraction layer genuinely helps.
+
+**Tier 4: Browser automation.** When no API exists, the agent opens a browser. It can fill forms, navigate authenticated sessions, extract data from web pages, and complete multi-step web workflows. Cookies persist across sessions. This is the fallback of last resort, but it means the agent can interact with enterprise tools that have no API surface at all.
+
+The tiered approach is a pragmatic answer to the [integration cost problem](/posts/the-webhook-tax/) this series has covered extensively. Instead of building and maintaining thousands of bespoke connectors (which [cost Lindy](/posts/lindy-ai-personal-assistant/) over a million dollars for 250 integrations before the [Pipedream](https://pipedream.com/) partnership), Tasklet uses model intelligence as the integration layer and invests in first-class connectors only where OAuth requires it.
+
+The LinkedIn example is telling. A user asked the agent to "connect with people in my industry and repost relevant posts on LinkedIn every day." Instead of blindly promising to do it, the agent spent 51 seconds researching LinkedIn's API, then came back with a clear breakdown: creating posts, liking, and commenting are supported; connection requests, reading your feed, and native reposts are not. It proposed alternatives and asked clarifying questions before committing to a plan. The model-first architecture working as intended: the agent reasons about feasibility before acting, not after failing.
+
+## Running the scorecard
+
+**Clock: Yes.** Clean schedule triggers with daily, weekly, and custom cron support. Agents run in cloud sandboxes, so the clock doesn't depend on your machine being awake. The persistent filesystem means a scheduled agent can pick up where it left off. Compared to [Aeon's](/posts/aeon-cron-agent-framework/) GitHub Actions workaround or [Hermes's](/posts/making-hermes-proactive/) self-hosted gateway, the managed compute is a genuine convenience.
+
+**Listener: Yes, with the broadest coverage in the series.** Fourteen trigger types spanning email, chat, calendar, file storage, code, video, and RSS. The named triggers appear to use genuine event-driven delivery for integrations where push is available (Gmail, Slack, GitHub, webhooks). For the long tail of 3,000 integrations where events arrive through the HTTP API fallback or browser automation, the picture is less clear. An agent that monitors a website by scraping it on a schedule is polling, even if the cron trigger that kicks it off is clean. The trigger breadth is real, but not every integration delivers events in real time.
+
+**Inbox: Yes, and notably bidirectional.** iMessage, RCS, email, and Apple Shortcuts give the user multiple ways to reach the agent on their own terms. The text messaging integration is strong enough that USV described delegating to Tasklet agents via text as part of their daily workflow. Combined with the "Instant Apps" feature, which lets agents generate lightweight interactive web apps with live data from connected services, the delivery surface is broader than any product in this series except possibly [Lindy's](/posts/lindy-ai-personal-assistant/) iMessage channel.
+
+Three for three, with asterisks. The clock is solid. The listener is the most comprehensive in this series but varies in push-vs-poll depth depending on the integration tier. The inbox is genuinely bidirectional. For a product that launched nine months ago, the primitive coverage is notable.
+
+Credit-based pricing makes cost unpredictable at scale. Tasklet credits vary by task complexity, context size, data volume, active integrations, trigger frequency, and intelligence level. A $100/month Pro plan buys 40,000 monthly credits, but a complex agent hitting multiple APIs on every trigger could burn through that in days. At least one reviewer on [Slashdot](https://slashdot.org/software/p/Tasklet/) reported an 11x price increase after usage patterns shifted. And 80% of Tasklet's churners reportedly migrate to Anthropic's own Claude Max subscription, which provides roughly 5x more tokens at equivalent API pricing. The product works well enough that pricing, not capability, is the main churn driver.
+
+## Who should pay attention
+
+Tasklet works best for teams that are already frustrated with maintaining [Zapier](https://zapier.com) workflows and are willing to trade deterministic execution for flexibility. The natural language interface means non-technical operators can build agents that would previously require a developer to wire up. If your use case is "handle recurring business operations across multiple tools," and you're comfortable with an AI that plans its own steps, Tasklet covers more ground than anything else in this space right now.
+
+It works less well for teams that need audit trails today (SOC 2 is still in progress), that require deterministic behavior for compliance workflows, or that need predictable per-task pricing. If you need to explain to a regulator exactly what steps your automation took and why, the model-plans-the-workflow approach is a harder sell than a visual canvas you can screenshot.
+
+The competitive pressure is worth naming. Lee has been transparent that the biggest threat isn't other agent platforms. It's the AI labs themselves. Claude Max, ChatGPT Pro, and Gemini Advanced all offer increasingly capable agents with deep integrations to their own ecosystems. Tasklet's advantage is breadth: fourteen trigger types, 3,000 integrations, the four-tier fallback strategy, and the persistent agent memory that accumulates institutional knowledge over time. None of the lab-built agents match that surface area yet. Whether that moat holds as the labs expand their own agent infrastructure is the open question for every horizontal platform in this space. Tasklet's bet is that model improvement strengthens the product faster than it strengthens the competition, because every model upgrade makes the agent's planning more reliable without requiring Tasklet to change a line of code.
+
+---
+
 ## Essay: Background agents and the factory model
 
 Published: 2026-06-16
