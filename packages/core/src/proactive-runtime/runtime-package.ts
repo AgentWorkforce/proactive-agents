@@ -1,0 +1,4 @@
+export const WORKFORCE_RUNTIME_PACKAGE = "@agentworkforce/runtime";
+export const WORKFORCE_RUNTIME_VERSION = "4.0.1";
+export const WORKFORCE_RUNTIME_SPEC =
+  `${WORKFORCE_RUNTIME_PACKAGE}@${WORKFORCE_RUNTIME_VERSION}`;
