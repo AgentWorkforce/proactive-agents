@@ -1,0 +1,75 @@
+---
+title: "Background agents and the factory model"
+summary: "Every major AI company ships agents that work while you sleep. The split that actually matters isn't foreground versus background — it's whether the agent waits for a ticket or goes looking for work."
+date: "2026-06-16"
+accent: "lavender"
+dropcap: true
+---
+
+Six months ago, "background agent" wasn't a product category. Now every major AI company ships one. [Cursor](https://cursor.com) runs tasks in the cloud while you switch tabs. [GitHub Copilot](https://github.com/features/copilot) assigns itself issues from your backlog. [Devin](https://devin.ai) clones your repo into a sandbox and opens a pull request before standup. [Factory](https://factory.ai/) wraps the entire dev lifecycle in agents it calls Droids. [OpenAI](https://openai.com) open-sourced [Symphony](https://github.com/openai/symphony), a spec for pointing [Codex](https://openai.com/index/codex/) agents at your [Linear](https://linear.app) board and letting them work through tickets overnight.
+
+In each case, the agent works somewhere you aren't watching. No open chat window, no prompt to type. The agent picks up a unit of work, executes in an isolated environment, and surfaces a result for you to review. "Background" means the human isn't in the loop while the work happens.
+
+That much everyone agrees on. The more interesting question is how the work *starts*.
+
+<Scene figure="BgForegroundFigure" caption="Foreground agents wait for you. Background agents don't.">
+
+## The foreground-background line
+
+Most AI tools today are foreground. You type a prompt, the model responds, you refine. The agent's clock starts when you press enter and stops when you close the tab. That works for writing, exploration, and pair programming. It doesn't work for the large category of software tasks that are routine: triage, test fixes, dependency bumps, boilerplate migrations, doc updates.
+
+Background agents flip the relationship. Instead of starting when you ask, they start when something happens: a ticket lands in the backlog, a test fails in CI, a PR gets flagged by a reviewer. The agent runs in its own environment (a cloud sandbox, a container, a managed VM) and delivers output asynchronously. You review a finished pull request, not a chat transcript.
+
+The mechanical difference is small. The operational difference is large. A foreground agent scales with your attention. A background agent scales with the rate of events in your system.
+
+<Callout tone="thought" label="Where the benchmarks stop">
+[Factory](https://factory.ai/) holds the top position on [Terminal Bench](https://www.terminal.shop/bench), the industry standard for autonomous task execution. But benchmarks measure single-task completion in isolation. Production background agents face a harder problem: staying useful across hundreds of tasks per week without generating so much output that the team stops reviewing it.
+</Callout>
+
+</Scene>
+
+<Scene side="right" figure="BgReactiveProactiveFigure" caption="Two modes of background work — one waits, the other watches.">
+
+## Reactive and proactive
+
+Look closer and background agents split into two postures.
+
+**Reactive background agents** wait for an explicit assignment. A ticket appears in Linear, a GitHub issue gets labeled `agent`, a Slack message says "handle this." The agent picks it up and works to completion. Autonomous in execution, but passive in initiation. Someone still decides what needs doing.
+
+Most of what ships today is reactive. Symphony is a clean example: it polls your Linear board, picks up issues marked for agents, spins up a Codex instance per task, and delivers pull requests. The human decides what goes on the board. The agent decides how to build it. That division is comfortable because it maps to how teams already assign work to junior engineers.
+
+**Proactive background agents** watch for signals and initiate work without being asked. A new error pattern appears in your monitoring. A dependency publishes a security advisory that touches a package in your lock file. The agent notices, evaluates whether action is warranted, and either acts or proposes a plan. Nobody filed a ticket. Nobody typed a prompt.
+
+The gap between the two is the gap between a contractor who builds what you spec and a colleague who notices that the CI pipeline has been flaky all week and opens a fix before anyone files an issue. We wrote about this distinction in [reactive vs proactive](/posts/reactive-vs-proactive/), and the background-agent wave is making it concrete. Nearly every background agent shipping today is a contractor.
+
+</Scene>
+
+<Scene figure="BgFactoryFigure" caption="The factory model: agents across the full lifecycle, context flowing between stages.">
+
+## The factory
+
+The most ambitious version of the background agent idea isn't a single agent doing a single task. It's a *factory*: a system of agents covering every stage of software delivery, with shared context flowing between them.
+
+[Factory](https://factory.ai/) is the company that has taken this furthest. Their platform breaks the SDLC into discrete stages (triage, code generation, validation, release, documentation, monitoring) and runs specialized Droid agents across all of them. A signal enters at triage, gets routed to code generation, passes through automated validation, and arrives at release as a tested, reviewed deliverable. Factory reports processing 57,000 lines of generated code per day with a 98.7% validation pass rate. They closed a [$150M Series C](https://theaiagentindex.com/agents/factory-ai) at a $1.5B valuation in April 2026, led by [Khosla Ventures](https://www.khoslaventures.com/).
+
+The factory model is interesting because it treats background agents as infrastructure rather than individual tools. Each stage feeds the next. The triage agent learns from which PRs pass validation. The monitoring agent surfaces patterns that feed back to triage. The system gets better the longer it runs.
+
+[OpenAI's Symphony](https://github.com/openai/symphony) approaches the same problem from the opposite end. Instead of building the factory itself, OpenAI published a *specification*: a reference architecture for wiring background agents to a project board. The [reference implementation](https://github.com/openai/symphony) is written in [Elixir](https://elixir-lang.org/), chosen because the [BEAM VM's](https://www.erlang.org/) supervision trees handle concurrent agent processes with built-in fault tolerance. Each task gets its own supervised process. If an agent crashes, Symphony restarts it. The spec doesn't prescribe which model runs underneath. It's plumbing for the orchestration layer, not a product.
+
+<Callout tone="warm" label="Two bets on the same frontier">
+Factory builds the whole pipeline. Symphony publishes the spec and lets you assemble your own. Both assume the same future: that background agents will handle enough of the SDLC to warrant dedicated orchestration infrastructure. They disagree on who should own it.
+</Callout>
+
+</Scene>
+
+## What comes next
+
+This is the first of several posts on background agents. There's plenty to unpack: how orchestration layers work in practice, what review load looks like when agents open twenty PRs a day, whether the reactive model is a stepping stone to proactive or a stable resting point.
+
+We're building a background agent platform at [AgentWorkforce](https://agentworkforce.ai) that starts from the proactive side. Instead of polling a ticket board, our agents watch for changes across connected services and initiate work when the signals justify it. More on that architecture soon.
+
+The interesting work ahead is on the proactive frontier, where the agent doesn't just execute your backlog faster but helps you see what should be on the backlog in the first place.
+
+<Callout tone="cool" label="Follow the series">
+We track the background and proactive agent landscape at [/market](/market/proactive-agent-landscape/). Factory, Symphony, Cursor, Copilot, and Devin are all indexed there with scoring across the [three primitives](/posts/three-primitives/).
+</Callout>
