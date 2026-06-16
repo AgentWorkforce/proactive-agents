@@ -4374,3 +4374,182 @@ export function LindyTradeoffFigure() {
     </svg>
   );
 }
+
+/** Background vs foreground agent posture. */
+export function BgForegroundFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="bg-fg-title">
+      <title id="bg-fg-title">Foreground agents loop with the user; background agents receive events and produce output asynchronously</title>
+      {/* Divider */}
+      <line x1="160" y1="30" x2="160" y2="270" stroke={C.rule} strokeWidth="1" strokeDasharray="4 4" />
+      {/* --- Left: Foreground --- */}
+      <text x="80" y="42" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>foreground</text>
+      {/* User circle */}
+      <circle cx="80" cy="90" r="22" fill={C.butter} opacity="0.4" />
+      <circle cx="80" cy="90" r="22" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="80" y="94" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>you</text>
+      {/* Double arrow */}
+      <line x1="80" y1="114" x2="80" y2="166" stroke={C.ink} strokeWidth="1.4" />
+      <polyline points="74,122 80,114 86,122" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinecap="round" />
+      <polyline points="74,158 80,166 86,158" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinecap="round" />
+      {/* Agent box */}
+      <rect x="50" y="172" width="60" height="36" rx="6" fill={C.peach} opacity="0.3" />
+      <rect x="50" y="172" width="60" height="36" rx="6" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="80" y="194" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>agent</text>
+      {/* Loop label */}
+      <text x="80" y="236" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>prompt → reply → refine</text>
+      {/* --- Right: Background --- */}
+      <text x="240" y="42" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>background</text>
+      {/* Event signals */}
+      {[{y: 72, w: 28}, {y: 90, w: 22}, {y: 108, w: 32}].map((e, i) => (
+        <g key={i}>
+          <circle cx={200 + i * 6} cy={e.y} r="3" fill={C.terracotta} opacity="0.6" />
+          <line x1={203 + i * 6} y1={e.y} x2={218} y2={140} stroke={C.ink} strokeWidth="0.8" strokeDasharray="2 3" />
+        </g>
+      ))}
+      <text x="220" y="68" textAnchor="start" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>events</text>
+      {/* Agent box */}
+      <rect x="210" y="128" width="60" height="36" rx="6" fill={C.sage} opacity="0.3" />
+      <rect x="210" y="128" width="60" height="36" rx="6" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="240" y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.ink}>agent</text>
+      {/* Arrow down to output */}
+      <line x1="240" y1="166" x2="240" y2="198" stroke={C.ink} strokeWidth="1.4" />
+      <polyline points="234,190 240,198 246,190" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinecap="round" />
+      {/* Output / review box */}
+      <rect x="213" y="204" width="54" height="30" rx="4" fill={C.lavender} opacity="0.3" />
+      <rect x="213" y="204" width="54" height="30" rx="4" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="240" y="222" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>review</text>
+      {/* Label */}
+      <text x="240" y="258" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>event → work → output</text>
+    </svg>
+  );
+}
+
+/** Reactive vs proactive background agent postures. */
+export function BgReactiveProactiveFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="bg-rp-title">
+      <title id="bg-rp-title">Reactive agents wait for tickets; proactive agents watch signals and initiate work</title>
+      {/* --- Top: Reactive --- */}
+      <text x="160" y="30" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>reactive</text>
+      {/* Ticket */}
+      <rect x="30" y="50" width="50" height="34" rx="4" fill={C.butter} opacity="0.3" />
+      <rect x="30" y="50" width="50" height="34" rx="4" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="55" y="64" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>ticket</text>
+      <line x1="38" y1="72" x2="72" y2="72" stroke={C.faint} strokeWidth="0.7" />
+      {/* Arrow */}
+      <line x1="84" y1="67" x2="120" y2="67" stroke={C.ink} strokeWidth="1.4" />
+      <polyline points="114,61 122,67 114,73" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinecap="round" />
+      {/* Agent */}
+      <circle cx="152" cy="67" r="22" fill={C.peach} opacity="0.3" />
+      <circle cx="152" cy="67" r="22" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="152" y="71" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>agent</text>
+      {/* Arrow */}
+      <line x1="176" y1="67" x2="212" y2="67" stroke={C.ink} strokeWidth="1.4" />
+      <polyline points="206,61 214,67 206,73" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinecap="round" />
+      {/* PR output */}
+      <rect x="218" y="50" width="50" height="34" rx="4" fill={C.sage} opacity="0.3" />
+      <rect x="218" y="50" width="50" height="34" rx="4" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="243" y="70" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>PR</text>
+      {/* Label */}
+      <text x="160" y="110" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>assigned → executed → delivered</text>
+      {/* Divider */}
+      <line x1="40" y1="130" x2="280" y2="130" stroke={C.rule} strokeWidth="1" strokeDasharray="4 4" />
+      {/* --- Bottom: Proactive --- */}
+      <text x="160" y="155" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>proactive</text>
+      {/* Signal waves */}
+      {[0, 1, 2, 3].map((i) => (
+        <path
+          key={i}
+          d={`M${28 + i * 12} ${190 + (i % 2 === 0 ? -8 : 8)} Q${34 + i * 12} ${190} ${28 + i * 12} ${190 + (i % 2 === 0 ? 8 : -8)}`}
+          fill="none"
+          stroke={C.terracotta}
+          strokeWidth="1.2"
+          opacity={0.4 + i * 0.15}
+        />
+      ))}
+      <text x="48" y="218" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>signals</text>
+      {/* Arrow to agent */}
+      <line x1="78" y1="195" x2="110" y2="195" stroke={C.ink} strokeWidth="1.2" strokeDasharray="3 3" />
+      {/* Agent with radar/watching indicator */}
+      <circle cx="152" cy="195" r="22" fill={C.lavender} opacity="0.3" />
+      <circle cx="152" cy="195" r="22" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="152" y="199" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>agent</text>
+      {/* Radar arcs */}
+      <path d="M130 180 A28 28 0 0 1 130 210" fill="none" stroke={C.terracotta} strokeWidth="1" opacity="0.5" />
+      <path d="M124 175 A34 34 0 0 1 124 215" fill="none" stroke={C.terracotta} strokeWidth="0.8" opacity="0.3" />
+      {/* Multiple outputs */}
+      <line x1="176" y1="185" x2="210" y2="175" stroke={C.ink} strokeWidth="1.2" />
+      <line x1="176" y1="195" x2="210" y2="195" stroke={C.ink} strokeWidth="1.2" />
+      <line x1="176" y1="205" x2="210" y2="215" stroke={C.ink} strokeWidth="1.2" />
+      <rect x="212" y="166" width="42" height="18" rx="3" fill={C.sage} opacity="0.25" />
+      <rect x="212" y="166" width="42" height="18" rx="3" fill="none" stroke={C.ink} strokeWidth="0.9" />
+      <text x="233" y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>fix</text>
+      <rect x="212" y="188" width="42" height="18" rx="3" fill={C.butter} opacity="0.25" />
+      <rect x="212" y="188" width="42" height="18" rx="3" fill="none" stroke={C.ink} strokeWidth="0.9" />
+      <text x="233" y="200" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>propose</text>
+      <rect x="212" y="210" width="42" height="18" rx="3" fill={C.peach} opacity="0.25" />
+      <rect x="212" y="210" width="42" height="18" rx="3" fill="none" stroke={C.ink} strokeWidth="0.9" />
+      <text x="233" y="222" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>alert</text>
+      {/* Label */}
+      <text x="160" y="256" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>observed → evaluated → initiated</text>
+    </svg>
+  );
+}
+
+/** Factory model: SDLC pipeline with feedback loop. */
+export function BgFactoryFigure() {
+  const stages = [
+    { x: 22, label: "triage", color: C.butter },
+    { x: 82, label: "code", color: C.sage },
+    { x: 142, label: "validate", color: C.sky },
+    { x: 202, label: "release", color: C.lavender },
+    { x: 262, label: "monitor", color: C.rose },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="bg-factory-title">
+      <title id="bg-factory-title">Factory model: agents across triage, code, validate, release, and monitor stages with feedback loop</title>
+      <text x="160" y="36" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>the factory pipeline</text>
+      {/* Pipeline stages */}
+      {stages.map((s, i) => (
+        <g key={i}>
+          <rect x={s.x} y="100" width="48" height="48" rx="6" fill={s.color} opacity="0.3" />
+          <rect x={s.x} y="100" width="48" height="48" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+          <text x={s.x + 24} y="128" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{s.label}</text>
+          {/* Connecting arrows between stages */}
+          {i < stages.length - 1 && (
+            <g>
+              <line x1={s.x + 50} y1="124" x2={stages[i + 1].x - 2} y2="124" stroke={C.ink} strokeWidth="1.2" />
+              <polyline
+                points={`${stages[i + 1].x - 6},120 ${stages[i + 1].x - 1},124 ${stages[i + 1].x - 6},128`}
+                fill="none" stroke={C.ink} strokeWidth="1.2" strokeLinecap="round"
+              />
+            </g>
+          )}
+        </g>
+      ))}
+      {/* Input signal arrow */}
+      <circle cx="10" cy="124" r="4" fill={C.terracotta} opacity="0.6" />
+      <line x1="16" y1="124" x2="20" y2="124" stroke={C.ink} strokeWidth="1" />
+      {/* Feedback loop: monitor → triage */}
+      <path
+        d="M286 150 Q286 200 160 210 Q34 200 34 150"
+        fill="none" stroke={C.terracotta} strokeWidth="1.4" strokeDasharray="4 3"
+      />
+      <polyline points="30,156 34,148 38,156" fill="none" stroke={C.terracotta} strokeWidth="1.4" strokeLinecap="round" />
+      <text x="160" y="226" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>feedback loop</text>
+      {/* Context flow label */}
+      <text x="160" y="80" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>shared context flows forward</text>
+      {/* Small "droid" icons inside each stage */}
+      {stages.map((s, i) => (
+        <g key={`d${i}`}>
+          <circle cx={s.x + 24} cy="112" r="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <circle cx={s.x + 24} cy="112" r="1.2" fill={C.ink} />
+        </g>
+      ))}
+      {/* Bottom summary */}
+      <text x="160" y="260" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>each stage strengthens the next</text>
+      <text x="160" y="276" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>the system compounds</text>
+    </svg>
+  );
+}
