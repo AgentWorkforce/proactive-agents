@@ -8,9 +8,9 @@ dropcap: true
 
 [Tasklet](https://tasklet.ai/) gives you a text box. "Describe your goal," it says. No canvas. No drag-and-drop nodes. No if-then-else branches to wire up. You type what you want done, something like "review all my subscriptions across email receipts and bank statements, identify unused ones, and cancel them using the browser," and the agent figures out how to do it.
 
-This is a different bet from what most of the products in this series have made. [Lindy](/posts/lindy-ai-personal-assistant/) gives you a visual agent builder with trigger nodes and action steps. [Claude Code routines](/posts/claude-code-routines/) give you a prompt-plus-triggers model anchored to code repos. [Zapier](https://zapier.com) and [Make](https://www.make.com/) give you the workflow canvas that defined the automation category for a decade. Tasklet skips all of it. The founding team, [Andrew Lee](https://x.com/anthropic) and Jonny Dimond, previously built [Firebase](https://firebase.google.com/) and then [Shortwave](https://www.shortwave.com/). They call this philosophy "always bet on the models." Let the AI plan the whole thing.
+Most products in this series still give you some kind of builder. [Lindy](/posts/lindy-ai-personal-assistant/) gives you a visual agent builder with trigger nodes and action steps. [Claude Code routines](/posts/claude-code-routines/) give you a prompt-plus-triggers model anchored to code repos. [Zapier](https://zapier.com) and [Make](https://www.make.com/) give you the workflow canvas that defined the automation category for a decade. Tasklet skips all of it. The founding team, [Andrew Lee](https://x.com/anthropic) and Jonny Dimond, previously built [Firebase](https://firebase.google.com/) and then [Shortwave](https://www.shortwave.com/). They call this philosophy "always bet on the models." Let the AI plan the whole thing.
 
-The bet has traction behind it. Tasklet launched in October 2025, crossed $5 million in annual recurring revenue by early 2026, and raised [$20 million](https://blog.usv.com/tasklet) from [Union Square Ventures](https://www.usv.com/) and [Lightspeed](https://lsvp.com/) at a $175 million valuation. USV's blog post about the investment includes a detail that says more than the numbers: the firm signed an enterprise contract and rebuilt their own operating system on Tasklet before the round even closed.
+Tasklet launched in October 2025, crossed $5 million in annual recurring revenue by early 2026, and raised [$20 million](https://blog.usv.com/tasklet) from [Union Square Ventures](https://www.usv.com/) and [Lightspeed](https://lsvp.com/) at a $175 million valuation. USV's blog post about the investment includes a detail that says more than the numbers: the firm signed an enterprise contract and rebuilt their own operating system on Tasklet before the round even closed.
 
 <Scene figure="TaskletInversionFigure" caption="Human-defined steps vs. AI-planned execution.">
 
@@ -25,7 +25,7 @@ The system routes tasks across multiple frontier models: [Claude](https://anthro
 The trade-off is legibility. When a Zapier workflow fails at step 4, you can see step 4 and fix it. When a Tasklet agent takes an unexpected path, you're reading a conversation transcript to understand what happened. For teams that need deterministic behavior, that's a real cost. For teams that are tired of maintaining brittle workflows that break every time an API changes, it's the whole point.
 
 <Callout tone="thought" label="The Shortwave origin">
-Tasklet exists because of a product pivot. The team spent years building Shortwave, an AI email client. When they added an agent to Shortwave in late 2024, users started asking for the agent without the email client. By January 2026, Tasklet alone was adding more monthly revenue than Shortwave had generated in four years. The founding team includes engineers who built Google Cloud Firestore and Firebase's real-time infrastructure, which helps explain why the trigger and state management architecture feels more mature than a nine-month-old product usually does.
+Tasklet exists because of a product pivot. The team spent years building Shortwave, an AI email client. When they added an agent to Shortwave in late 2024, users started asking for the agent without the email client. By January 2026, Tasklet alone was adding more monthly revenue than Shortwave had generated in four years. The team's background in Firebase and Firestore real-time infrastructure shows in the trigger and state management layer, which feels more solid than you'd expect from a product this young.
 </Callout>
 
 </Scene>
@@ -36,7 +36,7 @@ Tasklet exists because of a product pivot. The team spent years building Shortwa
 
 Tasklet's trigger menu includes: schedules (daily, weekly, custom cron), webhooks, email (Gmail with filters), Slack messages, Google Calendar events, Google Drive uploads, Outlook events, Telegram messages, YouTube uploads, GitHub events, [HubSpot](https://www.hubspot.com/) changes, RSS feeds, Apple Shortcuts, and text messages over iMessage and RCS.
 
-Fourteen distinct trigger types. [Claude Code routines](/posts/claude-code-routines/) ship three (schedule, GitHub events, API endpoint). [Lindy](/posts/lindy-ai-personal-assistant/) has broad trigger coverage but many of them are polling-based underneath. [Aeon](/posts/aeon-cron-agent-framework/) has one (cron via GitHub Actions).
+Fourteen distinct trigger types. For comparison, [Claude Code routines](/posts/claude-code-routines/) ship three (schedule, GitHub events, API endpoint), [Lindy](/posts/lindy-ai-personal-assistant/) has broad coverage but many triggers poll underneath, and [Aeon](/posts/aeon-cron-agent-framework/) has one.
 
 Mapped against the [three primitives](/posts/three-primitives/):
 
@@ -46,7 +46,7 @@ Mapped against the [three primitives](/posts/three-primitives/):
 
 **Inbox.** Two-way communication through iMessage, RCS text messages, email replies, and Apple Shortcuts. You can text your agent while walking to a meeting and get a response. The Apple Shortcuts integration means you can trigger agents from Siri, CarPlay, or location-based automations on your phone. The inbox here isn't just "the agent can reach you." You can reach the agent from wherever you already are.
 
-The combination of all three is what makes Tasklet interesting from an architecture standpoint. Most products in this series are strong in one primitive and weak in the others. Tasklet covers more surface area across all three than anything else we've evaluated so far.
+Most products in this series are strong on one primitive and thin on the others. Tasklet covers more surface area across all three than anything else we've evaluated.
 
 </Scene>
 
@@ -58,7 +58,7 @@ Tasklet claims 3,000+ integrations, a number that deserves unpacking. The system
 
 **Tier 1: Pre-built OAuth integrations.** These are the named integrations, around 15 with first-class OAuth flows: Gmail, Slack, Salesforce, HubSpot, Stripe, [Airtable](https://airtable.com), [Linear](https://linear.app), and others. Credentials are encrypted and never exposed to Tasklet's own systems.
 
-**Tier 2: HTTP API fallback.** For services without pre-built integrations, the agent can call any HTTP API directly. Lee has described how the models generate their own tool descriptions from web-scraped API documentation. You tell the agent "look up this company in our CRM," and it figures out which endpoints to call. The reliability here scales with model capability, which is the "always bet on the models" philosophy put to work.
+**Tier 2: HTTP API fallback.** For services without pre-built integrations, the agent can call any HTTP API directly. Lee has described how the models generate their own tool descriptions from web-scraped API documentation. You tell the agent "look up this company in our CRM," and it figures out which endpoints to call. The reliability here scales with model capability, which is the founding thesis put to work.
 
 **Tier 3: MCP servers.** Tasklet supports connecting to any [Model Context Protocol](https://modelcontextprotocol.io/) server, including private ones your company built internally. Lee's public take on MCP is notably measured: he argues that direct API connections outperform MCP in most real-world usage because modern models can reason about HTTP APIs independently. MCP's remaining value, in his view, is in OAuth authentication flows and edge cases where a standardized abstraction layer genuinely helps.
 
@@ -82,7 +82,7 @@ The LinkedIn example is telling. A user asked the agent to "connect with people 
 
 **Inbox: Yes, and notably bidirectional.** iMessage, RCS, email, and Apple Shortcuts give the user multiple ways to reach the agent on their own terms. The text messaging integration is strong enough that USV described delegating to Tasklet agents via text as part of their daily workflow. Combined with the "Instant Apps" feature, which lets agents generate lightweight interactive web apps with live data from connected services, the delivery surface is broader than any product in this series except possibly [Lindy's](/posts/lindy-ai-personal-assistant/) iMessage channel.
 
-Three for three, with asterisks. The clock is solid. The listener is the most comprehensive in this series but varies in push-vs-poll depth depending on the integration tier. The inbox is genuinely bidirectional. For a product that launched nine months ago, the primitive coverage is notable.
+The clock is solid. The listener is the most comprehensive in this series but varies in push-vs-poll depth depending on the integration tier. The inbox is genuinely bidirectional. For a product that launched nine months ago, the primitive coverage is notable.
 
 <Callout tone="cool" label="The pricing question">
 Credit-based pricing makes cost unpredictable at scale. Tasklet credits vary by task complexity, context size, data volume, active integrations, trigger frequency, and intelligence level. A $100/month Pro plan buys 40,000 monthly credits, but a complex agent hitting multiple APIs on every trigger could burn through that in days. At least one reviewer on [Slashdot](https://slashdot.org/software/p/Tasklet/) reported an 11x price increase after usage patterns shifted. And 80% of Tasklet's churners reportedly migrate to Anthropic's own Claude Max subscription, which provides roughly 5x more tokens at equivalent API pricing. The product works well enough that pricing, not capability, is the main churn driver.
@@ -96,4 +96,4 @@ Tasklet works best for teams that are already frustrated with maintaining [Zapie
 
 It works less well for teams that need audit trails today (SOC 2 is still in progress), that require deterministic behavior for compliance workflows, or that need predictable per-task pricing. If you need to explain to a regulator exactly what steps your automation took and why, the model-plans-the-workflow approach is a harder sell than a visual canvas you can screenshot.
 
-The competitive pressure is worth naming. Lee has been transparent that the biggest threat isn't other agent platforms. It's the AI labs themselves. Claude Max, ChatGPT Pro, and Gemini Advanced all offer increasingly capable agents with deep integrations to their own ecosystems. Tasklet's advantage is breadth: fourteen trigger types, 3,000 integrations, the four-tier fallback strategy, and the persistent agent memory that accumulates institutional knowledge over time. None of the lab-built agents match that surface area yet. Whether that moat holds as the labs expand their own agent infrastructure is the open question for every horizontal platform in this space. Tasklet's bet is that model improvement strengthens the product faster than it strengthens the competition, because every model upgrade makes the agent's planning more reliable without requiring Tasklet to change a line of code.
+Lee has been transparent about the competitive picture: the biggest threat isn't other agent platforms, it's the AI labs themselves. Claude Max, ChatGPT Pro, and Gemini Advanced all offer increasingly capable agents with deep integrations to their own ecosystems. Tasklet's advantage is breadth: fourteen trigger types, 3,000 integrations, the four-tier fallback strategy, and the persistent agent memory that accumulates institutional knowledge over time. None of the lab-built agents match that surface area yet. Whether that moat holds as the labs expand their own agent infrastructure is the open question for every horizontal platform in this space.
