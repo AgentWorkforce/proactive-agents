@@ -254,14 +254,14 @@ export default async function MarketIndex() {
             ))}
           </ul>
           <p className="mt-6 font-serif text-sm text-ink-soft">
-            Working on proactive agents?{" "}
+            Working on background or proactive agents?{" "}
             <a
-              href="https://github.com/AgentWorkforce/proactive-agents/issues/new?title=Add+startup%3A+%5Byour+company+name%5D&body=**Company+name%3A**%0A**Website%3A**%0A**Twitter%2FX%3A**%0A**One-line+description%3A**%0A%0ATell+us+what+you%27re+building+and+how+it+relates+to+proactive+agents.&labels=startup-profile"
+              href="https://github.com/AgentWorkforce/proactive-agents/issues/new?title=Add+company%3A+%5Byour+company+name%5D&body=**Company+name%3A**%0A**Website%3A**%0A**Twitter%2FX%3A**%0A**One-line+description%3A**%0A%0ATell+us+what+you%27re+building+and+how+it+relates+to+background+or+proactive+agents.&labels=company-profile"
               target="_blank"
               rel="noopener noreferrer"
               className="text-terracotta underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta"
             >
-              Add your startup here
+              Add your company here
             </a>
             .
           </p>
