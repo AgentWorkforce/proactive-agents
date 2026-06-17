@@ -64,9 +64,9 @@ export default async function MarketIndex() {
   const startupList = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Startups Building Proactive AI Agents",
+    name: "Companies Building Background and Proactive AI Agents",
     description:
-      "A tracker of early-stage companies building proactive AI agents — agents that observe, predict, and act without being prompted.",
+      "A tracker of companies and startups building background agents and proactive AI agents — agents that observe, predict, and act without being prompted.",
     numberOfItems: startups.length,
     itemListElement: startups.map((s, i) => ({
       "@type": "ListItem",
@@ -219,10 +219,10 @@ export default async function MarketIndex() {
       {startups.length > 0 && (
         <>
           <h2 className="mt-24 font-display text-2xl tracking-tight text-ink">
-            Startups
+            Companies
           </h2>
           <p className="mt-3 font-serif text-ink-soft">
-            Early-stage companies building proactive agents, tracked as they surface.
+            Companies and startups building background agents and proactive agents, tracked as they surface.
           </p>
           <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {startups.map((s) => (
@@ -254,14 +254,14 @@ export default async function MarketIndex() {
             ))}
           </ul>
           <p className="mt-6 font-serif text-sm text-ink-soft">
-            Working on proactive agents?{" "}
+            Working on background or proactive agents?{" "}
             <a
-              href="https://github.com/AgentWorkforce/proactive-agents/issues/new?title=Add+startup%3A+%5Byour+company+name%5D&body=**Company+name%3A**%0A**Website%3A**%0A**Twitter%2FX%3A**%0A**One-line+description%3A**%0A%0ATell+us+what+you%27re+building+and+how+it+relates+to+proactive+agents.&labels=startup-profile"
+              href="https://github.com/AgentWorkforce/proactive-agents/issues/new?title=Add+company%3A+%5Byour+company+name%5D&body=**Company+name%3A**%0A**Website%3A**%0A**Twitter%2FX%3A**%0A**One-line+description%3A**%0A%0ATell+us+what+you%27re+building+and+how+it+relates+to+background+or+proactive+agents.&labels=company-profile"
               target="_blank"
               rel="noopener noreferrer"
               className="text-terracotta underline decoration-terracotta/40 underline-offset-4 hover:decoration-terracotta"
             >
-              Add your startup here
+              Add your company here
             </a>
             .
           </p>
