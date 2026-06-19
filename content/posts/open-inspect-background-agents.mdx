@@ -8,7 +8,7 @@ dropcap: true
 
 In December 2025, [Ramp](https://ramp.com) published a detailed architecture post about [Inspect](https://builders.ramp.com/post/why-we-built-our-background-agent), the internal coding agent responsible for roughly 30% of all pull requests merged to their frontend and backend repos. The post was specific: [Cloudflare](https://cloudflare.com) Durable Objects for session state, [Modal](https://modal.com) for sandboxes, [OpenCode](https://opencode.ai) as the agent harness, filesystem snapshots for fast restarts, Slack as the primary invocation surface.
 
-A month later, [Cole Murray](https://github.com/ColeMurray) started building [Open-Inspect](https://github.com/ColeMurray/background-agents), an open-source reconstruction of that exact architecture. Not inspired-by, not similar-to. The same stack: Cloudflare Workers with Durable Objects, Modal sandboxes, OpenCode inside each container, Slack and Linear and GitHub as trigger surfaces. The README credits Ramp's Inspect by name.
+A month later, [Cole Murray](https://github.com/ColeMurray) started building [Open-Inspect](https://github.com/ColeMurray/background-agents), an open-source reconstruction of that exact architecture. A deliberate reconstruction. The same stack: Cloudflare Workers with Durable Objects, Modal sandboxes, OpenCode inside each container, Slack and Linear and GitHub as trigger surfaces. The README credits Ramp's Inspect by name.
 
 The project has reached nearly 2,000 stars and 300 forks in five months. It's the second most popular open-source background agent after [LangChain's open-swe](/posts/open-swe-langchain-coding-agent), and in several areas it goes further than open-swe does. It has scheduled automations, [Sentry](https://sentry.io) alert triggers, multiplayer sessions, browser automation for visual verification, and sub-task spawning. Where open-swe extracts common patterns across three companies, Open-Inspect goes deep on one and fills in the operational details that a framework-level view leaves out.
 
@@ -72,7 +72,7 @@ One bright spot in the security model: commits are attributed to the user who se
 
 ## Multiplayer and the session model
 
-The session abstraction is where Open-Inspect diverges most from other background agents. A session isn't just a task. It's a persistent, stateful workspace that multiple users can join simultaneously.
+The session abstraction is where Open-Inspect diverges most from other background agents. A session is a persistent, stateful workspace that multiple users can join simultaneously.
 
 Presence indicators show who's active. Prompts are attributed to their individual authors in git commits. Real-time streaming pushes events to all connected clients. You can send a prompt from Slack, your colleague can watch the progress on the web UI, and a third person can jump in with a follow-up from their own browser. Everyone sees the same session state because state lives in the Durable Object, not in any client.
 
