@@ -6,17 +6,17 @@ accent: "lavender"
 dropcap: true
 ---
 
-Three of the most respected engineering organizations in fintech built internal coding agents in the past year. [Stripe](https://stripe.com) built Minions. [Ramp](https://ramp.com) built Inspect. [Coinbase](https://coinbase.com) built Cloudbot. They worked independently, shared nothing, and arrived at almost exactly the same architecture: cloud sandboxes, curated toolsets, Slack-first invocation, and subagent orchestration. When three independent teams converge on the same design, the design is probably right.
+[Open SWE](https://github.com/langchain-ai/open-swe) is an open-source framework for building background coding agents, created by [LangChain](https://www.langchain.com/) and built on [LangGraph](https://langchain-ai.github.io/langgraph/) and [Deep Agents](https://github.com/langchain-ai/deepagents). Launched in March 2026, it has crossed 10,000 stars and 1,100 forks on GitHub. MIT license, actively maintained, with over 900 commits. It's the most popular open-source background agent by a wide margin.
 
-[Open SWE](https://github.com/langchain-ai/open-swe) is [LangChain](https://www.langchain.com/)'s attempt to extract that convergence into an open-source framework anyone can fork. Launched in March 2026, it has crossed 10,000 stars and 1,100 forks on GitHub. MIT license, actively maintained, with over 900 commits from a core team at LangChain. It's the most popular open-source background agent by a wide margin.
+The project exists because three of the most respected engineering organizations in fintech built internal coding agents in the past year. [Stripe](https://stripe.com) built Minions. [Ramp](https://ramp.com) built Inspect. [Coinbase](https://coinbase.com) built Cloudbot. They worked independently, shared nothing, and arrived at almost exactly the same architecture: cloud sandboxes, curated toolsets, Slack-first invocation, and subagent orchestration. Open SWE extracts that convergence into a framework anyone can fork.
 
-The star count is secondary. The interesting part is which architectural decisions open-swe chose to encode, and which it deliberately left out.
+The interesting part is which architectural decisions open-swe chose to encode, and which it deliberately left out.
 
 <Scene figure="OpenSweStackFigure" caption="Composition over forking: the open-swe layer stack." side="left">
 
 ## Composing, not building from scratch
 
-The first interesting decision is how open-swe relates to its underlying tools. It doesn't fork an existing agent CLI the way Stripe forked [Goose](https://block.github.io/goose/). It doesn't start from raw model calls. It composes on two LangChain frameworks: [LangGraph](https://langchain-ai.github.io/langgraph/) for durable execution and [Deep Agents](https://github.com/langchain-ai/deepagents) for the agent harness itself.
+The first interesting decision is how open-swe relates to its underlying tools. It doesn't fork an existing agent CLI the way Stripe forked [Goose](https://block.github.io/goose/) (Block's open-source agent framework), and it doesn't start from raw model calls. Instead it composes on LangGraph for durable execution and Deep Agents for the agent harness.
 
 The practical implication: when Deep Agents improves its context management or token efficiency, open-swe inherits those improvements without a merge conflict. When LangGraph ships better streaming or cancellation, open-swe gets that too. Ramp's Inspect team described the same benefit when they built on [OpenCode](https://github.com/nichochar/open-code) rather than starting fresh.
 
@@ -92,8 +92,20 @@ The combination gives you something closer to a real engineering conversation th
 
 Open-swe isn't the only open-source project in this space. [Runtime](https://www.runtm.com) (YC S26) takes a different approach: an agent-agnostic control plane that wraps [Claude Code](https://claude.ai), [Cursor](https://cursor.com), [Codex](https://openai.com/index/introducing-codex/), and others inside governed sandboxes. Runtime ships proactive Slack channel-watching, spend caps, and approval gates. Its AGPLv3 license on the API layer creates friction for enterprise forks that MIT doesn't.
 
-[Mistle](https://mistle.dev) (also YC-backed) focuses on credential brokering and identity attribution for agent work. [Deputies](https://deputies.dev) builds a control plane with swappable sandbox providers. [ColeMurray's background-agents](https://github.com/ColeMurray/background-agents) is the most architecturally similar to open-swe, running a cloud-native stack on Cloudflare Workers with Modal sandboxes and a triage classifier.
+[Mistle](https://mistle.dev) (also YC-backed) focuses on credential brokering and identity attribution for agent work. [Deputies](https://deputies.dev) builds a control plane with swappable sandbox providers. [ColeMurray's Open-Inspect](/posts/open-inspect-background-agents) is the most architecturally similar to open-swe, running a cloud-native stack on Cloudflare Workers with Modal sandboxes, cron triggers, and a triage classifier.
 
-The differentiation lines are forming. Open-swe leads on traction, framework maturity, and the LangChain ecosystem advantage. Runtime leads on governance and agent-agnosticism. Mistle leads on security primitives. Each one ships the base layer and leaves the proactive, verification, and orchestration work to the team deploying it.
+<table>
+  <thead>
+    <tr><th>Project</th><th>Stars</th><th>License</th><th>Triggers</th><th>Sandbox</th><th>Differentiator</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>open-swe</td><td>10k</td><td>MIT</td><td>Reactive (@mention)</td><td>Modal, Daytona, Runloop</td><td>LangChain ecosystem, composition</td></tr>
+    <tr><td>Open-Inspect</td><td>2k</td><td>MIT</td><td>Reactive + cron + Sentry</td><td>Modal, Daytona, Vercel</td><td>Broadest trigger surface</td></tr>
+    <tr><td>Runtime</td><td>YC S26</td><td>AGPL</td><td>Proactive Slack watch</td><td>Agent-agnostic (wraps any CLI)</td><td>Governance and spend caps</td></tr>
+    <tr><td>Mistle</td><td>66</td><td>MIT</td><td>Reactive + cron</td><td>Configurable</td><td>Credential brokering</td></tr>
+  </tbody>
+</table>
+
+Each one ships the base layer and leaves the proactive, verification, and orchestration work to the team deploying it.
 
 None of them ship a complete [factory model](/posts/background-agents) yet. The agent that watches your board, triages incoming work, runs tasks through verification, and handles failures gracefully, all without anyone @mentioning it first, remains something teams build in-house. Open-swe gives you the strongest open-source starting point for that build. How much of the remaining architecture you need to customize depends on how close your workflow is to the Slack-plus-Linear-plus-GitHub pattern that open-swe optimizes for.
