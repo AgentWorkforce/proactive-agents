@@ -136,6 +136,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "claude-code-routines": ClaudeRoutinesArt,
   "tasklet-ai-agent-platform": TaskletAgentArt,
   "background-agents": BackgroundAgentsArt,
+  "open-inspect-background-agents": OpenInspectArt,
   "open-swe-langchain-coding-agent": OpenSweArt,
 };
 
@@ -1565,6 +1566,53 @@ function BackgroundAgentsArt() {
           {/* Output arrow to right */}
           <line x1="70" y1="16" x2="85" y2="16" strokeWidth="1.4" />
           <polyline points="80,11 86,16 80,21" strokeWidth="1.3" fill="none" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function OpenInspectArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 110)">
+          {/* Cloudflare-style hexagon for control plane */}
+          <polygon
+            points="0,-32 28,-16 28,16 0,32 -28,16 -28,-16"
+            strokeWidth="1.8"
+          />
+          <circle cx="0" cy="0" r="8" strokeWidth="1.2" />
+          <circle cx="0" cy="0" r="2" fill={C.ink} stroke="none" />
+          {/* Trigger arrows from left */}
+          {[-20, 0, 20].map((y, i) => (
+            <g key={i}>
+              <line x1={-68} y1={y} x2={-32} y2={y > 0 ? 12 : y < 0 ? -12 : 0} strokeWidth="1.1" />
+              <circle cx={-72} cy={y} r="4" strokeWidth="1" />
+            </g>
+          ))}
+          {/* Sandbox outputs to right */}
+          {[-14, 14].map((y, i) => (
+            <g key={i}>
+              <line x1="30" y1={y} x2="52" y2={y} strokeWidth="1.2" strokeDasharray="3 2" />
+              <rect x="54" y={y - 8} width="20" height="16" rx="3" strokeWidth="1.2" strokeDasharray="3 2" />
+            </g>
+          ))}
+          {/* Cron clock above */}
+          <circle cx="0" cy="-52" r="10" strokeWidth="1" />
+          <line x1="0" y1="-52" x2="0" y2="-45" strokeWidth="0.9" />
+          <line x1="0" y1="-52" x2="5" y2="-49" strokeWidth="0.7" />
+          <line x1="0" y1="-42" x2="0" y2="-34" strokeWidth="0.8" strokeDasharray="2 2" />
         </g>
       </g>
     </svg>

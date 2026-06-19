@@ -4712,6 +4712,137 @@ export function BgReactiveProactiveFigure() {
   );
 }
 
+export function OIArchFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="oi-arch-title">
+      <title id="oi-arch-title">Open-Inspect three-tier architecture: clients, Cloudflare control plane, and sandbox data plane</title>
+      <text x="160" y="28" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>three-tier architecture</text>
+      {/* Clients tier */}
+      <rect x="60" y="42" width="200" height="38" rx="6" fill={C.butter} opacity="0.2" />
+      <rect x="60" y="42" width="200" height="38" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="58" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>clients</text>
+      <text x="160" y="72" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>web · slack · github · linear · webhooks</text>
+      {/* Arrow down */}
+      <line x1="160" y1="80" x2="160" y2="100" stroke={C.ink} strokeWidth="1" strokeDasharray="3 2" />
+      <polyline points="156,96 160,102 164,96" fill="none" stroke={C.ink} strokeWidth="1" strokeLinecap="round" />
+      {/* Control plane */}
+      <rect x="30" y="102" width="260" height="72" rx="6" fill={C.sky} opacity="0.15" />
+      <rect x="30" y="102" width="260" height="72" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="118" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>control plane (Cloudflare)</text>
+      {/* Durable Object boxes */}
+      {[{x: 48, label: "DO"}, {x: 108, label: "DO"}, {x: 168, label: "DO"}].map((d, i) => (
+        <g key={i}>
+          <rect x={d.x} y="128" width="40" height="28" rx="4" fill={C.sky} opacity="0.25" />
+          <rect x={d.x} y="128" width="40" height="28" rx="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <text x={d.x + 20} y="140" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>{d.label}</text>
+          <text x={d.x + 20} y="150" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5" fill={C.faint}>SQLite+WS</text>
+        </g>
+      ))}
+      {/* D1 box */}
+      <rect x="220" y="128" width="56" height="28" rx="4" fill={C.lavender} opacity="0.2" />
+      <rect x="220" y="128" width="56" height="28" rx="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+      <text x="248" y="144" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>D1 shared</text>
+      {/* Arrow down */}
+      <line x1="160" y1="174" x2="160" y2="194" stroke={C.ink} strokeWidth="1" strokeDasharray="3 2" />
+      <polyline points="156,190 160,196 164,190" fill="none" stroke={C.ink} strokeWidth="1" strokeLinecap="round" />
+      {/* Data plane */}
+      <rect x="30" y="196" width="260" height="72" rx="6" fill={C.sage} opacity="0.15" />
+      <rect x="30" y="196" width="260" height="72" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" strokeDasharray="4 2" />
+      <text x="160" y="212" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>data plane (sandboxes)</text>
+      {/* Sandbox boxes */}
+      {[{x: 48, label: "Modal"}, {x: 128, label: "Daytona"}, {x: 208, label: "Vercel"}].map((s, i) => (
+        <g key={i}>
+          <rect x={s.x} y="222" width="56" height="30" rx="4" fill={C.sage} opacity="0.2" />
+          <rect x={s.x} y="222" width="56" height="30" rx="4" fill="none" stroke={C.ink} strokeWidth="0.8" strokeDasharray="3 2" />
+          <text x={s.x + 28} y="238" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>{s.label}</text>
+          <circle cx={s.x + 28} cy="246" r="2" fill={C.ink} opacity="0.4" />
+        </g>
+      ))}
+      <text x="160" y="292" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>coordination is serverless, compute is pluggable</text>
+    </svg>
+  );
+}
+
+export function OITriggersFigure() {
+  const triggers = [
+    { y: 60, label: "Slack @mention", type: "reactive", color: C.sky },
+    { y: 96, label: "Linear comment", type: "reactive", color: C.sky },
+    { y: 132, label: "GitHub PR tag", type: "reactive", color: C.sky },
+    { y: 168, label: "cron schedule", type: "scheduled", color: C.butter },
+    { y: 204, label: "Sentry alert", type: "event", color: C.rose },
+    { y: 240, label: "inbound webhook", type: "event", color: C.peach },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="oi-triggers-title">
+      <title id="oi-triggers-title">Open-Inspect trigger surfaces: reactive mentions, cron schedules, Sentry alerts, and webhooks</title>
+      <text x="160" y="28" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>trigger surface</text>
+      <text x="26" y="46" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>source</text>
+      <text x="220" y="46" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>type</text>
+      <line x1="20" y1="52" x2="300" y2="52" stroke={C.rule} strokeWidth="0.6" />
+      {triggers.map((t, i) => (
+        <g key={i}>
+          <circle cx="30" cy={t.y} r="5" fill={t.color} opacity="0.4" />
+          <text x="44" y={t.y + 4} fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>{t.label}</text>
+          {/* Arrow to session */}
+          <line x1="160" y1={t.y} x2="198" y2={t.y} stroke={C.ink} strokeWidth="0.8" strokeDasharray="2 2" />
+          <polyline points={`194,${t.y - 3} 200,${t.y} 194,${t.y + 3}`} fill="none" stroke={C.ink} strokeWidth="0.8" strokeLinecap="round" />
+          {/* Type label */}
+          <rect x="202" y={t.y - 9} width="68" height="18" rx="3" fill={t.color} opacity="0.15" />
+          <text x="236" y={t.y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{t.type}</text>
+          {i < triggers.length - 1 && (
+            <line x1="20" y1={t.y + 16} x2="300" y2={t.y + 16} stroke={C.rule} strokeWidth="0.3" />
+          )}
+        </g>
+      ))}
+      {/* Divider between reactive and scheduled/event */}
+      <line x1="20" y1="150" x2="300" y2="150" stroke={C.terracotta} strokeWidth="0.6" strokeDasharray="4 3" />
+      <text x="160" y="162" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.terracotta}>most OSS agents stop here ↑</text>
+      <text x="160" y="290" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>reactive + scheduled + event-driven</text>
+    </svg>
+  );
+}
+
+export function OISingleTenantFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="oi-tenant-title">
+      <title id="oi-tenant-title">Single-tenant trust model: shared GitHub App credentials within one organization boundary</title>
+      <text x="160" y="28" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>single-tenant trust model</text>
+      {/* Org boundary box */}
+      <rect x="30" y="44" width="260" height="200" rx="8" fill={C.sage} opacity="0.08" />
+      <rect x="30" y="44" width="260" height="200" rx="8" fill="none" stroke={C.moss} strokeWidth="1.4" strokeDasharray="6 3" />
+      <text x="160" y="62" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.moss}>org boundary (SSO / VPN)</text>
+      {/* Users */}
+      {[{x: 70, label: "eng A"}, {x: 160, label: "eng B"}, {x: 250, label: "eng C"}].map((u, i) => (
+        <g key={i}>
+          <circle cx={u.x} cy="92" r="12" fill="none" stroke={C.ink} strokeWidth="1" />
+          <circle cx={u.x} cy="88" r="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <path d={`M${u.x - 8},100 Q${u.x},106 ${u.x + 8},100`} fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <text x={u.x} y="114" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{u.label}</text>
+          {/* Arrow to shared app */}
+          <line x1={u.x} y1="120" x2={u.x > 160 ? 190 : u.x < 160 ? 130 : 160} y2="148" stroke={C.ink} strokeWidth="0.7" strokeDasharray="2 2" />
+        </g>
+      ))}
+      {/* Shared GitHub App */}
+      <rect x="108" y="148" width="104" height="36" rx="6" fill={C.butter} opacity="0.25" />
+      <rect x="108" y="148" width="104" height="36" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="164" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>GitHub App</text>
+      <text x="160" y="176" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.faint}>shared credentials</text>
+      {/* Repos */}
+      {[{x: 80, label: "repo-1"}, {x: 160, label: "repo-2"}, {x: 240, label: "repo-3"}].map((r, i) => (
+        <g key={i}>
+          <line x1="160" y1="184" x2={r.x} y2="210" stroke={C.ink} strokeWidth="0.7" />
+          <rect x={r.x - 22} y="210" width="44" height="20" rx="3" fill={C.lavender} opacity="0.2" />
+          <rect x={r.x - 22} y="210" width="44" height="20" rx="3" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <text x={r.x} y="224" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.ink}>{r.label}</text>
+        </g>
+      ))}
+      {/* Warning label */}
+      <text x="160" y="268" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta}>any user → any repo the App can reach</text>
+      <text x="160" y="296" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>multi-tenant needs per-tenant App installs</text>
+    </svg>
+  );
+}
+
 /** Factory model: SDLC pipeline with feedback loop. */
 export function OpenSweStackFigure() {
   const layers = [
