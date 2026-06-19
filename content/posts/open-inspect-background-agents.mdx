@@ -1,14 +1,14 @@
 ---
 title: "Open-Inspect and the Ramp Inspect blueprint"
-summary: "ColeMurray's open-source background-agents project reconstructs Ramp's internal coding agent on Cloudflare Workers. Here's what the most faithful open-source clone of a production agent reveals about the stack."
+summary: "ColeMurray's background-agents project reconstructs Ramp's Inspect coding agent on Cloudflare Workers. What the most faithful open-source clone reveals."
 date: "2026-06-19"
 accent: "sage"
 dropcap: true
 ---
 
-In December 2025, [Ramp](https://ramp.com) published a detailed architecture post about [Inspect](https://builders.ramp.com/post/why-we-built-our-background-agent), the internal coding agent responsible for roughly 30% of all pull requests merged to their frontend and backend repos. The post was specific: [Cloudflare](https://cloudflare.com) Durable Objects for session state, [Modal](https://modal.com) for sandboxes, [OpenCode](https://opencode.ai) as the agent harness, filesystem snapshots for fast restarts, Slack as the primary invocation surface.
+[Open-Inspect](https://github.com/ColeMurray/background-agents) (repo: `ColeMurray/background-agents`) is an open-source background coding agent built by [Cole Murray](https://github.com/ColeMurray) as a faithful reconstruction of [Ramp](https://ramp.com)'s internal [Inspect](https://builders.ramp.com/post/why-we-built-our-background-agent) system. It runs on [Cloudflare](https://cloudflare.com) Workers with Durable Objects, [Modal](https://modal.com) sandboxes, and [OpenCode](https://opencode.ai) as the agent harness, with [Slack](https://slack.com), [Linear](https://linear.app), and [GitHub](https://github.com) as trigger surfaces. The README credits Ramp's Inspect by name.
 
-A month later, [Cole Murray](https://github.com/ColeMurray) started building [Open-Inspect](https://github.com/ColeMurray/background-agents), an open-source reconstruction of that exact architecture. A deliberate reconstruction. The same stack: Cloudflare Workers with Durable Objects, Modal sandboxes, OpenCode inside each container, Slack and Linear and GitHub as trigger surfaces. The README credits Ramp's Inspect by name.
+The source material was specific. In December 2025, Ramp published a detailed architecture post about Inspect, the internal [background coding agent](/posts/background-agents) responsible for roughly 30% of all pull requests merged to their frontend and backend repos. The post named the exact stack: Cloudflare Durable Objects for session state, Modal for sandboxes, filesystem snapshots for fast restarts, Slack as the primary invocation surface. Open-Inspect replicates that stack and extends it.
 
 The project has reached nearly 2,000 stars and 300 forks in five months. It's the second most popular open-source background agent after [LangChain's open-swe](/posts/open-swe-langchain-coding-agent), and in several areas it goes further than open-swe does. It has scheduled automations, [Sentry](https://sentry.io) alert triggers, multiplayer sessions, browser automation for visual verification, and sub-task spawning. Where open-swe extracts common patterns across three companies, Open-Inspect goes deep on one and fills in the operational details that a framework-level view leaves out.
 
@@ -90,8 +90,25 @@ The model-agnostic design means Open-Inspect doesn't optimize for any single pro
 
 ## Where it stands
 
-Open-Inspect is the most architecturally complete open-source background agent available. It ships the trigger layer (cron, Sentry, webhooks), the invocation surfaces (Slack, Linear, GitHub, web), the sandbox infrastructure (Modal, Daytona, Vercel), multiplayer collaboration, sub-task spawning, and browser automation. On the feature grid, it checks boxes that open-swe, [Runtime](https://www.runtm.com), and [Mistle](https://mistle.dev) each leave blank.
+Open-Inspect is the most architecturally complete open-source [background agent](/posts/background-agents) available. It ships the trigger layer (cron, Sentry, webhooks), the invocation surfaces (Slack, Linear, GitHub, web), the sandbox infrastructure (Modal, Daytona, Vercel), multiplayer collaboration, sub-task spawning, and browser automation. On the feature grid, it checks boxes that open-swe, [Runtime](https://www.runtm.com), and [Mistle](https://mistle.dev) each leave blank.
 
-The constraints are real too. Single-tenant only. Primarily maintained by one person (499 of approximately 590 commits). The Cloudflare control plane is elegant but non-portable. The ChatGPT OAuth path sits in a licensing gray zone. And while the trigger surface is broad, there's no triage layer that reads incoming work, prioritizes by urgency, or deduplicates related requests before spinning up sandboxes.
+<table>
+  <thead>
+    <tr><th>Capability</th><th>Open-Inspect</th><th><a href="/posts/open-swe-langchain-coding-agent">open-swe</a></th><th>Runtime</th><th>Mistle</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Cron / scheduled triggers</td><td>Yes (five-field cron)</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td>Incident triggers (Sentry)</td><td>Yes</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td>Multiplayer sessions</td><td>Yes</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td>Sub-task spawning</td><td>Yes</td><td>No</td><td>Yes</td><td>No</td></tr>
+    <tr><td>Browser automation</td><td>Yes</td><td>No</td><td>No</td><td>No</td></tr>
+    <tr><td>Multi-provider models</td><td>Anthropic, OpenAI, OpenCode Zen</td><td>Anthropic, OpenAI</td><td>Anthropic</td><td>Anthropic</td></tr>
+    <tr><td>Sandbox isolation</td><td>Modal, Daytona, Vercel</td><td>Modal, E2B, Docker</td><td>Docker</td><td>Docker</td></tr>
+    <tr><td>Multi-tenant ready</td><td>No</td><td>No</td><td>Yes</td><td>No</td></tr>
+    <tr><td>Stars (June 2026)</td><td>~2,000</td><td>~10,000</td><td>~400</td><td>~65</td></tr>
+  </tbody>
+</table>
+
+The constraints are real too. Single-tenant only. Primarily maintained by one person (499 of approximately 590 commits). The Cloudflare control plane is elegant but non-portable. The ChatGPT OAuth path sits in a licensing gray zone. And while the [trigger surface](/posts/the-webhook-tax) is broad, there's no [triage layer](/posts/devin-auto-triage) that reads incoming work, prioritizes by urgency, or deduplicates related requests before spinning up sandboxes.
 
 For a team that wants to deploy a background coding agent internally, behind their own auth boundary, with cron schedules and Sentry triggers working out of the box, Open-Inspect is the strongest open-source starting point. The 300 forks suggest many teams have reached the same conclusion. The question is whether a single-author project with 2,000 stars can sustain the pace of development that a production deployment demands, or whether the community needs to start carrying more of the weight.
