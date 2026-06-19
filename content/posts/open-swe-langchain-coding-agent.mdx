@@ -1,6 +1,6 @@
 ---
 title: "Open SWE and the architecture everyone built twice"
-summary: "LangChain's open-swe codifies the patterns that Stripe, Ramp, and Coinbase all built independently. Here's what the most popular open-source background agent teaches about where the category is converging."
+summary: "LangChain's open-swe codifies the patterns Stripe, Ramp, and Coinbase built independently. What the most popular open-source background agent reveals."
 date: "2026-06-19"
 accent: "lavender"
 dropcap: true
@@ -54,11 +54,11 @@ The recurring pattern across every production-grade background agent: give the a
 
 The architecture open-swe encodes is real and well-chosen. But the framework is explicitly a foundation, not a finished product. The README says as much: "meant to be forked." The gaps between open-swe and the internal agents it models are where the hardest engineering lives.
 
-**Invocation is reactive.** Open-swe responds to @mentions in [Slack](https://slack.com), Linear comments, and [GitHub](https://github.com) PR comments. There's no channel watching, no board monitoring, no scheduled wake-ups. Everything starts with a human explicitly pinging the bot. The [proactive trigger layer](/posts/reactive-vs-proactive), the one that turns a reactive tool into an always-on teammate, isn't part of the framework.
+**Invocation is reactive.** Open-swe responds to @mentions in [Slack](https://slack.com), Linear comments, and [GitHub](https://github.com) PR comments. There's no channel watching, no board monitoring, no scheduled wake-ups. Everything starts with a human explicitly pinging the bot. The [proactive trigger layer](/posts/reactive-vs-proactive) with its [clock, listener, and inbox primitives](/posts/three-primitives) isn't part of the framework.
 
 **Validation is prompt-driven.** The agent is instructed to run linters, formatters, and tests before committing. But there's no CI feedback loop where test failures route back to the agent for a retry. There's no verification gate that blocks a PR until checks pass. Stripe's Minions run three layers of validation: local checks, full CI, and one automatic retry on failure. Open-swe relies on the model following instructions, which works most of the time and fails silently when it doesn't.
 
-**No batch management.** When ten issues land at once, open-swe spins up ten independent sandboxes. There's no triage layer that reads all ten, identifies dependencies between them, prioritizes by urgency, or detects that three of them describe the same underlying bug. Each task is an island.
+**No batch management.** When ten issues land at once, open-swe spins up ten independent sandboxes. There's no [triage layer](/posts/devin-auto-triage) that reads all ten, identifies dependencies between them, prioritizes by urgency, or detects that three of them describe the same underlying bug. Each task is an island.
 
 **No bidirectional clarification.** The middleware can inject follow-up messages from a human into the agent loop. But the agent can't reach out proactively when it gets stuck. It can't ask a clarifying question in Slack and pause until the human responds. The communication is one-directional: human pushes context to the agent, but the agent doesn't pull context from the human.
 
