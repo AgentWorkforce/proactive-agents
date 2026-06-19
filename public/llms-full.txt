@@ -59,7 +59,87 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
-Last updated: 2026-06-17
+Last updated: 2026-06-19
+
+---
+
+## Essay: Open-Inspect and the Ramp Inspect blueprint
+
+Published: 2026-06-19
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/open-inspect-background-agents/
+
+In December 2025, [Ramp](https://ramp.com) published a detailed architecture post about [Inspect](https://builders.ramp.com/post/why-we-built-our-background-agent), the internal coding agent responsible for roughly 30% of all pull requests merged to their frontend and backend repos. The post was specific: [Cloudflare](https://cloudflare.com) Durable Objects for session state, [Modal](https://modal.com) for sandboxes, [OpenCode](https://opencode.ai) as the agent harness, filesystem snapshots for fast restarts, Slack as the primary invocation surface.
+
+A month later, [Cole Murray](https://github.com/ColeMurray) started building [Open-Inspect](https://github.com/ColeMurray/background-agents), an open-source reconstruction of that exact architecture. Not inspired-by, not similar-to. The same stack: Cloudflare Workers with Durable Objects, Modal sandboxes, OpenCode inside each container, Slack and Linear and GitHub as trigger surfaces. The README credits Ramp's Inspect by name.
+
+The project has reached nearly 2,000 stars and 300 forks in five months. It's the second most popular open-source background agent after [LangChain's open-swe](/posts/open-swe-langchain-coding-agent), and in several areas it goes further than open-swe does. It has scheduled automations, [Sentry](https://sentry.io) alert triggers, multiplayer sessions, browser automation for visual verification, and sub-task spawning. Where open-swe extracts common patterns across three companies, Open-Inspect goes deep on one and fills in the operational details that a framework-level view leaves out.
+
+## The Cloudflare bet
+
+Open-Inspect's most distinctive architectural decision is the control plane. While most background agent projects run their coordination layer on a conventional server (Node, Python, Rails), Open-Inspect puts it on [Cloudflare Workers](https://workers.cloudflare.com) with Durable Objects. Each session gets its own Durable Object, which means its own SQLite database, its own WebSocket hub, and its own event stream. Hundreds of concurrent sessions don't share a database connection pool or compete for a single server's resources.
+
+The Durable Object model gives you per-session isolation without spinning up a container for every session's coordinator. A session's state lives close to the code that manages it. The WebSocket Hibernation API keeps connections alive during idle periods without incurring compute costs, which matters for an agent that might run for twenty minutes without the user watching.
+
+Below the control plane sits the data plane: sandbox backends where code actually runs. Open-Inspect supports Modal, [Daytona](https://www.daytona.io/), and [Vercel Sandbox](https://vercel.com). Each session gets an isolated Linux environment with Node.js 22, Python 3.12, git, headless Chrome, and the full [OpenCode](https://opencode.ai) agent. The sandbox communicates back to the control plane through a bridge process, so the control plane never needs to reach into the sandbox directly.
+
+Between them sits a [D1 database](https://developers.cloudflare.com/d1/) for shared state: session indexes, repository metadata, and AES-256-GCM encrypted secrets. The architecture keeps coordination lightweight and serverless while pushing all the heavy compute into sandboxes that can be provisioned and discarded.
+
+The natural objection is lock-in: Durable Objects don't run anywhere else. But for a session coordinator that needs per-session state, WebSocket management, and zero cold start, the fit is strong. The control plane is the cheapest tier in the stack. The expensive part, model inference and sandbox compute, runs on pluggable providers. If you're going to be locked in somewhere, the coordination layer is the least painful place.
+
+## Beyond the @mention
+
+Open-Inspect has the broadest trigger surface of any open-source background agent. The reactive paths are familiar: @mention the bot in [Slack](https://slack.com), comment on a [Linear](https://linear.app) issue, tag it in a [GitHub](https://github.com) PR review. But the project also ships two trigger types that most open-source agents leave to the deploying team.
+
+**Cron schedules.** You can configure recurring tasks with standard five-field cron expressions and timezone support. Hourly dependency updates, daily test runs, weekly security scans. The scheduler runs inside the Cloudflare control plane and spawns sandbox sessions on the configured cadence. If a scheduled task fails three times in a row, the system auto-pauses it and logs the failure history. This is the [clock primitive](/posts/three-primitives) that open-swe and most other frameworks don't ship.
+
+**Sentry alert triggers.** Connect a [Sentry](https://sentry.io) webhook and Open-Inspect creates a coding session whenever a new error, regression, or critical metric alert fires. The agent receives the Sentry payload as context and can investigate the error, trace the breaking commit, and open a fix PR. This puts Open-Inspect closer to the [auto-triage pattern](/posts/devin-auto-triage) we covered with Devin, though without the multi-source deduplication or long-term memory.
+
+**Inbound webhooks.** Any external system can trigger a session via an authenticated HTTP POST. JSONPath condition filters let you gate which payloads actually spawn work, so you can connect a CI pipeline, a monitoring alert, or a custom tool without writing a dedicated integration.
+
+The combination is notable. Most open-source background agents answer when asked. Open-Inspect can answer when asked, run on a schedule, and react to production incidents. The trigger surface alone puts it closer to a production-grade system than a framework you need to extend.
+
+The three-consecutive-failure auto-pause on cron jobs is a small detail that matters in production. Without it, a misconfigured scheduled task can spin up sandboxes every hour indefinitely, burning compute. It's the kind of operational guardrail that separates a project built for real deployment from one built for demos.
+
+## The single-tenant constraint
+
+The README leads with a security warning that's easy to skim past and hard to overstate: "This system is designed for **single-tenant deployment only**, where all users are trusted members of the same organization."
+
+The architecture explains why. Open-Inspect uses a shared GitHub App installation for all git operations. The control plane mints short-lived installation tokens and brokers them to sandboxes through a git credential helper. Any user of the system can clone, fetch, and push to any repository the GitHub App has access to. There's no per-user repository access validation before creating a session.
+
+This follows Ramp's design exactly. Inspect was built for internal use where all employees are trusted and have access to company repositories. When every user is a Ramp engineer operating behind SSO and VPN, shared credentials make sense. Porting that trust model to open-source, where anyone might deploy the system, requires the README warning.
+
+For multi-tenant deployment, you'd need per-tenant GitHub App installations, access validation at session creation, and tenant isolation in the data model. The project acknowledges this explicitly and recommends deploying behind your organization's SSO or VPN, installing the GitHub App only on intended repositories, and using GitHub's repository selection to limit scope.
+
+The practical implication: Open-Inspect is ready for teams that operate like Ramp (everyone trusted, single org, repositories pre-selected) and requires real engineering work to serve multiple teams or external users. For a 20-person engineering team deploying behind their existing auth boundary, that's fine. For a platform serving multiple customers, it's a rebuild of the auth layer.
+
+One bright spot in the security model: commits are attributed to the user who sent the prompt, not to the bot. GitHub OAuth tokens create PRs under the human's identity, ensuring proper attribution and preventing self-approval loops. Users who sign in via Google (no SCM token) fall back to the GitHub App bot identity. It's a practical middle ground between full per-user isolation and a single shared identity.
+
+## Multiplayer and the session model
+
+The session abstraction is where Open-Inspect diverges most from other background agents. A session isn't just a task. It's a persistent, stateful workspace that multiple users can join simultaneously.
+
+Presence indicators show who's active. Prompts are attributed to their individual authors in git commits. Real-time streaming pushes events to all connected clients. You can send a prompt from Slack, your colleague can watch the progress on the web UI, and a third person can jump in with a follow-up from their own browser. Everyone sees the same session state because state lives in the Durable Object, not in any client.
+
+This multiplayer model enables a workflow that single-user agents can't support: collaborative debugging sessions where one person describes the bug, another provides context from the monitoring dashboard, and the agent synthesizes both inputs. Whether teams actually use this in practice or treat sessions as single-user is an open question, but the architecture supports the collaborative case cleanly.
+
+Sessions persist across connections. Close your laptop after kicking off a session, come back later, and the session is still there with all its events, artifacts, and sandbox state. Archive sessions when you're done; restore them later if you need the context. The lifecycle is closer to a shared document than a fire-and-forget command.
+
+## The model marketplace
+
+Open-Inspect's model support is wider than any other open-source background agent. The provider list spans [Anthropic](https://anthropic.com) (Claude Haiku through Opus and Fable), [OpenAI](https://openai.com) (GPT 5.x series plus Codex variants), and OpenCode Zen (Kimi, MiniMax, Qwen, GLM). Per-session reasoning effort controls let you dial the model's thinking budget up or down depending on the task.
+
+The OpenAI integration is particularly unusual: it supports ChatGPT subscription OAuth, so teams with existing ChatGPT Pro subscriptions can route agent work through their subscription rather than paying separate API costs. Whether this remains within [OpenAI](https://openai.com)'s terms of service for production use is ambiguous, but the cost-saving pattern is real. A team already paying $200/month per seat for ChatGPT Pro can avoid a separate API bill for their background agent.
+
+The model-agnostic design means Open-Inspect doesn't optimize for any single provider's strengths. The same prompt template, the same tool definitions, the same middleware run regardless of whether Claude Opus or GPT 5.5 is executing the task. For teams that want to A/B test models or switch providers based on cost and capability, that flexibility matters. For teams that want the agent loop tuned specifically for Claude's tool-use patterns or OpenAI's function-calling format, the one-size-fits-all approach leaves performance on the table.
+
+## Where it stands
+
+Open-Inspect is the most architecturally complete open-source background agent available. It ships the trigger layer (cron, Sentry, webhooks), the invocation surfaces (Slack, Linear, GitHub, web), the sandbox infrastructure (Modal, Daytona, Vercel), multiplayer collaboration, sub-task spawning, and browser automation. On the feature grid, it checks boxes that open-swe, [Runtime](https://www.runtm.com), and [Mistle](https://mistle.dev) each leave blank.
+
+The constraints are real too. Single-tenant only. Primarily maintained by one person (499 of approximately 590 commits). The Cloudflare control plane is elegant but non-portable. The ChatGPT OAuth path sits in a licensing gray zone. And while the trigger surface is broad, there's no triage layer that reads incoming work, prioritizes by urgency, or deduplicates related requests before spinning up sandboxes.
+
+For a team that wants to deploy a background coding agent internally, behind their own auth boundary, with cron schedules and Sentry triggers working out of the box, Open-Inspect is the strongest open-source starting point. The 300 forks suggest many teams have reached the same conclusion. The question is whether a single-author project with 2,000 stars can sustain the pace of development that a production deployment demands, or whether the community needs to start carrying more of the weight.
 
 ---
 
