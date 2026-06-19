@@ -95,6 +95,9 @@ import {
   BgForegroundFigure,
   BgReactiveProactiveFigure,
   BgFactoryFigure,
+  OpenSweStackFigure,
+  OpenSweSandboxFigure,
+  OpenSweGapFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -195,6 +198,9 @@ export const mdxComponents = {
   BgForegroundFigure,
   BgReactiveProactiveFigure,
   BgFactoryFigure,
+  OpenSweStackFigure,
+  OpenSweSandboxFigure,
+  OpenSweGapFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"

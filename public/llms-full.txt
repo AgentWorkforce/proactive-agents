@@ -59,7 +59,89 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
-Last updated: 2026-06-17
+Last updated: 2026-06-19
+
+---
+
+## Essay: Open SWE and the architecture everyone built twice
+
+Published: 2026-06-19
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/open-swe-langchain-coding-agent/
+
+Three of the most respected engineering organizations in fintech built internal coding agents in the past year. [Stripe](https://stripe.com) built Minions. [Ramp](https://ramp.com) built Inspect. [Coinbase](https://coinbase.com) built Cloudbot. They didn't coordinate. They didn't share code. And they arrived at almost exactly the same architecture: cloud sandboxes, curated toolsets, Slack-first invocation, and subagent orchestration. When three independent teams converge on the same design, the design is probably right.
+
+[Open SWE](https://github.com/langchain-ai/open-swe) is [LangChain](https://www.langchain.com/)'s attempt to extract that convergence into an open-source framework anyone can fork. Launched in March 2026, it has crossed 10,000 stars and 1,100 forks on GitHub. MIT license, actively maintained, with over 900 commits from a core team at LangChain. It's the most popular open-source background agent by a wide margin.
+
+What makes it worth studying isn't the star count. It's the set of architectural decisions open-swe chose to encode, and the equally telling set it chose to leave out.
+
+## Composing, not building from scratch
+
+The first interesting decision is how open-swe relates to its underlying tools. It doesn't fork an existing agent CLI the way Stripe forked [Goose](https://block.github.io/goose/). It doesn't start from raw model calls. It composes on two LangChain frameworks: [LangGraph](https://langchain-ai.github.io/langgraph/) for durable execution and [Deep Agents](https://github.com/langchain-ai/deepagents) for the agent harness itself.
+
+The practical implication: when Deep Agents improves its context management or token efficiency, open-swe inherits those improvements without a merge conflict. When LangGraph ships better streaming or cancellation, open-swe gets that too. Ramp's Inspect team described the same benefit when they built on [OpenCode](https://github.com/nichochar/open-code) rather than starting fresh.
+
+The alternative is what Coinbase did: build from scratch. That gives you total control but locks you into maintaining everything from file I/O tools to token window management to conversation compaction. Open-swe's bet is that the foundational agent loop is commodity infrastructure. The value is in what you build on top: the triggers, the tools, the middleware, the safety boundaries.
+
+This is the same architectural split we covered in [the background agents essay](/posts/background-agents): the runtime layer is converging, and the differentiation is moving up the stack toward orchestration, verification, and proactive triggers.
+
+Composing on an upstream framework means you inherit its decisions, including the ones you'd make differently. Open-swe can't easily replace Deep Agents' tool-calling convention or LangGraph's state management without breaking the upgrade path. For most teams, that's a reasonable trade. For teams with unusual execution models or compliance requirements, it may not be.
+
+## The sandbox-first principle
+
+Every task in open-swe runs inside an isolated cloud sandbox: a remote Linux environment with full shell access, a cloned copy of the repository, and no connection to production infrastructure. The blast radius of any mistake stays inside the sandbox walls.
+
+This is the decision all three internal agents converged on independently. Stripe runs agents in pre-warmed EC2 devboxes. Ramp uses [Modal](https://modal.com) containers. Coinbase built their sandbox in-house. Open-swe makes the sandbox backend pluggable and ships adapters for Modal, [Daytona](https://www.daytona.io/), [Runloop](https://www.runloop.ai/), and [LangSmith](https://smith.langchain.com/). Swap one line of configuration and the agent runs in a different cloud.
+
+Each conversation thread gets its own persistent sandbox. If you send a follow-up message in Slack, the agent picks it up in the same environment with all the files and state from the previous turn still in place. If a sandbox becomes unreachable, the system recreates it automatically and re-clones the repo.
+
+The parallel execution story matters too. Multiple tasks run simultaneously, each in its own sandbox. There's no shared queue that serializes work. A team can assign ten issues in [Linear](https://linear.app) and the agent spins up ten sandboxes in parallel, working on all of them at once.
+
+The recurring pattern across every production-grade background agent: give the agent full permissions inside a boundary that contains the damage. No confirmation prompts inside the sandbox. No restricted command lists. The agent can run anything it wants, because nothing it does can reach production. The safety model is architectural, not behavioral.
+
+## What open-swe leaves to you
+
+The architecture open-swe encodes is real and well-chosen. But the framework is explicitly a foundation, not a finished product. The README says as much: "meant to be forked." The gaps between open-swe and the internal agents it models are where the hardest engineering lives.
+
+**Invocation is reactive.** Open-swe responds to @mentions in [Slack](https://slack.com), Linear comments, and [GitHub](https://github.com) PR comments. It doesn't watch a channel for new conversations. It doesn't monitor a project board for newly triaged tickets. It doesn't wake up on a schedule. Everything starts with a human explicitly pinging the bot. The [proactive trigger layer](/posts/reactive-vs-proactive), the one that turns a reactive tool into an always-on teammate, isn't part of the framework.
+
+**Validation is prompt-driven.** The agent is instructed to run linters, formatters, and tests before committing. But there's no CI feedback loop where test failures route back to the agent for a retry. There's no verification gate that blocks a PR until checks pass. Stripe's Minions run three layers of validation: local checks, full CI, and one automatic retry on failure. Open-swe relies on the model following instructions, which works most of the time and fails silently when it doesn't.
+
+**No batch management.** When ten issues land at once, open-swe spins up ten independent sandboxes. There's no triage layer that reads all ten, identifies dependencies between them, prioritizes by urgency, or detects that three of them describe the same underlying bug. Each task is an island.
+
+**No bidirectional clarification.** The middleware can inject follow-up messages from a human into the agent loop. But the agent can't reach out proactively when it gets stuck. It can't ask a clarifying question in Slack and pause until the human responds. The communication is one-directional: human pushes context to the agent, but the agent doesn't pull context from the human.
+
+These aren't oversights. They're scope choices. Open-swe ships the 60% of the architecture that's well-understood and lets teams build the remaining 40% specific to their organization, their risk tolerance, and their definition of "done."
+
+If you're evaluating open-swe, the real question isn't whether the framework covers your needs today. It's whether the foundation is solid enough that building the missing pieces on top is faster than starting from scratch. For most teams, 10,000 stars, 900 commits, and an MIT license make a strong case for forking over reinventing.
+
+## Fifteen tools, not five hundred
+
+Stripe's internal coding agents have access to roughly 500 tools. Open-swe ships about 15. The difference isn't laziness. It's a deliberate design position: a smaller, well-tested toolset is easier to maintain, easier for the model to reason about, and produces more predictable results.
+
+The core set is tight: `execute` for shell commands, `fetch_url` and `http_request` for web access, `linear_comment` and `slack_thread_reply` for communication, and the Deep Agents built-ins for file operations and subagent spawning. GitHub operations run through `gh` CLI inside the sandbox rather than through a dedicated tool, which keeps the tool surface small while still giving the agent full git access.
+
+Optional add-ons include [Datadog](https://www.datadoghq.com) integration for observability and [Corridor](https://corridor.dev) for plan analysis, both running server-side so that credentials never enter the sandbox. The security boundary is clear: the sandbox has network egress and repository access; observability keys and admin secrets stay in the server process.
+
+The curation question scales differently depending on team size. Fifteen tools work well for a framework that ships to thousands of forks. Five hundred tools work for an internal agent at Stripe where a dedicated platform team maintains and tests each one. Open-swe's bet is that most teams are closer to fifteen than five hundred, and that adding tools is easier than removing them.
+
+## Context engineering through AGENTS.md
+
+Open-swe's context model has two layers. The first is an `AGENTS.md` file at the repo root, analogous to the rule files that Stripe uses to encode coding conventions, testing requirements, and architectural constraints. If the file exists, it's read from the sandbox and injected into the system prompt. The second is source context: the full Linear issue, Slack thread history, or GitHub PR conversation, assembled and passed to the agent so it starts with rich context rather than discovering everything through tool calls.
+
+The middleware layer adds a third dimension. `check_message_queue_before_model` runs before every model call and injects any follow-up messages that arrived while the agent was working. You can send a Slack reply to the agent mid-task ("actually, target the v2 branch instead") and it picks up the correction at its next step. This is a meaningful difference from fire-and-forget agents that ignore everything after the initial prompt.
+
+The combination gives you something closer to a real engineering conversation than a one-shot prompt: the agent has institutional context from `AGENTS.md`, task-specific context from the ticket, and live corrections from the thread. Whether that's enough depends on how much unwritten context your codebase requires.
+
+## Where open-swe sits in the open-source landscape
+
+Open-swe isn't the only open-source project in this space. [Runtime](https://www.runtm.com) (YC S26) takes a different approach: an agent-agnostic control plane that wraps [Claude Code](https://claude.ai), [Cursor](https://cursor.com), [Codex](https://openai.com/index/introducing-codex/), and others inside governed sandboxes. Runtime ships proactive Slack channel-watching, spend caps, and approval gates. Its AGPLv3 license on the API layer creates friction for enterprise forks that MIT doesn't.
+
+[Mistle](https://mistle.dev) (also YC-backed) focuses on credential brokering and identity attribution for agent work. [Deputies](https://deputies.dev) builds a control plane with swappable sandbox providers. [ColeMurray's background-agents](https://github.com/ColeMurray/background-agents) is the most architecturally similar to open-swe, running a cloud-native stack on Cloudflare Workers with Modal sandboxes and a triage classifier.
+
+The differentiation lines are forming. Open-swe leads on traction, framework maturity, and the LangChain ecosystem advantage. Runtime leads on governance and agent-agnosticism. Mistle leads on security primitives. Each one ships the base layer and leaves the proactive, verification, and orchestration work to the team deploying it.
+
+None of them ship a complete [factory model](/posts/background-agents) yet. The agent that watches your board, triages incoming work, runs tasks through verification, and handles failures gracefully, all without anyone @mentioning it first, remains something teams build in-house. Open-swe gives you the strongest open-source starting point for that build. How much of the remaining architecture you need to customize depends on how close your workflow is to the Slack-plus-Linear-plus-GitHub pattern that open-swe optimizes for.
 
 ---
 

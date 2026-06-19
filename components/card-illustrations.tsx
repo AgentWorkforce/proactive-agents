@@ -136,6 +136,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "claude-code-routines": ClaudeRoutinesArt,
   "tasklet-ai-agent-platform": TaskletAgentArt,
   "background-agents": BackgroundAgentsArt,
+  "open-swe-langchain-coding-agent": OpenSweArt,
 };
 
 function TaskletAgentArt() {
@@ -1564,6 +1565,42 @@ function BackgroundAgentsArt() {
           {/* Output arrow to right */}
           <line x1="70" y1="16" x2="85" y2="16" strokeWidth="1.4" />
           <polyline points="80,11 86,16 80,21" strokeWidth="1.3" fill="none" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function OpenSweArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 110)">
+          {/* Stacked layers — composition */}
+          {[-36, -12, 12, 36].map((y, i) => (
+            <rect key={i} x={-40 + i * 3} y={y - 8} width={80 - i * 6} height="18" rx="3" strokeWidth="1.4" />
+          ))}
+          {/* Fork arrows branching outward */}
+          <line x1="44" y1="-28" x2="65" y2="-40" strokeWidth="1.2" />
+          <line x1="44" y1="-28" x2="65" y2="-16" strokeWidth="1.2" />
+          <circle cx="68" cy="-40" r="4" strokeWidth="1" />
+          <circle cx="68" cy="-16" r="4" strokeWidth="1" />
+          {/* Small sandbox box on right */}
+          <rect x="56" y="20" width="24" height="18" rx="3" strokeWidth="1.2" strokeDasharray="3 2" />
+          <circle cx="68" cy="29" r="3" strokeWidth="0.8" />
+          <circle cx="68" cy="29" r="1" fill={C.ink} stroke="none" />
+          {/* Dashed orbit — open source */}
+          <circle cx="0" cy="4" r="56" strokeWidth="0.8" strokeDasharray="4 4" />
         </g>
       </g>
     </svg>
