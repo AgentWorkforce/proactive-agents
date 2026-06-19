@@ -4844,6 +4844,153 @@ export function OISingleTenantFigure() {
 }
 
 /** Factory model: SDLC pipeline with feedback loop. */
+export function OpenSweStackFigure() {
+  const layers = [
+    { y: 50, label: "your org", sub: "triggers · tools · middleware", color: C.lavender },
+    { y: 110, label: "open-swe", sub: "sandbox · invocation · context", color: C.sage },
+    { y: 170, label: "Deep Agents", sub: "harness · subagents · file ops", color: C.sky },
+    { y: 230, label: "LangGraph", sub: "durable execution · streaming", color: C.butter },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="openswe-stack-title">
+      <title id="openswe-stack-title">Open SWE composition stack: LangGraph, Deep Agents, open-swe, and your org's customization layer</title>
+      <text x="160" y="32" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>composition stack</text>
+      {layers.map((l, i) => (
+        <g key={i}>
+          <rect x="40" y={l.y} width="240" height="46" rx="6" fill={l.color} opacity="0.25" />
+          <rect x="40" y={l.y} width="240" height="46" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+          <text x="160" y={l.y + 20} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fontWeight="600" fill={C.ink}>{l.label}</text>
+          <text x="160" y={l.y + 34} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>{l.sub}</text>
+          {i < layers.length - 1 && (
+            <g>
+              <line x1="160" y1={l.y + 46} x2="160" y2={layers[i + 1].y} stroke={C.ink} strokeWidth="1" strokeDasharray="3 2" />
+              <polyline
+                points={`156,${layers[i + 1].y - 4} 160,${layers[i + 1].y} 164,${layers[i + 1].y - 4}`}
+                fill="none" stroke={C.ink} strokeWidth="1" strokeLinecap="round"
+              />
+            </g>
+          )}
+        </g>
+      ))}
+      <text x="22" y="145" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.terracotta} transform="rotate(-90, 22, 145)">upgrades flow up</text>
+      <line x1="30" y1="230" x2="30" y2="96" stroke={C.terracotta} strokeWidth="0.8" strokeDasharray="3 3" />
+      <polyline points="27,100 30,94 33,100" fill="none" stroke={C.terracotta} strokeWidth="1" strokeLinecap="round" />
+      <text x="160" y="298" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>improvements compound upward</text>
+    </svg>
+  );
+}
+
+export function OpenSweSandboxFigure() {
+  const sandboxes = [
+    { x: 30, label: "issue #42" },
+    { x: 120, label: "issue #58" },
+    { x: 210, label: "issue #71" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="openswe-sandbox-title">
+      <title id="openswe-sandbox-title">Parallel isolated sandboxes: each task runs in its own cloud environment</title>
+      <text x="160" y="32" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>parallel isolation</text>
+      {/* Trigger sources at top */}
+      <g>
+        <rect x="100" y="48" width="120" height="28" rx="5" fill={C.butter} opacity="0.3" />
+        <rect x="100" y="48" width="120" height="28" rx="5" fill="none" stroke={C.ink} strokeWidth="1" />
+        <text x="160" y="66" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>Slack / Linear / GitHub</text>
+      </g>
+      {/* Fan-out arrows */}
+      {sandboxes.map((s, i) => (
+        <g key={`arrow-${i}`}>
+          <line x1="160" y1="76" x2={s.x + 40} y2="110" stroke={C.ink} strokeWidth="0.8" strokeDasharray="3 2" />
+          <circle cx={s.x + 40} cy="110" r="2" fill={C.ink} />
+        </g>
+      ))}
+      {/* Sandbox containers */}
+      {sandboxes.map((s, i) => (
+        <g key={i}>
+          <rect x={s.x} y="118" width="80" height="110" rx="6" fill={C.sage} opacity="0.15" />
+          <rect x={s.x} y="118" width="80" height="110" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" strokeDasharray="4 2" />
+          <text x={s.x + 40} y="136" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fontWeight="600" fill={C.ink}>{s.label}</text>
+          {/* Mini repo icon */}
+          <rect x={s.x + 14} y="146" width="20" height="14" rx="2" fill="none" stroke={C.faint} strokeWidth="0.8" />
+          <line x1={s.x + 18} y1="150" x2={s.x + 30} y2="150" stroke={C.faint} strokeWidth="0.6" />
+          <line x1={s.x + 18} y1="154" x2={s.x + 28} y2="154" stroke={C.faint} strokeWidth="0.6" />
+          {/* Mini shell icon */}
+          <rect x={s.x + 42} y="146" width="24" height="14" rx="2" fill="none" stroke={C.faint} strokeWidth="0.8" />
+          <text x={s.x + 54} y="156" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5" fill={C.faint}>$_</text>
+          {/* Agent dot */}
+          <circle cx={s.x + 40} cy="182" r="6" fill="none" stroke={C.ink} strokeWidth="1" />
+          <circle cx={s.x + 40} cy="182" r="2" fill={C.ink} />
+          {/* Output arrow to PR */}
+          <line x1={s.x + 40} y1="196" x2={s.x + 40} y2="210" stroke={C.ink} strokeWidth="0.8" />
+          <text x={s.x + 40} y="206" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5" fill={C.faint}>↓</text>
+        </g>
+      ))}
+      {/* PR outputs at bottom */}
+      <text x="160" y="246" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>draft PRs</text>
+      {sandboxes.map((s, i) => (
+        <g key={`pr-${i}`}>
+          <rect x={s.x + 18} y="254" width="44" height="18" rx="4" fill={C.lavender} opacity="0.3" />
+          <rect x={s.x + 18} y="254" width="44" height="18" rx="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <text x={s.x + 40} y="267" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>PR</text>
+        </g>
+      ))}
+      <text x="160" y="298" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>no shared queue, no serialization</text>
+    </svg>
+  );
+}
+
+export function OpenSweGapFigure() {
+  const rows = [
+    { label: "sandbox isolation", openswe: true, prod: true },
+    { label: "Slack/Linear invoke", openswe: true, prod: true },
+    { label: "subagent spawning", openswe: true, prod: true },
+    { label: "mid-task messages", openswe: true, prod: true },
+    { label: "proactive triggers", openswe: false, prod: true },
+    { label: "CI feedback loop", openswe: false, prod: true },
+    { label: "batch triage", openswe: false, prod: true },
+    { label: "agent → human ask", openswe: false, prod: true },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="openswe-gap-title">
+      <title id="openswe-gap-title">Feature comparison: what open-swe ships versus what production internal agents require</title>
+      <text x="160" y="28" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>shipped vs. still needed</text>
+      {/* Column headers */}
+      <text x="200" y="52" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>open-swe</text>
+      <text x="275" y="52" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>production</text>
+      <line x1="20" y1="58" x2="305" y2="58" stroke={C.rule} strokeWidth="0.8" />
+      {rows.map((r, i) => {
+        const y = 74 + i * 28;
+        return (
+          <g key={i}>
+            <text x="24" y={y} fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>{r.label}</text>
+            {/* open-swe column */}
+            {r.openswe ? (
+              <g>
+                <circle cx="200" cy={y - 3} r="5" fill={C.sage} opacity="0.4" />
+                <text x="200" y={y} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>✓</text>
+              </g>
+            ) : (
+              <text x="200" y={y} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>—</text>
+            )}
+            {/* production column */}
+            <g>
+              <circle cx="275" cy={y - 3} r="5" fill={C.sage} opacity="0.4" />
+              <text x="275" y={y} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>✓</text>
+            </g>
+            {/* Highlight gap rows */}
+            {!r.openswe && (
+              <rect x="18" y={y - 12} width="290" height="20" rx="3" fill={C.rose} opacity="0.08" />
+            )}
+            {i < rows.length - 1 && (
+              <line x1="20" y1={y + 10} x2="305" y2={y + 10} stroke={C.rule} strokeWidth="0.4" />
+            )}
+          </g>
+        );
+      })}
+      <text x="160" y="306" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>the bottom four are where teams fork</text>
+    </svg>
+  );
+}
+
 export function BgFactoryFigure() {
   const stages = [
     { x: 22, label: "triage", color: C.butter },
