@@ -1,5 +1,20 @@
 [
   {
+    "id": "1783760405974-weekly-digest-582e99",
+    "timestamp": "2026-07-11T09:00:05.974Z",
+    "agent": "weekly-digest",
+    "trigger": "time",
+    "action": "Filed weekly digest",
+    "summary": "Found 12 new mention(s) across 4 sources, deduped, clustered into 3 topic(s).",
+    "outcome": "success",
+    "links": [
+      {
+        "label": "Issue #140",
+        "url": "https://github.com/AgentWorkforce/proactive-agents/issues/140"
+      }
+    ]
+  },
+  {
     "id": "1783245603278-newsletter-drafter-gph6rv",
     "timestamp": "2026-07-05T10:00:03.278Z",
     "agent": "newsletter-drafter",
