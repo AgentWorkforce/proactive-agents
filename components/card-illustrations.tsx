@@ -138,6 +138,8 @@ const SLUGS: Record<string, React.ComponentType> = {
   "background-agents": BackgroundAgentsArt,
   "open-inspect-background-agents": OpenInspectArt,
   "open-swe-langchain-coding-agent": OpenSweArt,
+  "loopy-agent-orchestration": LoopyOrchArt,
+  "charlie-labs-daemons": CharlieDaemonArt,
 };
 
 function TaskletAgentArt() {
@@ -1649,6 +1651,105 @@ function OpenSweArt() {
           <circle cx="68" cy="29" r="1" fill={C.ink} stroke="none" />
           {/* Dashed orbit — open source */}
           <circle cx="0" cy="4" r="56" strokeWidth="0.8" strokeDasharray="4 4" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function LoopyOrchArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 110)">
+          {/* Loopy loop — the infinite cycle */}
+          <ellipse rx="44" ry="28" strokeWidth="1.8" />
+          {/* Arrow on the loop */}
+          <path d="M40 -14 L44 -6 L36 -8" strokeWidth="1.3" />
+          {/* Center compile dot */}
+          <circle r="6" strokeWidth="1.4" />
+          <circle r="2" fill={C.ink} stroke="none" />
+          {/* Sensor inputs from left */}
+          {[-18, 0, 18].map((y, i) => (
+            <g key={i}>
+              <line x1={-72} y1={y} x2={-46} y2={y > 0 ? 14 : y < 0 ? -14 : 0} strokeWidth="1" />
+              <rect x={-88} y={y - 5} width="14" height="10" rx="2" strokeWidth="1" />
+            </g>
+          ))}
+          {/* Workflow steps to right */}
+          {[-14, 14].map((y, i) => (
+            <g key={i}>
+              <line x1="46" y1={y > 0 ? 14 : -14} x2="62" y2={y} strokeWidth="1.1" strokeDasharray="3 2" />
+              <rect x="64" y={y - 7} width="24" height="14" rx="3" strokeWidth="1.2" />
+              <line x1={70} y1={y - 1} x2={82} y2={y - 1} strokeWidth="0.6" />
+              <line x1={70} y1={y + 3} x2={80} y2={y + 3} strokeWidth="0.6" />
+            </g>
+          ))}
+          {/* Small "compiled" checkmark above */}
+          <text x="0" y="-38" textAnchor="middle" fontFamily="sans-serif" fontSize="8" fill={C.ink} stroke="none">✓</text>
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function CharlieDaemonArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 110)">
+          {/* Daemon — bounded circle with deny boundary */}
+          <circle r="32" strokeWidth="1.8" />
+          <circle r="50" strokeWidth="0.9" strokeDasharray="4 4" />
+          {/* Agent dot center */}
+          <circle r="6" strokeWidth="1.2" />
+          <circle r="2" fill={C.ink} stroke="none" />
+          {/* Watch triggers from left */}
+          {[-16, 0, 16].map((y, i) => (
+            <g key={i}>
+              <line x1={-70} y1={y} x2={-34} y2={y > 0 ? 12 : y < 0 ? -12 : 0} strokeWidth="1" />
+              <circle cx={-74} cy={y} r="3" strokeWidth="0.9" />
+            </g>
+          ))}
+          {/* Routine outputs to right */}
+          {[-10, 10].map((y, i) => (
+            <g key={i}>
+              <line x1="34" y1={y} x2="58" y2={y} strokeWidth="1.1" strokeDasharray="3 2" />
+              <rect x="60" y={y - 6} width="16" height="12" rx="2" strokeWidth="1" />
+            </g>
+          ))}
+          {/* Deny X marks outside boundary */}
+          {[-45, 45].map((angle, i) => {
+            const rad = ((angle - 90) * Math.PI) / 180;
+            const x = Math.cos(rad) * 50;
+            const y = Math.sin(rad) * 50;
+            return (
+              <g key={i}>
+                <line x1={x - 3} y1={y - 3} x2={x + 3} y2={y + 3} strokeWidth="1.2" />
+                <line x1={x - 3} y1={y + 3} x2={x + 3} y2={y - 3} strokeWidth="1.2" />
+              </g>
+            );
+          })}
         </g>
       </g>
     </svg>
