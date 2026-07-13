@@ -574,6 +574,18 @@ The factory model treats background agents as infrastructure rather than individ
 
 Factory builds the whole pipeline. Symphony publishes the spec and lets you assemble your own. Both assume the same future: that background agents will handle enough of the SDLC to warrant dedicated orchestration infrastructure. They disagree on who should own it.
 
+## The proof point
+
+The factory model is architectural theory until someone runs it at scale on real work. [Sierra](https://sierra.ai), the AI agent company co-founded by [Bret Taylor](https://en.wikipedia.org/wiki/Bret_Taylor) and Clay Bavor, published a detailed account of doing exactly that with an internal agent called [Pinecone](https://sierra.ai/blog/ai-pilling-our-company-lessons-learned).
+
+Pinecone started as three separate agents, each scoped to a department. The team collapsed them into a single unified agent behind one Slack handle and one URL. Employees describe what they need. The agent figures out which systems to pull from. That architectural choice, one agent spanning every function rather than one per silo, let Sierra discover that the most valuable workflows cross team boundaries. A single-department agent can't see them.
+
+The numbers back it up: 75,000 sessions and 70% of the company's pull requests opened by the agent. Two engineers built a cross-system debugging agent that pulls context from Slack, GitHub, ClickHouse, Salesforce, and PagerDuty simultaneously, cutting investigation time from afternoons to minutes. The integration layer is an [MCP](https://modelcontextprotocol.io) Gateway connecting 37 systems with access inheritance, policy enforcement, and audit trails baked in.
+
+The part that matters for this series: Pinecone is proactive. Prep notes are waiting before a meeting starts. Interview debriefs are drafted before the interviewer sits down. The agent doesn't wait for a ticket or a prompt. It watches for signals (webhooks, calendar events, task state changes) and initiates work on its own. It treats existing tools as backends, not surfaces to replace. Pull requests land in GitHub. Contracts land in Salesforce. The agent is the interface; the systems of record stay where they are.
+
+Sierra's AI acceleration team surfaced an insight worth repeating: frontier models already exceed the intelligence threshold for most business tasks. The bottleneck is business-specific context. The debugging agent works not because the model is smarter, but because it can reach into five systems at once and correlate what it finds.
+
 ## The open questions
 
 Most of this series has focused on products that give a single agent proactive capabilities: a clock, a listener, an inbox. The background-agent wave raises a different set of problems. When you have dozens of agents running unattended, the orchestration layer matters as much as any individual agent's capabilities. How do you route context between stages? What does review load look like when agents open twenty PRs a day? Is the reactive model a stepping stone to proactive, or a stable equilibrium on its own?
