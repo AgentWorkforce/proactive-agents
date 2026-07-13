@@ -71,9 +71,9 @@ URL: https://proactiveagents.dev/posts/loopy-agent-orchestration/
 
 [Loopy](https://loopy.computer/) (repo: [`peterzakin/loopy`](https://github.com/peterzakin/loopy)) is an open-source agent orchestration framework by [Peter Zakin](https://github.com/peterzakin) that does something most projects in this space haven't tried: it compiles your agent workflows before running them. You write markdown files for workflow steps, Python decorators for sensors, and a single YAML registry for agents, sandboxes, and events. Then `loopy compile` builds a DAG, validates types, checks that your model-harness pairings make sense, and tells you what's broken. No runtime surprises.
 
-The framework launched on [PyPI](https://pypi.org/project/loopy-computer/) as `loopy-computer` in late June 2026. It's at v0.2.0 with 37 stars and 176 merged pull requests in its first month. The velocity says more than the star count. And the scope is unusual: Loopy doesn't just give you a sandbox to run an agent in. It gives you the entire loop, from the webhook that starts the work to the typed event that carries data between steps to the isolated environment where the agent executes.
+The framework launched on [PyPI](https://pypi.org/project/loopy-computer/) as `loopy-computer` in late June 2026. It's at v0.2.0 with 37 stars and 176 merged pull requests in its first month. Thirty-seven stars isn't a ton, but 176 merged PRs in a month is a serious pace for any open-source project. And the scope is unusual: Loopy doesn't just give you a sandbox to run an agent in. It gives you the entire loop, from the webhook that starts the work to the typed event that carries data between steps to the isolated environment where the agent executes.
 
-That full-loop scope is what makes it interesting to look at closely.
+Most of the open-source agent projects we've covered in this series hand you a piece of the puzzle and wish you luck with the rest. Loopy tries to hand you the whole thing.
 
 ## The shape of the loop
 
@@ -133,7 +133,7 @@ To put Loopy in context, here's how its coverage compares to other open-source p
 
 Loopy covers more of the surface than any single project: typed events, a compile-time validator, an agent-neutral harness layer, sandboxed execution, multiple deployment paths, and both webhook and polling sensors. What it doesn't have yet is the session model that Open-Inspect provides (multiplayer sessions, real-time streaming, browser-based UI), or the deep CI integration that production background agents like Ramp's Inspect ship. The admin dashboard exists but is early. And the project is a month old with 37 stars, so the community is nascent.
 
-The gap worth watching is how the harness abstraction handles the differences between agent runtimes in practice. The base class defines a clean JSON protocol that all agents are expected to emit. But each agent CLI has its own quirks around context length, tool availability, output format, and error handling. The abstraction is elegant on paper. The real test is whether it holds up across model updates and new providers without accumulating harness-specific workarounds.
+The gap worth watching is the harness abstraction. The base class defines a clean JSON protocol that all agents are expected to emit. But each agent CLI has its own quirks around context length, tool availability, output format, and error handling. Provider abstractions tend to accumulate edge-case workarounds over time. Whether this one holds up across model updates and new providers without that drift is an open question.
 
 176 merged pull requests in a month, with a clean compiler test suite, stable error codes, and a documented AGENTS.md file. The commit history shows a project being built by someone who's thought about this problem for a while, not a weekend prototype looking for stars. The documentation is thorough, the examples compile, and the architecture has clear seams. Whether it gains adoption is a different question, but the engineering is serious.
 
@@ -147,17 +147,17 @@ The template variables (`{{ event.ticket_id }}`, `{{ entry.pr_url }}`) are the o
 
 This is a bet that LLMs are good enough at following natural-language instructions that you don't need a structured DSL for agent behavior. The agent's "programming language" is the same markdown you'd write in a GitHub issue or a Notion doc. The structure comes from the typed outputs and events, not from the prose.
 
-Loopy's workflows version, diff, and review like regular code because they are regular files. The compiler validates the contracts. The prose handles the rest.
+When you review a PR that changes a workflow step, you're reviewing the exact text the agent will receive. There's no indirection, no separate prompt file, no string interpolation layer to trace.
 
 ## Where it goes from here
 
 Loopy launched less than a month ago and it already has a compiler pipeline, three harness integrations, three sandbox providers, three deployment paths, six documented examples, built-in GitHub and Sentry events, and an admin dashboard. The open issue list includes an [Islo sandbox provider](https://github.com/peterzakin/loopy/issues/172), suggesting more execution environments are coming.
 
-The project sits at an interesting intersection. It's the first open-source framework to treat the complete agent automation loop (sensors to events to workflows to sandboxed execution) as a single, compilable, versionable artifact. Every other project in this space asks you to assemble that loop yourself from components, libraries, or platform features. Loopy ships it as one thing.
+As far as we can tell, it's the first open-source framework to treat the complete agent automation loop (sensors to events to workflows to sandboxed execution) as a single, compilable, versionable artifact. Most projects in this space ask you to assemble that loop yourself.
 
 Whether that scope is a strength or a liability depends on adoption. A framework that covers the full loop only works if developers trust it enough to hand over the full loop. The compile-time safety, typed contracts, and clean error messages all push in the right direction. The `loopy init` wizard, the working examples, and the `loopy doctor` pre-flight checks lower the barrier. But it's still a new project asking you to commit your agent automation infrastructure to a single framework.
 
-For teams that have been building agent loops out of scripts, cron jobs, and ad-hoc webhook handlers, Loopy offers a clear upgrade path: replace the glue code with declarations and let a compiler tell you when they're wrong. For teams already invested in a specific platform or framework, the switching cost is higher. The question isn't whether the design is good. The question is whether one month of runway is enough to bet on.
+For teams that have been building agent loops out of scripts, cron jobs, and ad-hoc webhook handlers, Loopy offers a clear upgrade path: replace the glue code with declarations and let a compiler tell you when they're wrong. For teams already invested in a specific platform, the switching cost is real. At a month old with serious engineering behind it, the remaining question is whether enough developers adopt it to sustain the scope it's taken on.
 
 ---
 
@@ -171,7 +171,7 @@ URL: https://proactiveagents.dev/posts/charlie-labs-daemons/
 
 The daemon concept is defined through an open specification. Each daemon is a `DAEMON.md` file stored in your repo at `.agents/daemons/<daemon-id>/DAEMON.md`. The file has YAML frontmatter declaring the daemon's identity, purpose, triggers, routines, and prohibitions, followed by a markdown body with operating guidance. The spec is documented at [docs.charlielabs.ai](https://docs.charlielabs.ai/daemons), and Charlie Labs publishes a [catalog of example daemons](https://github.com/charlie-labs/daemons) with an npm CLI for browsing and installing them.
 
-What makes the daemon framing worth examining closely isn't the execution engine (that's Charlie's proprietary product). It's the authoring model and the assumptions it encodes about what background agents should and shouldn't do.
+The execution engine is Charlie's proprietary product, so we can't dig into the runtime. But the authoring model is open, and the assumptions it encodes about what background agents should and shouldn't do are worth a close look.
 
 ## The anatomy of a daemon
 
@@ -187,7 +187,7 @@ The frontmatter fields:
 
 **`routines`** are the concrete operations the daemon performs. Each routine must be finite and verifiable: something a human could confirm happened or didn't. "Push a focused evidence-grounded fix to the PR branch when the correct repo change is clear." Not "Improve code quality."
 
-**`deny`** lists the hard prohibitions. This is where the design gets interesting. The deny rules aren't generic safety slogans. They're specific to the daemon's scope and address the adjacent risks, the shortcuts the daemon might naturally attempt to reach its goals faster. A PR check repair daemon is denied from refreshing branches, merging PRs, or pushing speculative changes. A bug triage daemon is denied from changing issue fields, labels, or assignees. The deny list defines the daemon's boundary by naming exactly what it must not cross.
+**`deny`** lists the hard prohibitions. This is where the design gets interesting. The deny rules aren't generic safety slogans. They're specific to the daemon's scope and address the adjacent risks, the shortcuts the daemon might naturally attempt to reach its goals faster. A PR check repair daemon is denied from refreshing branches, merging PRs, or pushing speculative changes. A bug triage daemon is denied from changing issue fields, labels, or assignees. Every boundary is named explicitly rather than left to the runtime's judgment.
 
 **`schedule`** is an optional five-field cron expression for time-based activation. A dependency update daemon runs `0 8 * * 1` (Monday mornings). A docs staleness scanner runs weekly. Daemons can be watch-only, schedule-only, or hybrid.
 
@@ -219,9 +219,9 @@ The `linear-bug-context-researcher` daemon is even more constrained. It adds tri
 
 This level of constraint isn't accidental. The [authoring guide](https://docs.charlielabs.ai/daemons/writing-and-editing-daemon-md) explicitly frames it as a design principle: "Write the narrowest daemon that can do the job." Start with 50 to 100 lines, 2 to 3 routines, and iterate after real activations show what the daemon actually needs. The guide warns against unbounded routines ("help with code"), vague watch conditions ("when the repo needs attention"), and missing deny rules for risky actions.
 
-The deny rules are where trust gets built. A daemon that can push commits but not merge them, that can comment but not approve, that can research but not edit issue fields, earns trust incrementally. Each denied action is a boundary the team doesn't have to police manually. If the daemon's scope needs to expand later, the expansion shows up as a diff to the `DAEMON.md` file, visible in code review, not as a surprise behavior change.
+Trust builds from the deny rules outward. A daemon that can push commits but not merge them, that can comment but not approve, that can research but not edit issue fields, earns trust incrementally. Each denied action is a boundary the team doesn't have to police manually. If the daemon's scope needs to expand later, the expansion shows up as a diff to the `DAEMON.md` file, visible in code review, not as a surprise behavior change.
 
-Charlie's framing draws a clear line between daemons and agents. Agents handle novel, directed work: "build this feature," "fix this bug." Daemons handle recurring, undirected work: "keep docs current," "triage new bugs," "fix failing CI." The daemon doesn't need a prompt each time. It has a standing role, wakes when relevant events happen, does its bounded job, and stops. The closest analogy is a junior team member with a specific responsibility, clear boundaries, and a standing invitation to ask for help when they're unsure.
+Charlie's framing draws a clear line between daemons and agents. An agent handles a specific request: "build this feature," "fix this bug." A daemon has a standing role: "keep docs current," "triage new bugs," "fix failing CI." It doesn't need a prompt each time. It wakes when relevant events happen, does its bounded job, and stops. Think of it like a junior team member who owns one specific responsibility, knows exactly where their authority ends, and has a standing invitation to ask for help when they're unsure.
 
 ## The execution model
 
@@ -243,7 +243,7 @@ Charlie's daemon model adds a layer above individual activations. The daemon is 
 
 This has practical implications. A task-based system needs to inject all relevant context into each invocation. A role-based system can accumulate context across invocations, learning which CI failures are typically flaky, which docs are most prone to drift, which types of bugs get duplicate reports. The authoring docs mention "dedicated daemon memory" as coming soon, but even without it, the activation log provides continuity.
 
-The tradeoff is configuration surface. A `DAEMON.md` file is more complex than a cron expression plus a prompt. The frontmatter alone has five fields, and the body can run to hundreds of lines of operating guidance. The `pr-review-triage` daemon in the catalog is detailed enough to be a mini operating manual. That complexity is the cost of encoding a role rather than a task, and whether teams will invest in writing and maintaining these files is the central adoption question.
+The tradeoff is configuration surface. A `DAEMON.md` file is more complex than a cron expression plus a prompt. The frontmatter alone has five fields, and the body can run to hundreds of lines of operating guidance. The `pr-review-triage` daemon in the catalog is detailed enough to be a mini operating manual. Teams will need to decide whether the upfront investment in writing and maintaining these files pays off through more predictable daemon behavior over time.
 
 Publishing the daemon format as an open spec is a strategic choice. If other platforms adopt `DAEMON.md` as a configuration format, Charlie becomes the reference implementation rather than a proprietary island. The spec is deliberately simple (YAML frontmatter, markdown body, five fields) and runtime-agnostic. Nothing in the format assumes Charlie's execution engine. A team could read a `DAEMON.md` file and implement the daemon as a GitHub Action, a [Loopy](/posts/loopy-agent-orchestration) workflow, or a custom script. The format's value is in the role abstraction and the deny-list pattern, not in the runtime.
 
@@ -255,7 +255,7 @@ The open repo is a catalog, not a framework. It contains fourteen example `DAEMO
 
 For teams evaluating background agent infrastructure, the daemon format offers a useful authoring model regardless of runtime. The five-field frontmatter (id, purpose, watch, routines, deny) is a reasonable template for specifying any recurring background agent's scope. The deny-list-as-pre-mortem pattern is portable to any system. And the catalog's fourteen examples are concrete references for the categories of maintenance work that background agents can own today: PR hygiene, issue triage, dependency updates, documentation freshness, and operational alerting.
 
-The question for Charlie as a product is whether teams will pay for a hosted runtime when the format itself is open and the individual daemon behaviors could be implemented on other platforms. The answer probably depends on how well the proprietary pieces (memory, cross-system context building, escalation workflows, the dashboard) deliver on the promise that a daemon improves with each activation. If the memory and context layers work well, the hosted runtime justifies itself. If they don't, the open format becomes the lasting contribution and the runtime becomes interchangeable.
+The question for Charlie as a product is whether teams will pay for a hosted runtime when the format itself is open and the individual daemon behaviors could be implemented on other platforms. The answer probably depends on how well the proprietary pieces, especially memory, cross-system context building, and escalation workflows, deliver on the promise that a daemon improves with each activation. Strong memory and context layers would justify the hosted runtime. Without them, the open format itself becomes the lasting contribution, and teams could reasonably build their own execution layer on top of it.
 
 ---
 

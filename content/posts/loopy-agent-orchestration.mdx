@@ -8,9 +8,9 @@ dropcap: true
 
 [Loopy](https://loopy.computer/) (repo: [`peterzakin/loopy`](https://github.com/peterzakin/loopy)) is an open-source agent orchestration framework by [Peter Zakin](https://github.com/peterzakin) that does something most projects in this space haven't tried: it compiles your agent workflows before running them. You write markdown files for workflow steps, Python decorators for sensors, and a single YAML registry for agents, sandboxes, and events. Then `loopy compile` builds a DAG, validates types, checks that your model-harness pairings make sense, and tells you what's broken. No runtime surprises.
 
-The framework launched on [PyPI](https://pypi.org/project/loopy-computer/) as `loopy-computer` in late June 2026. It's at v0.2.0 with 37 stars and 176 merged pull requests in its first month. The velocity says more than the star count. And the scope is unusual: Loopy doesn't just give you a sandbox to run an agent in. It gives you the entire loop, from the webhook that starts the work to the typed event that carries data between steps to the isolated environment where the agent executes.
+The framework launched on [PyPI](https://pypi.org/project/loopy-computer/) as `loopy-computer` in late June 2026. It's at v0.2.0 with 37 stars and 176 merged pull requests in its first month. Thirty-seven stars isn't a ton, but 176 merged PRs in a month is a serious pace for any open-source project. And the scope is unusual: Loopy doesn't just give you a sandbox to run an agent in. It gives you the entire loop, from the webhook that starts the work to the typed event that carries data between steps to the isolated environment where the agent executes.
 
-That full-loop scope is what makes it interesting to look at closely.
+Most of the open-source agent projects we've covered in this series hand you a piece of the puzzle and wish you luck with the rest. Loopy tries to hand you the whole thing.
 
 <Scene figure="LoopyArchFigure" caption="Loopy's four-part architecture: sensors, event bus, workflows, sandboxes." side="left">
 
@@ -88,7 +88,7 @@ To put Loopy in context, here's how its coverage compares to other open-source p
 
 Loopy covers more of the surface than any single project: typed events, a compile-time validator, an agent-neutral harness layer, sandboxed execution, multiple deployment paths, and both webhook and polling sensors. What it doesn't have yet is the session model that Open-Inspect provides (multiplayer sessions, real-time streaming, browser-based UI), or the deep CI integration that production background agents like Ramp's Inspect ship. The admin dashboard exists but is early. And the project is a month old with 37 stars, so the community is nascent.
 
-The gap worth watching is how the harness abstraction handles the differences between agent runtimes in practice. The base class defines a clean JSON protocol that all agents are expected to emit. But each agent CLI has its own quirks around context length, tool availability, output format, and error handling. The abstraction is elegant on paper. The real test is whether it holds up across model updates and new providers without accumulating harness-specific workarounds.
+The gap worth watching is the harness abstraction. The base class defines a clean JSON protocol that all agents are expected to emit. But each agent CLI has its own quirks around context length, tool availability, output format, and error handling. Provider abstractions tend to accumulate edge-case workarounds over time. Whether this one holds up across model updates and new providers without that drift is an open question.
 
 <Callout tone="warm" label="The velocity signal">
 176 merged pull requests in a month, with a clean compiler test suite, stable error codes, and a documented AGENTS.md file. The commit history shows a project being built by someone who's thought about this problem for a while, not a weekend prototype looking for stars. The documentation is thorough, the examples compile, and the architecture has clear seams. Whether it gains adoption is a different question, but the engineering is serious.
@@ -107,15 +107,15 @@ The template variables (`{{ event.ticket_id }}`, `{{ entry.pr_url }}`) are the o
 This is a bet that LLMs are good enough at following natural-language instructions that you don't need a structured DSL for agent behavior. The agent's "programming language" is the same markdown you'd write in a GitHub issue or a Notion doc. The structure comes from the typed outputs and events, not from the prose.
 
 <PullQuote>
-Loopy's workflows version, diff, and review like regular code because they are regular files. The compiler validates the contracts. The prose handles the rest.
+When you review a PR that changes a workflow step, you're reviewing the exact text the agent will receive. There's no indirection, no separate prompt file, no string interpolation layer to trace.
 </PullQuote>
 
 ## Where it goes from here
 
 Loopy launched less than a month ago and it already has a compiler pipeline, three harness integrations, three sandbox providers, three deployment paths, six documented examples, built-in GitHub and Sentry events, and an admin dashboard. The open issue list includes an [Islo sandbox provider](https://github.com/peterzakin/loopy/issues/172), suggesting more execution environments are coming.
 
-The project sits at an interesting intersection. It's the first open-source framework to treat the complete agent automation loop (sensors to events to workflows to sandboxed execution) as a single, compilable, versionable artifact. Every other project in this space asks you to assemble that loop yourself from components, libraries, or platform features. Loopy ships it as one thing.
+As far as we can tell, it's the first open-source framework to treat the complete agent automation loop (sensors to events to workflows to sandboxed execution) as a single, compilable, versionable artifact. Most projects in this space ask you to assemble that loop yourself.
 
 Whether that scope is a strength or a liability depends on adoption. A framework that covers the full loop only works if developers trust it enough to hand over the full loop. The compile-time safety, typed contracts, and clean error messages all push in the right direction. The `loopy init` wizard, the working examples, and the `loopy doctor` pre-flight checks lower the barrier. But it's still a new project asking you to commit your agent automation infrastructure to a single framework.
 
-For teams that have been building agent loops out of scripts, cron jobs, and ad-hoc webhook handlers, Loopy offers a clear upgrade path: replace the glue code with declarations and let a compiler tell you when they're wrong. For teams already invested in a specific platform or framework, the switching cost is higher. The question isn't whether the design is good. The question is whether one month of runway is enough to bet on.
+For teams that have been building agent loops out of scripts, cron jobs, and ad-hoc webhook handlers, Loopy offers a clear upgrade path: replace the glue code with declarations and let a compiler tell you when they're wrong. For teams already invested in a specific platform, the switching cost is real. At a month old with serious engineering behind it, the remaining question is whether enough developers adopt it to sustain the scope it's taken on.
