@@ -5046,3 +5046,401 @@ export function BgFactoryFigure() {
     </svg>
   );
 }
+
+export function LoopyArchFigure() {
+  const layers = [
+    { y: 40, label: "sensors", sub: "webhook · poll · built-in", color: C.peach },
+    { y: 110, label: "event bus", sub: "typed events · in-proc or Redis", color: C.butter },
+    { y: 180, label: "workflows", sub: "markdown steps · DAG · templates", color: C.sage },
+    { y: 250, label: "sandboxes", sub: "local · docker · daytona", color: C.sky },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="loopy-arch-title">
+      <title id="loopy-arch-title">Loopy four-part architecture: sensors feed the event bus, which triggers workflows running in sandboxes</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>the full loop</text>
+      {layers.map((l, i) => (
+        <g key={i}>
+          <rect x="40" y={l.y} width="240" height="50" rx="6" fill={l.color} opacity="0.25" />
+          <rect x="40" y={l.y} width="240" height="50" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+          <text x="160" y={l.y + 22} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="10" fontWeight="600" fill={C.ink}>{l.label}</text>
+          <text x="160" y={l.y + 38} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>{l.sub}</text>
+          {i < layers.length - 1 && (
+            <g>
+              <line x1="160" y1={l.y + 50} x2="160" y2={layers[i + 1].y} stroke={C.ink} strokeWidth="1" strokeDasharray="3 2" />
+              <polyline
+                points={`156,${layers[i + 1].y - 4} 160,${layers[i + 1].y} 164,${layers[i + 1].y - 4}`}
+                fill="none" stroke={C.ink} strokeWidth="1" strokeLinecap="round"
+              />
+            </g>
+          )}
+        </g>
+      ))}
+      {/* External sources on left */}
+      {["GitHub", "Sentry", "Zendesk"].map((src, i) => {
+        const y = 50 + i * 16;
+        return (
+          <g key={src}>
+            <text x="28" y={y + 4} textAnchor="end" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>{src}</text>
+            <line x1="30" y1={y} x2="40" y2={y} stroke={C.faint} strokeWidth="0.8" />
+          </g>
+        );
+      })}
+      {/* Agent icons inside sandbox layer */}
+      {[100, 160, 220].map((x, i) => (
+        <g key={i}>
+          <circle cx={x} cy="272" r="5" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <circle cx={x} cy="272" r="1.5" fill={C.ink} />
+        </g>
+      ))}
+      <text x="160" y="308" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>data flows down, events flow across</text>
+    </svg>
+  );
+}
+
+export function LoopyCompilerFigure() {
+  const passes = [
+    { label: "P0 discover", color: C.butter },
+    { label: "P1–P2 registry", color: C.peach },
+    { label: "P3–P5 workflows", color: C.sage },
+    { label: "P7 sensors", color: C.sky },
+    { label: "P6 templates", color: C.lavender },
+    { label: "P8 cross-check", color: C.rose },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="loopy-compiler-title">
+      <title id="loopy-compiler-title">Loopy compiler pipeline: six passes from file discovery to validated manifest</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>compile pipeline</text>
+      {/* Input files at top */}
+      <g>
+        <rect x="60" y="36" width="200" height="24" rx="4" fill="none" stroke={C.faint} strokeWidth="0.8" strokeDasharray="3 2" />
+        <text x="160" y="52" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>registry.yml · workflows/ · sensors/</text>
+      </g>
+      <line x1="160" y1="60" x2="160" y2="72" stroke={C.ink} strokeWidth="0.8" />
+      <polyline points="157,69 160,73 163,69" fill="none" stroke={C.ink} strokeWidth="0.8" strokeLinecap="round" />
+      {/* Pipeline passes */}
+      {passes.map((p, i) => {
+        const y = 78 + i * 34;
+        return (
+          <g key={i}>
+            <rect x="50" y={y} width="220" height="26" rx="5" fill={p.color} opacity="0.25" />
+            <rect x="50" y={y} width="220" height="26" rx="5" fill="none" stroke={C.ink} strokeWidth="1" />
+            <text x="160" y={y + 16} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.ink}>{p.label}</text>
+            {i < passes.length - 1 && (
+              <g>
+                <line x1="160" y1={y + 26} x2="160" y2={y + 34} stroke={C.ink} strokeWidth="0.8" />
+                <polyline
+                  points={`157,${y + 31} 160,${y + 34} 163,${y + 31}`}
+                  fill="none" stroke={C.ink} strokeWidth="0.8" strokeLinecap="round"
+                />
+              </g>
+            )}
+          </g>
+        );
+      })}
+      {/* Error codes on right side */}
+      <text x="286" y="128" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.terracotta}>LOOPY-E201</text>
+      <text x="286" y="162" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.terracotta}>LOOPY-E102</text>
+      <text x="286" y="196" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.terracotta}>LOOPY-E401</text>
+      <text x="286" y="230" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.terracotta}>LOOPY-E301</text>
+      <text x="286" y="264" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.terracotta}>LOOPY-E506</text>
+      {/* Output manifest at bottom */}
+      <line x1="160" y1="282" x2="160" y2="292" stroke={C.ink} strokeWidth="0.8" />
+      <polyline points="157,289 160,293 163,289" fill="none" stroke={C.ink} strokeWidth="0.8" strokeLinecap="round" />
+      <rect x="100" y="294" width="120" height="20" rx="4" fill={C.sage} opacity="0.3" />
+      <rect x="100" y="294" width="120" height="20" rx="4" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="308" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>manifest.json</text>
+    </svg>
+  );
+}
+
+export function LoopyHarnessFigure() {
+  const harnesses = [
+    { x: 20, label: "claude-code", model: "claude-sonnet-4-6", color: C.lavender },
+    { x: 120, label: "codex", model: "gpt-5.5", color: C.sage },
+    { x: 220, label: "opencode", model: "any provider", color: C.butter },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="loopy-harness-title">
+      <title id="loopy-harness-title">Three agent harnesses: Claude Code, Codex, and OpenCode sharing a common protocol</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>agent-neutral harnesses</text>
+      {/* Shared workflow at top */}
+      <rect x="70" y="38" width="180" height="36" rx="6" fill={C.peach} opacity="0.2" />
+      <rect x="70" y="38" width="180" height="36" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="160" y="56" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fontWeight="600" fill={C.ink}>workflow step</text>
+      <text x="160" y="68" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>same markdown prompt</text>
+      {/* Fan-out arrows */}
+      {harnesses.map((h, i) => (
+        <g key={`arrow-${i}`}>
+          <line x1="160" y1="74" x2={h.x + 40} y2="104" stroke={C.ink} strokeWidth="0.8" strokeDasharray="3 2" />
+          <circle cx={h.x + 40} cy="104" r="2" fill={C.ink} />
+        </g>
+      ))}
+      {/* Harness boxes */}
+      {harnesses.map((h, i) => (
+        <g key={i}>
+          <rect x={h.x} y="110" width="80" height="90" rx="6" fill={h.color} opacity="0.2" />
+          <rect x={h.x} y="110" width="80" height="90" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+          <text x={h.x + 40} y="130" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>{h.label}</text>
+          <line x1={h.x + 10} y1="138" x2={h.x + 70} y2="138" stroke={C.rule} strokeWidth="0.6" />
+          <text x={h.x + 40} y="152" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>{h.model}</text>
+          {/* Agent icon */}
+          <circle cx={h.x + 40} cy="176" r="8" fill="none" stroke={C.ink} strokeWidth="1" />
+          <circle cx={h.x + 40} cy="176" r="2.5" fill={C.ink} />
+        </g>
+      ))}
+      {/* Shared JSON protocol at bottom */}
+      <rect x="40" y="224" width="240" height="32" rx="5" fill={C.sky} opacity="0.2" />
+      <rect x="40" y="224" width="240" height="32" rx="5" fill="none" stroke={C.ink} strokeWidth="1" />
+      <text x="160" y="242" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.ink}>shared JSON output protocol</text>
+      <text x="160" y="252" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.faint}>{"{"} output: {"{"} ... {"}"}, emits: {"{"} ... {"}"} {"}"}</text>
+      {/* Converge arrows from harnesses to protocol */}
+      {harnesses.map((h, i) => (
+        <g key={`down-${i}`}>
+          <line x1={h.x + 40} y1="200" x2={h.x + 40} y2="224" stroke={C.ink} strokeWidth="0.8" strokeDasharray="3 2" />
+          <polyline
+            points={`${h.x + 37},220 ${h.x + 40},224 ${h.x + 43},220`}
+            fill="none" stroke={C.ink} strokeWidth="0.8" strokeLinecap="round"
+          />
+        </g>
+      ))}
+      {/* Budget + validation labels */}
+      <text x="160" y="278" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>budget enforcement · model validation</text>
+      <text x="160" y="294" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>toolchain layering · credential isolation</text>
+    </svg>
+  );
+}
+
+export function LoopyGapFigure() {
+  const rows = [
+    { label: "typed event contracts", loopy: true, others: false },
+    { label: "compile-time validation", loopy: true, others: false },
+    { label: "agent-neutral harnesses", loopy: true, others: false },
+    { label: "webhook + poll sensors", loopy: true, others: false },
+    { label: "cron scheduling", loopy: true, others: true },
+    { label: "sandbox isolation", loopy: true, others: true },
+    { label: "multiplayer sessions", loopy: false, others: true },
+    { label: "CI feedback loop", loopy: false, others: true },
+    { label: "real-time streaming UI", loopy: false, others: true },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="loopy-gap-title">
+      <title id="loopy-gap-title">Feature coverage: Loopy versus other open-source agent orchestration projects</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>coverage comparison</text>
+      <text x="200" y="48" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>loopy</text>
+      <text x="275" y="48" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>others</text>
+      <line x1="20" y1="54" x2="305" y2="54" stroke={C.rule} strokeWidth="0.8" />
+      {rows.map((r, i) => {
+        const y = 70 + i * 26;
+        const isLoopyUnique = r.loopy && !r.others;
+        const isOthersUnique = !r.loopy && r.others;
+        return (
+          <g key={i}>
+            {isLoopyUnique && <rect x="18" y={y - 10} width="290" height="20" rx="3" fill={C.sage} opacity="0.1" />}
+            {isOthersUnique && <rect x="18" y={y - 10} width="290" height="20" rx="3" fill={C.rose} opacity="0.08" />}
+            <text x="24" y={y + 2} fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>{r.label}</text>
+            {r.loopy ? (
+              <g>
+                <circle cx="200" cy={y - 1} r="5" fill={C.sage} opacity="0.4" />
+                <text x="200" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>✓</text>
+              </g>
+            ) : (
+              <text x="200" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>—</text>
+            )}
+            {r.others ? (
+              <g>
+                <circle cx="275" cy={y - 1} r="5" fill={C.sage} opacity="0.4" />
+                <text x="275" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>✓</text>
+              </g>
+            ) : (
+              <text x="275" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>—</text>
+            )}
+            {i < rows.length - 1 && (
+              <line x1="20" y1={y + 10} x2="305" y2={y + 10} stroke={C.rule} strokeWidth="0.4" />
+            )}
+          </g>
+        );
+      })}
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>complementary strengths, not a clear winner</text>
+    </svg>
+  );
+}
+
+export function DaemonAnatomyFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="daemon-anatomy-title">
+      <title id="daemon-anatomy-title">DAEMON.md anatomy: YAML frontmatter with five fields plus markdown body guidance</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>DAEMON.md</text>
+      {/* File container */}
+      <rect x="30" y="34" width="260" height="270" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      {/* Frontmatter section */}
+      <rect x="30" y="34" width="260" height="150" rx="6" fill={C.lavender} opacity="0.15" />
+      <text x="46" y="52" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>---</text>
+      {[
+        { label: "id:", value: "pr-check-repair", y: 68 },
+        { label: "purpose:", value: "Repair failing checks…", y: 84 },
+        { label: "watch:", value: "[check run fails]", y: 100 },
+        { label: "routines:", value: "[diagnose, fix, comment]", y: 116 },
+        { label: "deny:", value: "[no merge, no approve]", y: 132 },
+      ].map((f, i) => (
+        <g key={i}>
+          <text x="46" y={f.y} fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>{f.label}</text>
+          <text x={46 + f.label.length * 5} y={f.y} fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}> {f.value}</text>
+        </g>
+      ))}
+      <text x="46" y="152" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>---</text>
+      {/* Separator */}
+      <line x1="40" y1="164" x2="280" y2="164" stroke={C.rule} strokeWidth="0.8" />
+      {/* Body section */}
+      <rect x="30" y="164" width="260" height="140" rx="6" fill={C.sage} opacity="0.1" />
+      <text x="46" y="182" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}># Repair decision policy</text>
+      {[190, 200, 210, 220].map((y, i) => (
+        <line key={i} x1="46" y1={y} x2={200 + i * 10} y2={y} stroke={C.faint} strokeWidth="0.6" />
+      ))}
+      <text x="46" y="240" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>## Concurrency safety</text>
+      {[248, 258, 268].map((y, i) => (
+        <line key={i} x1="46" y1={y} x2={180 + i * 15} y2={y} stroke={C.faint} strokeWidth="0.6" />
+      ))}
+      {/* Labels */}
+      <text x="300" y="100" fontFamily="var(--font-mono)" fontSize="7" fill={C.plum} transform="rotate(90, 300, 100)">contract</text>
+      <text x="300" y="230" fontFamily="var(--font-mono)" fontSize="7" fill={C.moss} transform="rotate(90, 300, 230)">guidance</text>
+    </svg>
+  );
+}
+
+export function DaemonCatalogFigure() {
+  const categories = [
+    { label: "PR lifecycle", count: "4", color: C.sage },
+    { label: "Linear hygiene", count: "4", color: C.lavender },
+    { label: "Documentation", count: "2", color: C.butter },
+    { label: "Dependencies", count: "1", color: C.peach },
+    { label: "Operations", count: "3", color: C.sky },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="daemon-catalog-title">
+      <title id="daemon-catalog-title">Charlie Labs daemon catalog: 14 daemons across 5 maintenance categories</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>daemon catalog</text>
+      {categories.map((c, i) => {
+        const y = 44 + i * 52;
+        return (
+          <g key={i}>
+            <rect x="30" y={y} width="260" height="40" rx="6" fill={c.color} opacity="0.2" />
+            <rect x="30" y={y} width="260" height="40" rx="6" fill="none" stroke={C.ink} strokeWidth="1" />
+            <text x="50" y={y + 18} fontFamily="var(--font-mono)" fontSize="9" fontWeight="600" fill={C.ink}>{c.label}</text>
+            <text x="50" y={y + 32} fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>{c.count} {parseInt(c.count) === 1 ? "daemon" : "daemons"}</text>
+            {/* Small daemon icons */}
+            {Array.from({ length: parseInt(c.count) }).map((_, j) => (
+              <g key={j}>
+                <circle cx={220 + j * 18} cy={y + 20} r="6" fill="none" stroke={C.ink} strokeWidth="0.8" />
+                <circle cx={220 + j * 18} cy={y + 20} r="2" fill={C.ink} />
+              </g>
+            ))}
+          </g>
+        );
+      })}
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>14 daemons, each bounded and deny-listed</text>
+    </svg>
+  );
+}
+
+export function DaemonBoundaryFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="daemon-boundary-title">
+      <title id="daemon-boundary-title">Bounded autonomy: routines define what the daemon can do, deny rules define the boundary</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>bounded autonomy</text>
+      {/* Outer boundary circle */}
+      <circle cx="160" cy="170" r="120" fill="none" stroke={C.ink} strokeWidth="1.2" strokeDasharray="4 3" />
+      <text x="160" y="62" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>deny boundary</text>
+      {/* Inner role circle */}
+      <circle cx="160" cy="170" r="66" fill={C.sage} opacity="0.15" />
+      <circle cx="160" cy="170" r="66" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      {/* Agent dot in center */}
+      <circle cx="160" cy="155" r="10" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <circle cx="160" cy="155" r="3" fill={C.ink} />
+      <text x="160" y="180" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>daemon role</text>
+      {/* Routine labels inside */}
+      {[
+        { label: "diagnose", angle: -60 },
+        { label: "fix + push", angle: 0 },
+        { label: "comment", angle: 60 },
+      ].map((r, i) => {
+        const rad = (r.angle * Math.PI) / 180;
+        const x = 160 + Math.cos(rad) * 42;
+        const y = 155 + Math.sin(rad) * 42;
+        return (
+          <text key={i} x={x} y={y + 4} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.moss}>{r.label}</text>
+        );
+      })}
+      {/* Deny labels outside boundary */}
+      {[
+        { label: "✗ merge", angle: -120, dist: 100 },
+        { label: "✗ approve", angle: -60, dist: 100 },
+        { label: "✗ force-push", angle: 0, dist: 100 },
+        { label: "✗ new issues", angle: 60, dist: 100 },
+        { label: "✗ secrets", angle: 120, dist: 100 },
+      ].map((d, i) => {
+        const rad = (d.angle * Math.PI) / 180;
+        const x = 160 + Math.cos(rad) * d.dist;
+        const y = 170 + Math.sin(rad) * d.dist;
+        return (
+          <text key={i} x={x} y={y} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6.5" fill={C.terracotta}>{d.label}</text>
+        );
+      })}
+      <text x="160" y="308" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>deny rules define what the daemon must never cross</text>
+    </svg>
+  );
+}
+
+export function DaemonComparisonFigure() {
+  const rows = [
+    { label: "role-based model", daemon: true, task: false },
+    { label: "deny-list boundaries", daemon: true, task: false },
+    { label: "open spec format", daemon: true, task: false },
+    { label: "cross-system context", daemon: true, task: true },
+    { label: "cron scheduling", daemon: true, task: true },
+    { label: "event-driven triggers", daemon: true, task: true },
+    { label: "typed event contracts", daemon: false, task: true },
+    { label: "compile-time validation", daemon: false, task: true },
+    { label: "open-source runtime", daemon: false, task: true },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="daemon-compare-title">
+      <title id="daemon-compare-title">Daemon model versus task model: complementary strengths across role definition, boundaries, and runtime infrastructure</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>role model vs. task model</text>
+      <text x="195" y="48" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>daemons</text>
+      <text x="275" y="48" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fontWeight="600" fill={C.ink}>task-based</text>
+      <line x1="20" y1="54" x2="305" y2="54" stroke={C.rule} strokeWidth="0.8" />
+      {rows.map((r, i) => {
+        const y = 70 + i * 26;
+        const isDaemonUnique = r.daemon && !r.task;
+        const isTaskUnique = !r.daemon && r.task;
+        return (
+          <g key={i}>
+            {isDaemonUnique && <rect x="18" y={y - 10} width="290" height="20" rx="3" fill={C.lavender} opacity="0.1" />}
+            {isTaskUnique && <rect x="18" y={y - 10} width="290" height="20" rx="3" fill={C.sage} opacity="0.1" />}
+            <text x="24" y={y + 2} fontFamily="var(--font-mono)" fontSize="7.5" fill={C.ink}>{r.label}</text>
+            {r.daemon ? (
+              <g>
+                <circle cx="195" cy={y - 1} r="5" fill={C.lavender} opacity="0.4" />
+                <text x="195" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.plum}>✓</text>
+              </g>
+            ) : (
+              <text x="195" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>—</text>
+            )}
+            {r.task ? (
+              <g>
+                <circle cx="275" cy={y - 1} r="5" fill={C.sage} opacity="0.4" />
+                <text x="275" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.moss}>✓</text>
+              </g>
+            ) : (
+              <text x="275" y={y + 2} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>—</text>
+            )}
+            {i < rows.length - 1 && (
+              <line x1="20" y1={y + 10} x2="305" y2={y + 10} stroke={C.rule} strokeWidth="0.4" />
+            )}
+          </g>
+        );
+      })}
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>different layers of the same problem</text>
+    </svg>
+  );
+}

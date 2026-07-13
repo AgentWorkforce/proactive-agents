@@ -1,0 +1,119 @@
+---
+title: "Charlie Labs and the daemon as a role, not a task"
+summary: "Charlie's open daemon format treats background agents as ongoing maintenance roles with bounded autonomy, not one-shot tasks. What the DAEMON.md spec reveals about the next layer of agent orchestration."
+date: "2026-07-13"
+accent: "lavender"
+dropcap: true
+---
+
+[Charlie Labs](https://charlielabs.ai/) ships a product called Charlie that runs autonomous background processes across your development tools. They call these processes daemons, and the name is deliberate. A daemon in the Unix sense is a long-running background process that does its job without being asked. Charlie's daemons borrow that mental model and apply it to the maintenance work that accumulates around every codebase: stale docs, unlabeled issues, failing CI checks, merge conflicts on open PRs, dependency drift.
+
+The daemon concept is defined through an open specification. Each daemon is a `DAEMON.md` file stored in your repo at `.agents/daemons/<daemon-id>/DAEMON.md`. The file has YAML frontmatter declaring the daemon's identity, purpose, triggers, routines, and prohibitions, followed by a markdown body with operating guidance. The spec is documented at [docs.charlielabs.ai](https://docs.charlielabs.ai/daemons), and Charlie Labs publishes a [catalog of example daemons](https://github.com/charlie-labs/daemons) with an npm CLI for browsing and installing them.
+
+What makes the daemon framing worth examining closely isn't the execution engine (that's Charlie's proprietary product). It's the authoring model and the assumptions it encodes about what background agents should and shouldn't do.
+
+<Scene figure="DaemonAnatomyFigure" caption="The DAEMON.md file: frontmatter contract plus markdown operating guidance." side="left">
+
+## The anatomy of a daemon
+
+A `DAEMON.md` file has two parts. The frontmatter is the durable contract: five fields that define what the daemon is, when it wakes, what it does, and what it must never do. The markdown body is operating guidance: decision policies, communication rules, verification requirements, limits, and examples.
+
+The frontmatter fields:
+
+**`id`** is the daemon's canonical identifier. It must match the directory name exactly. Once published, it's treated as permanent, never renamed for cosmetic reasons.
+
+**`purpose`** is a single sentence describing the outcome the daemon exists to achieve. The docs are specific about this: write the outcome, not the mechanics. "Keeps repository docs current" not "Scans for stale markdown files." The purpose frames the daemon as a role, not a script.
+
+**`watch`** is a list of observable events that trigger activation. "A [GitHub](https://github.com) pull request review is submitted on an open non-draft pull request." "A [Linear](https://linear.app) issue is created for a bug or likely regression." Watch conditions must describe concrete events, not derived states. "When code quality is low" isn't a valid watch condition because there's no specific moment to wake on.
+
+**`routines`** are the concrete operations the daemon performs. Each routine must be finite and verifiable: something a human could confirm happened or didn't. "Push a focused evidence-grounded fix to the PR branch when the correct repo change is clear." Not "Improve code quality."
+
+**`deny`** lists the hard prohibitions. This is where the design gets interesting. The deny rules aren't generic safety slogans. They're specific to the daemon's scope and address the adjacent risks, the shortcuts the daemon might naturally attempt to reach its goals faster. A PR check repair daemon is denied from refreshing branches, merging PRs, or pushing speculative changes. A bug triage daemon is denied from changing issue fields, labels, or assignees. The deny list defines the daemon's boundary by naming exactly what it must not cross.
+
+**`schedule`** is an optional five-field cron expression for time-based activation. A dependency update daemon runs `0 8 * * 1` (Monday mornings). A docs staleness scanner runs weekly. Daemons can be watch-only, schedule-only, or hybrid.
+
+<Callout tone="thought" label="Deny as design">
+The deny field is the most instructive part of the spec. It forces the author to think about the daemon's failure modes before deployment, not after. What would this daemon do if it were slightly too ambitious? What adjacent actions would seem reasonable but violate the team's trust boundaries? The deny list is a pre-mortem baked into the config file.
+</Callout>
+
+</Scene>
+
+<Scene figure="DaemonCatalogFigure" caption="Fourteen example daemons across five maintenance categories." side="right">
+
+## The catalog
+
+Charlie Labs publishes fourteen example daemons in their [open catalog](https://github.com/charlie-labs/daemons). Each one is a complete `DAEMON.md` with paired metadata, and some include helper scripts. The catalog spans five categories of maintenance work.
+
+**PR lifecycle.** Four daemons cover the pull request surface: `pr-check-repair` diagnoses and fixes failing CI checks, `pr-merge-conflict-repair` resolves merge conflicts on non-draft PRs, `pr-metadata` keeps PR titles and descriptions current, and `pr-review-triage` processes review threads to identify which feedback is valid, which is fixed, and which is duplicate. The review triage daemon is the most complex in the catalog, with detailed disposition logic (`valid`, `invalid`, `duplicate`, `fixed`, `uncertain`) and separate action policies for human-authored versus non-human feedback.
+
+**Linear issue hygiene.** Four daemons work the [Linear](https://linear.app) surface: `linear-issue-labeler` keeps labels aligned with the current label set, `linear-bug-context-researcher` adds repo-aware triage context to new bugs, `linear-issue-duplicate-finder` suggests likely duplicates when new issues arrive, and `linear-pr-link-reconciler` finds likely GitHub code work for Linear issues and asks for confirmation before linking.
+
+**Documentation freshness.** Two daemons handle docs: `docs-drift-maintainer` repairs drift caused by recent merged source changes, and `docs-stale-maintainer` runs weekly sweeps for older outdated documentation. Both have hard limits on commit volume per activation.
+
+**Dependency maintenance.** The `js-ts-dependency-upgrades` daemon scans for available patch and minor updates, groups them by runtime versus dev dependencies, and opens at most two PRs per run. It respects the repo's configured package manager and won't attempt major-version upgrades unless explicitly allowed.
+
+**Operations.** Two daemons work [Slack](https://slack.com): `slack-alert-context-researcher` replies to alert-like bot messages with compact GitHub and incident context, and `slack-meeting-followup-planner` turns meeting notes into repo-aware follow-up options. A `github-activity-digest` daemon posts periodic summaries of meaningful PR and CI activity.
+
+The catalog is installable via a CLI: `daemon add js-ts-dependency-upgrades --adapt package_manager=pnpm` scaffolds the daemon into your repo with the adaptation applied. The `--dry-run` flag previews what would be written. A `daemon pr open` command creates a GitHub PR that adds the daemon files, so the installation itself goes through code review.
+
+</Scene>
+
+<Scene figure="DaemonBoundaryFigure" caption="Bounded autonomy: the deny list defines what the daemon must never cross." side="left">
+
+## Bounded autonomy as a design principle
+
+The most consistent theme across the daemon catalog is restraint. Every daemon in the catalog is scoped to a narrow maintenance role, given explicit limits on output volume, and denied the shortcuts that would make it faster but less trustworthy.
+
+The `pr-check-repair` daemon illustrates the pattern. Its purpose is to fix failing CI checks on non-draft PRs. It can push fixes, rerun flaky checks, or comment with a blocking reason. But it cannot refresh branches from base, cannot merge PRs, cannot approve or request changes, cannot force-push, and cannot make product or security decisions just to make checks pass. It must re-fetch the remote PR head before editing and again before pushing, to avoid overwriting concurrent human work.
+
+The `linear-bug-context-researcher` daemon is even more constrained. It adds triage context to new bugs. It can post one comment. It cannot change issue fields, labels, state, assignee, priority, project, cycle, estimate, or description. It cannot create, edit, close, merge, label, assign, or comment on GitHub issues or pull requests. The daemon's scope is: read the bug, research context, post one useful comment, stop.
+
+This level of constraint isn't accidental. The [authoring guide](https://docs.charlielabs.ai/daemons/writing-and-editing-daemon-md) explicitly frames it as a design principle: "Write the narrowest daemon that can do the job." Start with 50 to 100 lines, 2 to 3 routines, and iterate after real activations show what the daemon actually needs. The guide warns against unbounded routines ("help with code"), vague watch conditions ("when the repo needs attention"), and missing deny rules for risky actions.
+
+The deny rules are where trust gets built. A daemon that can push commits but not merge them, that can comment but not approve, that can research but not edit issue fields, earns trust incrementally. Each denied action is a boundary the team doesn't have to police manually. If the daemon's scope needs to expand later, the expansion shows up as a diff to the `DAEMON.md` file, visible in code review, not as a surprise behavior change.
+
+<Callout tone="warm" label="The 'daemon' versus 'agent' distinction">
+Charlie's framing draws a clear line between daemons and agents. Agents handle novel, directed work: "build this feature," "fix this bug." Daemons handle recurring, undirected work: "keep docs current," "triage new bugs," "fix failing CI." The daemon doesn't need a prompt each time. It has a standing role, wakes when relevant events happen, does its bounded job, and stops. The closest analogy is a junior team member with a specific responsibility, clear boundaries, and a standing invitation to ask for help when they're unsure.
+</Callout>
+
+</Scene>
+
+## The execution model
+
+Charlie's execution engine is proprietary (the daemon format is open, the runtime is not), but the documentation describes a seven-stage lifecycle: intake, context build, plan and boundaries, execute and delegate, verify, report, and continue. Each stage produces a specific output and has defined human touchpoints.
+
+The risk-gating model separates automatic operations (classification, context gathering, routine metadata updates) from approval-gated operations (broader scope changes, merge or close actions). The daemon pauses and asks for approval when a request affects risk, scope, or customer impact. This maps to the deny list in practice: actions not denied are automatic within the daemon's scope, and actions that exceed the scope trigger an escalation rather than a silent expansion.
+
+The system integrates with [GitHub](https://github.com), [Linear](https://linear.app), [Slack](https://slack.com), and [Sentry](https://sentry.io) as both input surfaces (watch conditions) and output surfaces (comments, PRs, reactions, thread resolutions). Daemons build context by reading across multiple systems: a bug triage daemon might pull Sentry error data, recent GitHub PRs, and Linear issue history to compose a single triage comment.
+
+Idempotency is enforced at the activation level. Before taking visible action, the daemon checks whether an equivalent action already exists. Duplicate events reconcile to single outcomes. Bounded retries with exponential backoff prevent noisy failure loops. Progress checkpointing at each stage enables resumption after interruptions.
+
+<Scene figure="DaemonComparisonFigure" caption="How the daemon model compares to other approaches to background agent work." side="right">
+
+## The role model versus the task model
+
+The deeper question the daemon format raises is whether "role" is a better abstraction than "task" for recurring background work.
+
+Most agent orchestration tools model work as tasks: a trigger fires, a workflow runs, a result is produced. [Loopy](/posts/loopy-agent-orchestration) compiles workflows from triggers through typed events to sandboxed execution. [Open-Inspect](/posts/open-inspect-background-agents) creates sessions per invocation. [Claude Code Routines](/posts/claude-code-routines) run prompts on a schedule. Each activation is a discrete unit with a beginning and end.
+
+Charlie's daemon model adds a layer above individual activations. The daemon is a persistent role that spans many activations over time. The `pr-check-repair` daemon doesn't run once. It runs every time a check fails on every non-draft PR, accumulating context about the repo's CI patterns, common failure modes, and flaky tests. The `docs-drift-maintainer` doesn't scan once. It watches every merge for documentation impact and sweeps weekly for staleness. The daemon's identity persists across activations.
+
+This has practical implications. A task-based system needs to inject all relevant context into each invocation. A role-based system can accumulate context across invocations, learning which CI failures are typically flaky, which docs are most prone to drift, which types of bugs get duplicate reports. The authoring docs mention "dedicated daemon memory" as coming soon, but even without it, the activation log provides continuity.
+
+The tradeoff is configuration surface. A `DAEMON.md` file is more complex than a cron expression plus a prompt. The frontmatter alone has five fields, and the body can run to hundreds of lines of operating guidance. The `pr-review-triage` daemon in the catalog is detailed enough to be a mini operating manual. That complexity is the cost of encoding a role rather than a task, and whether teams will invest in writing and maintaining these files is the central adoption question.
+
+<Callout tone="cool" label="The open format bet">
+Publishing the daemon format as an open spec is a strategic choice. If other platforms adopt `DAEMON.md` as a configuration format, Charlie becomes the reference implementation rather than a proprietary island. The spec is deliberately simple (YAML frontmatter, markdown body, five fields) and runtime-agnostic. Nothing in the format assumes Charlie's execution engine. A team could read a `DAEMON.md` file and implement the daemon as a GitHub Action, a [Loopy](/posts/loopy-agent-orchestration) workflow, or a custom script. The format's value is in the role abstraction and the deny-list pattern, not in the runtime.
+</Callout>
+
+</Scene>
+
+## Where it fits
+
+Charlie Labs is a funded startup (investors include [HF0](https://hf0.com), The General Partnership, [Abstract](https://abstract.vc), [Soma Capital](https://somacap.com), and angels including [Guillermo Rauch](https://rauchg.com)). The product is commercial with a dashboard at `dash.charlielabs.ai`. The daemon catalog and spec are open-source under the `charlie-labs/daemons` repo, but the execution engine, integrations, memory system, and dashboard are proprietary.
+
+The open repo is a catalog, not a framework. It contains fourteen example `DAEMON.md` files, a CLI for browsing and installing them, and an npm package for programmatic access. There's no runtime code, no event bus, no sandbox provider. The value is in the patterns: how to scope a daemon, what deny rules to write, how to handle concurrency between multiple daemon activations, how to structure communication policies.
+
+For teams evaluating background agent infrastructure, the daemon format offers a useful authoring model regardless of runtime. The five-field frontmatter (id, purpose, watch, routines, deny) is a reasonable template for specifying any recurring background agent's scope. The deny-list-as-pre-mortem pattern is portable to any system. And the catalog's fourteen examples are concrete references for the categories of maintenance work that background agents can own today: PR hygiene, issue triage, dependency updates, documentation freshness, and operational alerting.
+
+The question for Charlie as a product is whether teams will pay for a hosted runtime when the format itself is open and the individual daemon behaviors could be implemented on other platforms. The answer probably depends on how well the proprietary pieces (memory, cross-system context building, escalation workflows, the dashboard) deliver on the promise that a daemon improves with each activation. If the memory and context layers work well, the hosted runtime justifies itself. If they don't, the open format becomes the lasting contribution and the runtime becomes interchangeable.

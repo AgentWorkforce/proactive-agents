@@ -59,7 +59,203 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
-Last updated: 2026-06-19
+Last updated: 2026-07-13
+
+---
+
+## Essay: Loopy and the case for compiling your agent workflows
+
+Published: 2026-07-13
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/loopy-agent-orchestration/
+
+[Loopy](https://loopy.computer/) (repo: [`peterzakin/loopy`](https://github.com/peterzakin/loopy)) is an open-source agent orchestration framework by [Peter Zakin](https://github.com/peterzakin) that does something most projects in this space haven't tried: it compiles your agent workflows before running them. You write markdown files for workflow steps, Python decorators for sensors, and a single YAML registry for agents, sandboxes, and events. Then `loopy compile` builds a DAG, validates types, checks that your model-harness pairings make sense, and tells you what's broken. No runtime surprises.
+
+The framework launched on [PyPI](https://pypi.org/project/loopy-computer/) as `loopy-computer` in late June 2026. It's at v0.2.0 with 37 stars and 176 merged pull requests in its first month. The velocity says more than the star count. And the scope is unusual: Loopy doesn't just give you a sandbox to run an agent in. It gives you the entire loop, from the webhook that starts the work to the typed event that carries data between steps to the isolated environment where the agent executes.
+
+That full-loop scope is what makes it interesting to look at closely.
+
+## The shape of the loop
+
+Most open-source agent projects cover one or two pieces of the automation problem. [Open-Inspect](/posts/open-inspect-background-agents) handles the control plane and sandbox but leaves event sourcing to you. [Open-swe](/posts/open-swe-langchain-coding-agent) gives you the sandbox abstraction and invocation surface but not scheduling or cross-workflow coordination. [Claude Code Routines](/posts/claude-code-routines) ship a cron trigger but run locally with no event bus. Each project solves its slice well and hands you the rest.
+
+Loopy's pitch is that the full loop belongs in one framework. The architecture has four parts:
+
+**Sensors** are Python functions decorated with `@sensor(webhook="/path", emits="EventName")` or `@sensor(poll="interval", emits="EventName")`. A sensor receives a raw payload from [Zendesk](https://zendesk.com), [Datadog](https://datadog.com), [Sentry](https://sentry.io), or any HTTP source and transforms it into a typed event. A polling sensor checks an endpoint on a cadence and emits an event only when the check fails or finds new data. Five [GitHub](https://github.com) events and three Sentry events are built in, no sensor code required.
+
+**The event bus** routes typed events to workflows. In-process by default, swappable to [Redis](https://redis.io) for distributed deployments. Sensor-published events and step-emitted events look identical on the bus, so a workflow doesn't know or care whether its trigger came from a webhook or from another workflow's output.
+
+**Workflows** are directories of markdown files. Each file is one step: YAML frontmatter declares the trigger (`on:` for entry steps, `after:` for subsequent ones), the agent, typed outputs, and optionally an event to emit. The prose body is the agent's instruction. Templates like `{{ event.ticket_id }}` inject data from upstream.
+
+**Sandboxes** are isolated execution environments. Three providers today: `local`, `docker`, and [Daytona](https://www.daytona.io/). Each step gets a fresh sandbox with its own filesystem, cloned repos, and injected credentials. The sandbox is the security boundary: agents run with full tool access inside the sandbox, and the sandbox constrains what they can reach outside.
+
+The interesting architectural decision is that none of these four components assume the others exist as specific implementations. The bus doesn't know about harnesses. Sensors don't know about sandboxes. Workflows don't know whether they're running on Docker or Daytona. The coupling happens through typed events and the compiled manifest, not through shared runtime state.
+
+## The compiler is the product
+
+Plenty of frameworks validate configuration at startup. Loopy goes further: it has a genuine multi-pass compiler with stable diagnostic codes, a DAG builder, template reference resolution, and cross-cutting checks that span the entire project.
+
+The pipeline runs six phases. Discovery (P0) reads the project layout. Registry loading (P1–P2) parses agents, sandboxes, and events from `registry.yml` with type desugaring. Workflow loading (P3–P5) parses frontmatter, builds the step DAG from `on:`/`after:` edges, and extracts template references. Sensor loading (P7) validates sensor decorators and injects built-in GitHub and Sentry events. Template resolution (P6) statically verifies that every `{{ event.field }}` and `{{ step.field }}` reference points at a real field on a real upstream producer. Cross-checking (P8) runs whole-project validations: lineage tracing, agent-model compatibility, and unused event detection.
+
+Every error gets a stable code like `LOOPY-E301` (undefined template variable) or `LOOPY-E506` (model-harness mismatch). The codes are documented, never renumbered, and each one has a matching test fixture in the repo. Running `loopy docs errors` prints the full catalog from the CLI.
+
+This compile-time rigor catches a class of problems that most agent orchestration tools surface only at runtime, if at all. A typo in an event field name? Caught before any agent runs. A Claude model specified on an OpenAI harness? Rejected during compilation. A workflow step referencing an output field that its predecessor doesn't produce? Flagged with the specific line and expected schema. The error messages point at the file and field, not at a stack trace from deep inside an execution engine.
+
+The compiler also produces a manifest: a single JSON document that captures the fully resolved project, the DAG, and lineage data showing which sensors and steps produce and consume each event. The manifest is what the runtime executes against, and it's deterministic. Same project files, same manifest.
+
+The CLI command `loopy docs` prints the full authoring reference as markdown. Every check returns clean exit codes. The `AGENTS.md` file in the repo root tells coding agents how to work with the codebase. The whole framework is designed to be authored and operated by agents, not just to run them.
+
+## Agent-neutral by design
+
+Loopy ships three harnesses today: `claude-code` for [Anthropic](https://anthropic.com) models, `codex` for [OpenAI](https://openai.com) models, and `opencode` for [OpenCode](https://opencode.ai)'s multi-provider runner. Each harness knows how to build the CLI argv for its agent, parse the response envelope, and extract usage metrics. The shared base class handles the JSON output protocol, budget enforcement, and template rendering.
+
+The practical consequence: you can mix providers in a single project. Route a triage step to a fast, cheap model on one harness, and route the fixer step to a stronger model on a different one. The workflow prose doesn't change. The `agent:` field in each step's frontmatter points at a registry entry, and the registry entry names the harness and model. Swap `claude-sonnet-4-6` for `gpt-5.5` by editing one line in `registry.yml`, not by rewriting the workflow.
+
+The harness abstraction runs deeper than just swapping model names. Each harness declares its own toolchain layer: the apt packages, npm modules, and runtime dependencies that need to be layered onto the sandbox image so the agent CLI is available. The Claude Code harness installs Node and `@anthropic-ai/claude-code`. The Codex harness installs Node and OpenAI's Codex CLI. These toolchain layers compose onto the user's base image at sandbox build time, so the agent binary is present by construction, not by hope.
+
+Model eligibility is validated at harness construction, not at step execution. If you name `gpt-5.5` on a `claude-code` harness, the compiler rejects it immediately with `LOOPY-E506`. And budget enforcement is per-step: a `budget:` field in the step frontmatter caps wall-clock time and (for harnesses that report cost) USD spend. A step with a spend budget on a harness that doesn't report cost is a hard error, not a silent pass.
+
+## Outputs, events, and the bus
+
+The data model makes a clean distinction between two kinds of inter-step communication. **Outputs** are workflow-internal. A step declares `output: { pr_url: url, verdict: str }` in its frontmatter, and the next step in the `after:` chain reads those values as `{{ step_name.pr_url }}`. Outputs never touch the bus. They're passed directly along the DAG edges.
+
+**Events** cross workflow boundaries. A step can declare `emits: FixDeployed` to publish a typed event to the bus when it finishes. Another workflow, listening with `on: FixDeployed`, picks it up. Sensors publish events the same way. From the bus's perspective, a sensor-published event and a step-emitted event are identical.
+
+This separation matters because it keeps the common case simple. Most multi-step workflows are linear chains where each step feeds the next. Those don't need a bus at all, just typed references along the DAG. Events are for the cases where one workflow's completion should trigger a different workflow, or where a sensor's signal needs to fan out to multiple consumers. Keeping the two mechanisms distinct means the simple case stays simple and the complex case stays explicit.
+
+The event schemas are defined once in `registry.yml` as typed field maps: `str`, `int`, `float`, `bool`, `url`, `enum[a, b, c]`, or inline JSON Schema objects for nested structures. At compile time, the schemas are validated. At runtime, pydantic enforces them. And at authoring time, `loopy compile` code-generates Python dataclasses into `loopy.events` so your IDE's typechecker catches field mismatches in sensor code before you run anything.
+
+## The coverage map
+
+To put Loopy in context, here's how its coverage compares to other open-source projects we've looked at in this series.
+
+[Open-Inspect](/posts/open-inspect-background-agents) has the broadest trigger surface (Slack, Linear, GitHub, cron, Sentry, webhooks) and the most mature session model, but it's a single-tenant deployment with shared GitHub credentials and no typed contract system. [Open-swe](/posts/open-swe-langchain-coding-agent) ships the cleanest sandbox abstraction and subagent spawning, but has no proactive triggers, no event bus, and no cross-workflow coordination. [Claude Code Routines](/posts/claude-code-routines) give you cron-triggered workflows on Anthropic's cloud with zero infrastructure, but you can't bring your own sandbox, use non-Anthropic models, or wire event-driven triggers. [Aeon](/posts/aeon-cron-agent-framework) ships a self-healing cron runner with skill registries but stays in the scheduled-task lane.
+
+Loopy covers more of the surface than any single project: typed events, a compile-time validator, an agent-neutral harness layer, sandboxed execution, multiple deployment paths, and both webhook and polling sensors. What it doesn't have yet is the session model that Open-Inspect provides (multiplayer sessions, real-time streaming, browser-based UI), or the deep CI integration that production background agents like Ramp's Inspect ship. The admin dashboard exists but is early. And the project is a month old with 37 stars, so the community is nascent.
+
+The gap worth watching is how the harness abstraction handles the differences between agent runtimes in practice. The base class defines a clean JSON protocol that all agents are expected to emit. But each agent CLI has its own quirks around context length, tool availability, output format, and error handling. The abstraction is elegant on paper. The real test is whether it holds up across model updates and new providers without accumulating harness-specific workarounds.
+
+176 merged pull requests in a month, with a clean compiler test suite, stable error codes, and a documented AGENTS.md file. The commit history shows a project being built by someone who's thought about this problem for a while, not a weekend prototype looking for stars. The documentation is thorough, the examples compile, and the architecture has clear seams. Whether it gains adoption is a different question, but the engineering is serious.
+
+## The markdown-as-prompt pattern
+
+One of Loopy's quieter design choices is also one of its most interesting: the prose body of each workflow step is the agent's prompt. There's no separate prompt template language, no string interpolation library, no prompt management system. You write a markdown file with YAML frontmatter at the top and instructions in the body. The agent reads the body as its task description.
+
+This means the workflow definition and the agent prompt are the same artifact. When you review a PR that changes a workflow step, you're reviewing the exact text the agent will receive. When you diff two versions of a step, you're diffing the exact difference in the agent's instructions. There's no indirection to trace.
+
+The template variables (`{{ event.ticket_id }}`, `{{ entry.pr_url }}`) are the only dynamic parts, and they're statically resolved by the compiler. The agent never sees raw template syntax. It receives a fully rendered markdown document with concrete values.
+
+This is a bet that LLMs are good enough at following natural-language instructions that you don't need a structured DSL for agent behavior. The agent's "programming language" is the same markdown you'd write in a GitHub issue or a Notion doc. The structure comes from the typed outputs and events, not from the prose.
+
+Loopy's workflows version, diff, and review like regular code because they are regular files. The compiler validates the contracts. The prose handles the rest.
+
+## Where it goes from here
+
+Loopy launched less than a month ago and it already has a compiler pipeline, three harness integrations, three sandbox providers, three deployment paths, six documented examples, built-in GitHub and Sentry events, and an admin dashboard. The open issue list includes an [Islo sandbox provider](https://github.com/peterzakin/loopy/issues/172), suggesting more execution environments are coming.
+
+The project sits at an interesting intersection. It's the first open-source framework to treat the complete agent automation loop (sensors to events to workflows to sandboxed execution) as a single, compilable, versionable artifact. Every other project in this space asks you to assemble that loop yourself from components, libraries, or platform features. Loopy ships it as one thing.
+
+Whether that scope is a strength or a liability depends on adoption. A framework that covers the full loop only works if developers trust it enough to hand over the full loop. The compile-time safety, typed contracts, and clean error messages all push in the right direction. The `loopy init` wizard, the working examples, and the `loopy doctor` pre-flight checks lower the barrier. But it's still a new project asking you to commit your agent automation infrastructure to a single framework.
+
+For teams that have been building agent loops out of scripts, cron jobs, and ad-hoc webhook handlers, Loopy offers a clear upgrade path: replace the glue code with declarations and let a compiler tell you when they're wrong. For teams already invested in a specific platform or framework, the switching cost is higher. The question isn't whether the design is good. The question is whether one month of runway is enough to bet on.
+
+---
+
+## Essay: Charlie Labs and the daemon as a role, not a task
+
+Published: 2026-07-13
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/charlie-labs-daemons/
+
+[Charlie Labs](https://charlielabs.ai/) ships a product called Charlie that runs autonomous background processes across your development tools. They call these processes daemons, and the name is deliberate. A daemon in the Unix sense is a long-running background process that does its job without being asked. Charlie's daemons borrow that mental model and apply it to the maintenance work that accumulates around every codebase: stale docs, unlabeled issues, failing CI checks, merge conflicts on open PRs, dependency drift.
+
+The daemon concept is defined through an open specification. Each daemon is a `DAEMON.md` file stored in your repo at `.agents/daemons/<daemon-id>/DAEMON.md`. The file has YAML frontmatter declaring the daemon's identity, purpose, triggers, routines, and prohibitions, followed by a markdown body with operating guidance. The spec is documented at [docs.charlielabs.ai](https://docs.charlielabs.ai/daemons), and Charlie Labs publishes a [catalog of example daemons](https://github.com/charlie-labs/daemons) with an npm CLI for browsing and installing them.
+
+What makes the daemon framing worth examining closely isn't the execution engine (that's Charlie's proprietary product). It's the authoring model and the assumptions it encodes about what background agents should and shouldn't do.
+
+## The anatomy of a daemon
+
+A `DAEMON.md` file has two parts. The frontmatter is the durable contract: five fields that define what the daemon is, when it wakes, what it does, and what it must never do. The markdown body is operating guidance: decision policies, communication rules, verification requirements, limits, and examples.
+
+The frontmatter fields:
+
+**`id`** is the daemon's canonical identifier. It must match the directory name exactly. Once published, it's treated as permanent, never renamed for cosmetic reasons.
+
+**`purpose`** is a single sentence describing the outcome the daemon exists to achieve. The docs are specific about this: write the outcome, not the mechanics. "Keeps repository docs current" not "Scans for stale markdown files." The purpose frames the daemon as a role, not a script.
+
+**`watch`** is a list of observable events that trigger activation. "A [GitHub](https://github.com) pull request review is submitted on an open non-draft pull request." "A [Linear](https://linear.app) issue is created for a bug or likely regression." Watch conditions must describe concrete events, not derived states. "When code quality is low" isn't a valid watch condition because there's no specific moment to wake on.
+
+**`routines`** are the concrete operations the daemon performs. Each routine must be finite and verifiable: something a human could confirm happened or didn't. "Push a focused evidence-grounded fix to the PR branch when the correct repo change is clear." Not "Improve code quality."
+
+**`deny`** lists the hard prohibitions. This is where the design gets interesting. The deny rules aren't generic safety slogans. They're specific to the daemon's scope and address the adjacent risks, the shortcuts the daemon might naturally attempt to reach its goals faster. A PR check repair daemon is denied from refreshing branches, merging PRs, or pushing speculative changes. A bug triage daemon is denied from changing issue fields, labels, or assignees. The deny list defines the daemon's boundary by naming exactly what it must not cross.
+
+**`schedule`** is an optional five-field cron expression for time-based activation. A dependency update daemon runs `0 8 * * 1` (Monday mornings). A docs staleness scanner runs weekly. Daemons can be watch-only, schedule-only, or hybrid.
+
+The deny field is the most instructive part of the spec. It forces the author to think about the daemon's failure modes before deployment, not after. What would this daemon do if it were slightly too ambitious? What adjacent actions would seem reasonable but violate the team's trust boundaries? The deny list is a pre-mortem baked into the config file.
+
+## The catalog
+
+Charlie Labs publishes fourteen example daemons in their [open catalog](https://github.com/charlie-labs/daemons). Each one is a complete `DAEMON.md` with paired metadata, and some include helper scripts. The catalog spans five categories of maintenance work.
+
+**PR lifecycle.** Four daemons cover the pull request surface: `pr-check-repair` diagnoses and fixes failing CI checks, `pr-merge-conflict-repair` resolves merge conflicts on non-draft PRs, `pr-metadata` keeps PR titles and descriptions current, and `pr-review-triage` processes review threads to identify which feedback is valid, which is fixed, and which is duplicate. The review triage daemon is the most complex in the catalog, with detailed disposition logic (`valid`, `invalid`, `duplicate`, `fixed`, `uncertain`) and separate action policies for human-authored versus non-human feedback.
+
+**Linear issue hygiene.** Four daemons work the [Linear](https://linear.app) surface: `linear-issue-labeler` keeps labels aligned with the current label set, `linear-bug-context-researcher` adds repo-aware triage context to new bugs, `linear-issue-duplicate-finder` suggests likely duplicates when new issues arrive, and `linear-pr-link-reconciler` finds likely GitHub code work for Linear issues and asks for confirmation before linking.
+
+**Documentation freshness.** Two daemons handle docs: `docs-drift-maintainer` repairs drift caused by recent merged source changes, and `docs-stale-maintainer` runs weekly sweeps for older outdated documentation. Both have hard limits on commit volume per activation.
+
+**Dependency maintenance.** The `js-ts-dependency-upgrades` daemon scans for available patch and minor updates, groups them by runtime versus dev dependencies, and opens at most two PRs per run. It respects the repo's configured package manager and won't attempt major-version upgrades unless explicitly allowed.
+
+**Operations.** Two daemons work [Slack](https://slack.com): `slack-alert-context-researcher` replies to alert-like bot messages with compact GitHub and incident context, and `slack-meeting-followup-planner` turns meeting notes into repo-aware follow-up options. A `github-activity-digest` daemon posts periodic summaries of meaningful PR and CI activity.
+
+The catalog is installable via a CLI: `daemon add js-ts-dependency-upgrades --adapt package_manager=pnpm` scaffolds the daemon into your repo with the adaptation applied. The `--dry-run` flag previews what would be written. A `daemon pr open` command creates a GitHub PR that adds the daemon files, so the installation itself goes through code review.
+
+## Bounded autonomy as a design principle
+
+The most consistent theme across the daemon catalog is restraint. Every daemon in the catalog is scoped to a narrow maintenance role, given explicit limits on output volume, and denied the shortcuts that would make it faster but less trustworthy.
+
+The `pr-check-repair` daemon illustrates the pattern. Its purpose is to fix failing CI checks on non-draft PRs. It can push fixes, rerun flaky checks, or comment with a blocking reason. But it cannot refresh branches from base, cannot merge PRs, cannot approve or request changes, cannot force-push, and cannot make product or security decisions just to make checks pass. It must re-fetch the remote PR head before editing and again before pushing, to avoid overwriting concurrent human work.
+
+The `linear-bug-context-researcher` daemon is even more constrained. It adds triage context to new bugs. It can post one comment. It cannot change issue fields, labels, state, assignee, priority, project, cycle, estimate, or description. It cannot create, edit, close, merge, label, assign, or comment on GitHub issues or pull requests. The daemon's scope is: read the bug, research context, post one useful comment, stop.
+
+This level of constraint isn't accidental. The [authoring guide](https://docs.charlielabs.ai/daemons/writing-and-editing-daemon-md) explicitly frames it as a design principle: "Write the narrowest daemon that can do the job." Start with 50 to 100 lines, 2 to 3 routines, and iterate after real activations show what the daemon actually needs. The guide warns against unbounded routines ("help with code"), vague watch conditions ("when the repo needs attention"), and missing deny rules for risky actions.
+
+The deny rules are where trust gets built. A daemon that can push commits but not merge them, that can comment but not approve, that can research but not edit issue fields, earns trust incrementally. Each denied action is a boundary the team doesn't have to police manually. If the daemon's scope needs to expand later, the expansion shows up as a diff to the `DAEMON.md` file, visible in code review, not as a surprise behavior change.
+
+Charlie's framing draws a clear line between daemons and agents. Agents handle novel, directed work: "build this feature," "fix this bug." Daemons handle recurring, undirected work: "keep docs current," "triage new bugs," "fix failing CI." The daemon doesn't need a prompt each time. It has a standing role, wakes when relevant events happen, does its bounded job, and stops. The closest analogy is a junior team member with a specific responsibility, clear boundaries, and a standing invitation to ask for help when they're unsure.
+
+## The execution model
+
+Charlie's execution engine is proprietary (the daemon format is open, the runtime is not), but the documentation describes a seven-stage lifecycle: intake, context build, plan and boundaries, execute and delegate, verify, report, and continue. Each stage produces a specific output and has defined human touchpoints.
+
+The risk-gating model separates automatic operations (classification, context gathering, routine metadata updates) from approval-gated operations (broader scope changes, merge or close actions). The daemon pauses and asks for approval when a request affects risk, scope, or customer impact. This maps to the deny list in practice: actions not denied are automatic within the daemon's scope, and actions that exceed the scope trigger an escalation rather than a silent expansion.
+
+The system integrates with [GitHub](https://github.com), [Linear](https://linear.app), [Slack](https://slack.com), and [Sentry](https://sentry.io) as both input surfaces (watch conditions) and output surfaces (comments, PRs, reactions, thread resolutions). Daemons build context by reading across multiple systems: a bug triage daemon might pull Sentry error data, recent GitHub PRs, and Linear issue history to compose a single triage comment.
+
+Idempotency is enforced at the activation level. Before taking visible action, the daemon checks whether an equivalent action already exists. Duplicate events reconcile to single outcomes. Bounded retries with exponential backoff prevent noisy failure loops. Progress checkpointing at each stage enables resumption after interruptions.
+
+## The role model versus the task model
+
+The deeper question the daemon format raises is whether "role" is a better abstraction than "task" for recurring background work.
+
+Most agent orchestration tools model work as tasks: a trigger fires, a workflow runs, a result is produced. [Loopy](/posts/loopy-agent-orchestration) compiles workflows from triggers through typed events to sandboxed execution. [Open-Inspect](/posts/open-inspect-background-agents) creates sessions per invocation. [Claude Code Routines](/posts/claude-code-routines) run prompts on a schedule. Each activation is a discrete unit with a beginning and end.
+
+Charlie's daemon model adds a layer above individual activations. The daemon is a persistent role that spans many activations over time. The `pr-check-repair` daemon doesn't run once. It runs every time a check fails on every non-draft PR, accumulating context about the repo's CI patterns, common failure modes, and flaky tests. The `docs-drift-maintainer` doesn't scan once. It watches every merge for documentation impact and sweeps weekly for staleness. The daemon's identity persists across activations.
+
+This has practical implications. A task-based system needs to inject all relevant context into each invocation. A role-based system can accumulate context across invocations, learning which CI failures are typically flaky, which docs are most prone to drift, which types of bugs get duplicate reports. The authoring docs mention "dedicated daemon memory" as coming soon, but even without it, the activation log provides continuity.
+
+The tradeoff is configuration surface. A `DAEMON.md` file is more complex than a cron expression plus a prompt. The frontmatter alone has five fields, and the body can run to hundreds of lines of operating guidance. The `pr-review-triage` daemon in the catalog is detailed enough to be a mini operating manual. That complexity is the cost of encoding a role rather than a task, and whether teams will invest in writing and maintaining these files is the central adoption question.
+
+Publishing the daemon format as an open spec is a strategic choice. If other platforms adopt `DAEMON.md` as a configuration format, Charlie becomes the reference implementation rather than a proprietary island. The spec is deliberately simple (YAML frontmatter, markdown body, five fields) and runtime-agnostic. Nothing in the format assumes Charlie's execution engine. A team could read a `DAEMON.md` file and implement the daemon as a GitHub Action, a [Loopy](/posts/loopy-agent-orchestration) workflow, or a custom script. The format's value is in the role abstraction and the deny-list pattern, not in the runtime.
+
+## Where it fits
+
+Charlie Labs is a funded startup (investors include [HF0](https://hf0.com), The General Partnership, [Abstract](https://abstract.vc), [Soma Capital](https://somacap.com), and angels including [Guillermo Rauch](https://rauchg.com)). The product is commercial with a dashboard at `dash.charlielabs.ai`. The daemon catalog and spec are open-source under the `charlie-labs/daemons` repo, but the execution engine, integrations, memory system, and dashboard are proprietary.
+
+The open repo is a catalog, not a framework. It contains fourteen example `DAEMON.md` files, a CLI for browsing and installing them, and an npm package for programmatic access. There's no runtime code, no event bus, no sandbox provider. The value is in the patterns: how to scope a daemon, what deny rules to write, how to handle concurrency between multiple daemon activations, how to structure communication policies.
+
+For teams evaluating background agent infrastructure, the daemon format offers a useful authoring model regardless of runtime. The five-field frontmatter (id, purpose, watch, routines, deny) is a reasonable template for specifying any recurring background agent's scope. The deny-list-as-pre-mortem pattern is portable to any system. And the catalog's fourteen examples are concrete references for the categories of maintenance work that background agents can own today: PR hygiene, issue triage, dependency updates, documentation freshness, and operational alerting.
+
+The question for Charlie as a product is whether teams will pay for a hosted runtime when the format itself is open and the individual daemon behaviors could be implemented on other platforms. The answer probably depends on how well the proprietary pieces (memory, cross-system context building, escalation workflows, the dashboard) deliver on the promise that a daemon improves with each activation. If the memory and context layers work well, the hosted runtime justifies itself. If they don't, the open format becomes the lasting contribution and the runtime becomes interchangeable.
 
 ---
 
