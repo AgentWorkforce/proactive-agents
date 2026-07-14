@@ -62,6 +62,24 @@ Factory builds the whole pipeline. Symphony publishes the spec and lets you asse
 
 </Scene>
 
+<Scene side="right" figure="BgProofPointFigure" caption="One agent, 37 systems, proactive triggers — Sierra's Pinecone in production.">
+
+## The proof point
+
+Most of the factory model conversation has been architectural: what the pipeline looks like, which stages are automated, how context flows. [Sierra](https://sierra.ai) offers something rarer: a production deployment that has been running long enough to produce real numbers.
+
+Sierra, the AI agent company co-founded by [Bret Taylor](https://en.wikipedia.org/wiki/Bret_Taylor) and Clay Bavor, built an internal agent called [Pinecone](https://sierra.ai/blog/ai-pilling-our-company-lessons-learned) to accelerate their own engineering and operations. It started as three department-specific agents. The team merged them into one, reachable through a single Slack handle and URL. That turned out to be the important decision: once the agent could see across departments, it started finding workflows that no single-department tool would have surfaced. The most valuable work was cross-functional, and a siloed agent just can't see it.
+
+At 75,000 sessions and 70% of pull requests opened by the agent, the scale is no longer experimental. Two engineers built a debugging agent on the same infrastructure that reaches into Slack, GitHub, ClickHouse, Salesforce, and PagerDuty at the same time. What used to be an afternoon of digging through five dashboards now takes minutes. The integration layer underneath is an [MCP](https://modelcontextprotocol.io) Gateway connecting 37 systems with access inheritance, policy enforcement, and audit trails baked in.
+
+Pinecone is also proactive. Meeting prep notes show up before the meeting. Interview debriefs are ready before anyone asks for them. The agent watches webhooks, calendar events, and task state changes, then acts without a prompt or a ticket. Outputs go where teams already work: pull requests in GitHub, contracts in Salesforce, notes in whatever tool the team already checks. The existing systems stay the backend, and the agent just sits in front of them.
+
+<Callout tone="thought" label="Context over intelligence">
+Sierra's team landed on something we keep seeing: frontier models are already smart enough for most business tasks. The hard part is business-specific context. The debugging agent works because it can reach into five systems at once and piece together what happened, not because anyone swapped in a better model.
+</Callout>
+
+</Scene>
+
 ## The open questions
 
 Most of this series has focused on products that give a single agent proactive capabilities: a clock, a listener, an inbox. The background-agent wave raises a different set of problems. When you have dozens of agents running unattended, the orchestration layer matters as much as any individual agent's capabilities. How do you route context between stages? What does review load look like when agents open twenty PRs a day? Is the reactive model a stepping stone to proactive, or a stable equilibrium on its own?

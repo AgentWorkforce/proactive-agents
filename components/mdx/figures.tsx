@@ -5047,6 +5047,80 @@ export function BgFactoryFigure() {
   );
 }
 
+export function BgProofPointFigure() {
+  const triggers = [
+    { y: 58, label: "webhook", color: C.terracotta },
+    { y: 86, label: "schedule", color: C.butter },
+    { y: 114, label: "board", color: C.sage },
+  ];
+  const systems = [
+    { y: 44, label: "GitHub" },
+    { y: 64, label: "Slack" },
+    { y: 84, label: "Salesforce" },
+    { y: 104, label: "ClickHouse" },
+    { y: 124, label: "PagerDuty" },
+    { y: 144, label: "+32 more" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="bg-proof-title">
+      <title id="bg-proof-title">Production proactive agent: triggers flow into one unified agent, which connects through an MCP gateway to dozens of backend systems and produces artifacts</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>production proof point</text>
+      {/* Proactive triggers (left) */}
+      <text x="14" y="42" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>triggers</text>
+      {triggers.map((t, i) => (
+        <g key={i}>
+          <circle cx="20" cy={t.y} r="8" fill={t.color} opacity="0.4" />
+          <circle cx="20" cy={t.y} r="8" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <text x="20" y={t.y + 3} textAnchor="middle" fontFamily="var(--font-mono)" fontSize="5.5" fill={C.ink}>{t.label}</text>
+          <line x1="30" y1={t.y} x2="72" y2="88" stroke={C.ink} strokeWidth="0.8" strokeDasharray="2 2" />
+        </g>
+      ))}
+      {/* Unified agent hub (center-left) */}
+      <rect x="74" y="64" width="64" height="48" rx="8" fill={C.lavender} opacity="0.3" />
+      <rect x="74" y="64" width="64" height="48" rx="8" fill="none" stroke={C.ink} strokeWidth="1.4" />
+      <text x="106" y="84" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>unified</text>
+      <text x="106" y="96" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fontWeight="600" fill={C.ink}>agent</text>
+      {/* Arrow to MCP gateway */}
+      <line x1="140" y1="88" x2="168" y2="88" stroke={C.ink} strokeWidth="1.4" />
+      <polyline points="162,84 168,88 162,92" fill="none" stroke={C.ink} strokeWidth="1.4" strokeLinecap="round" />
+      {/* MCP Gateway (center-right) */}
+      <rect x="170" y="56" width="48" height="64" rx="6" fill={C.sky} opacity="0.25" />
+      <rect x="170" y="56" width="48" height="64" rx="6" fill="none" stroke={C.ink} strokeWidth="1.2" />
+      <text x="194" y="82" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>MCP</text>
+      <text x="194" y="94" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>gateway</text>
+      {/* Systems (right) */}
+      {systems.map((s, i) => (
+        <g key={i}>
+          <line x1="220" y1="88" x2="258" y2={s.y + 4} stroke={C.rule} strokeWidth="0.8" />
+          <text x="262" y={s.y + 8} fontFamily="var(--font-mono)" fontSize="6.5" fill={i < 5 ? C.inkSoft : C.faint}>{s.label}</text>
+        </g>
+      ))}
+      {/* Artifacts (bottom) */}
+      <line x1="106" y1="114" x2="106" y2="156" stroke={C.ink} strokeWidth="1.2" />
+      <polyline points="102,150 106,158 110,150" fill="none" stroke={C.ink} strokeWidth="1.2" strokeLinecap="round" />
+      {[
+        { x: 46, label: "PR" },
+        { x: 106, label: "debrief" },
+        { x: 166, label: "prep notes" },
+      ].map((a, i) => (
+        <g key={i}>
+          <rect x={a.x - 30} y="162" width="60" height="24" rx="4" fill={C.peach} opacity="0.2" />
+          <rect x={a.x - 30} y="162" width="60" height="24" rx="4" fill="none" stroke={C.ink} strokeWidth="0.8" />
+          <text x={a.x} y="178" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.ink}>{a.label}</text>
+        </g>
+      ))}
+      <text x="106" y="202" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>artifacts land in existing tools</text>
+      {/* Stats bar */}
+      <line x1="40" y1="228" x2="280" y2="228" stroke={C.rule} strokeWidth="0.6" />
+      <text x="90" y="250" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fontWeight="600" fill={C.terracotta}>70%</text>
+      <text x="90" y="264" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>of PRs via agent</text>
+      <text x="230" y="250" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fontWeight="600" fill={C.terracotta}>37</text>
+      <text x="230" y="264" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7" fill={C.faint}>systems connected</text>
+      <text x="160" y="296" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>agent as interface, systems as backend</text>
+    </svg>
+  );
+}
+
 export function LoopyArchFigure() {
   const layers = [
     { y: 40, label: "sensors", sub: "webhook · poll · built-in", color: C.peach },
