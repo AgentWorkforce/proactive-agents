@@ -1,5 +1,20 @@
 [
   {
+    "id": "1785574806826-weekly-digest-jc4ieg",
+    "timestamp": "2026-08-01T09:00:06.826Z",
+    "agent": "weekly-digest",
+    "trigger": "time",
+    "action": "Filed weekly digest",
+    "summary": "Found 6 new mention(s) across 4 sources, deduped, clustered into 2 topic(s).",
+    "outcome": "success",
+    "links": [
+      {
+        "label": "Issue #148",
+        "url": "https://github.com/AgentWorkforce/proactive-agents/issues/148"
+      }
+    ]
+  },
+  {
     "id": "1785060002582-newsletter-drafter-8pzlv2",
     "timestamp": "2026-07-26T10:00:02.582Z",
     "agent": "newsletter-drafter",
