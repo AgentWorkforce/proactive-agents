@@ -1,5 +1,24 @@
 [
   {
+    "id": "1792317604123-newsletter-drafter-jot4jv",
+    "timestamp": "2026-10-18T10:00:04.123Z",
+    "agent": "newsletter-drafter",
+    "trigger": "time",
+    "action": "Drafted weekly newsletter",
+    "summary": "0 essay(s), 0 market update(s), 3 news cluster(s). Draft created in Buttondown, review issue filed.",
+    "outcome": "success",
+    "links": [
+      {
+        "label": "Review issue",
+        "url": "https://github.com/AgentWorkforce/proactive-agents/issues/171"
+      },
+      {
+        "label": "Buttondown draft",
+        "url": "https://buttondown.com/khaliq/emails/em_4qrf8gfk8t865srsjm3c1x55wq"
+      }
+    ]
+  },
+  {
     "id": "1792227607589-weekly-digest-ndxde5",
     "timestamp": "2026-10-17T09:00:07.589Z",
     "agent": "weekly-digest",
