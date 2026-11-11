@@ -140,6 +140,7 @@ const SLUGS: Record<string, React.ComponentType> = {
   "open-swe-langchain-coding-agent": OpenSweArt,
   "loopy-agent-orchestration": LoopyOrchArt,
   "charlie-labs-daemons": CharlieDaemonArt,
+  "the-personal-agent-squeeze": SqueezeCardArt,
 };
 
 function TaskletAgentArt() {
@@ -1750,6 +1751,51 @@ function CharlieDaemonArt() {
               </g>
             );
           })}
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+function SqueezeCardArt() {
+  return (
+    <svg
+      viewBox="0 0 500 300"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden
+    >
+      <g
+        opacity="0.14"
+        stroke={C.ink}
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <g transform="translate(250, 110)">
+          {/* Top vise jaw */}
+          <rect x="-60" y="-50" width="120" height="24" rx="3" strokeWidth="1.8" />
+          {/* Five platform dots */}
+          {[-40, -20, 0, 20, 40].map((x, i) => (
+            <circle key={i} cx={x} cy={-38} r="3" fill={C.ink} stroke="none" />
+          ))}
+          {/* Downward pressure arrows */}
+          <line x1="-30" y1="-26" x2="-30" y2="-10" strokeWidth="1.3" />
+          <line x1="0" y1="-26" x2="0" y2="-10" strokeWidth="1.3" />
+          <line x1="30" y1="-26" x2="30" y2="-10" strokeWidth="1.3" />
+          {/* Narrow gap */}
+          <line x1="-55" y1="-6" x2="55" y2="-6" strokeWidth="0.7" strokeDasharray="3 3" />
+          <line x1="-55" y1="6" x2="55" y2="6" strokeWidth="0.7" strokeDasharray="3 3" />
+          {/* Small survivor dot squeezing through */}
+          <circle cx="0" cy="0" r="4" strokeWidth="1.3" />
+          {/* Bottom vise jaw */}
+          <rect x="-60" y="10" width="120" height="24" rx="3" strokeWidth="1.8" />
+          {/* X mark — fallen startup */}
+          <g transform="translate(-30, 22)">
+            <line x1="-4" y1="-4" x2="4" y2="4" strokeWidth="1.2" />
+            <line x1="-4" y1="4" x2="4" y2="-4" strokeWidth="1.2" />
+          </g>
+          {/* Dashed orbit around the whole thing */}
+          <circle cx="0" cy="0" r="62" strokeWidth="0.8" strokeDasharray="4 4" />
         </g>
       </g>
     </svg>

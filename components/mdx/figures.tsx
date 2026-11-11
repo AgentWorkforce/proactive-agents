@@ -5518,3 +5518,128 @@ export function DaemonComparisonFigure() {
     </svg>
   );
 }
+
+/** Personal agent squeeze — launch timeline (Aug–Oct 2026). */
+export function SqueezeLaunchFigure() {
+  const launches = [
+    { date: "Aug 11", name: "Grok Bot", org: "xAI" },
+    { date: "Aug 24", name: "Instinct", org: "Spear Street" },
+    { date: "Sep 8", name: "Muse", org: "Meta" },
+    { date: "Sep 29", name: "Dots", org: "OpenAI" },
+    { date: "Oct 21", name: "Duet", org: "Anthropic" },
+  ];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="squeeze-launch-title">
+      <title id="squeeze-launch-title">Five personal agent launches in sixty days: Grok Bot, Instinct, Muse, Dots, Duet</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>Aug–Oct 2026</text>
+      {/* vertical timeline spine */}
+      <line x1="80" y1="44" x2="80" y2="290" stroke={C.rule} strokeWidth="1.5" />
+      {launches.map((l, i) => {
+        const y = 62 + i * 50;
+        return (
+          <g key={i}>
+            <circle cx="80" cy={y} r="7" fill={C.rose} stroke={C.terracotta} strokeWidth="1.5" />
+            <text x="96" y={y - 6} fontFamily="var(--font-display)" fontSize="11" fontWeight="600" fill={C.ink}>{l.name}</text>
+            <text x="96" y={y + 8} fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>{l.org} · {l.date}</text>
+          </g>
+        );
+      })}
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>five platforms, sixty days</text>
+    </svg>
+  );
+}
+
+/** Personal agent squeeze — convergent architecture. */
+export function SqueezeArchFigure() {
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="squeeze-arch-title">
+      <title id="squeeze-arch-title">Every personal agent ships the same stack: cloud VM, persistent state, background execution, web browser</title>
+      <text x="160" y="24" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>convergent architecture</text>
+      {/* cloud shape */}
+      <path
+        d="M100 130 Q72 130 72 108 Q72 82 100 78 Q108 54 140 54 Q168 54 180 72 Q186 66 200 66 Q222 66 222 86 Q234 88 234 104 Q234 130 210 130 Z"
+        fill={C.rose} fillOpacity="0.15" stroke={C.terracotta} strokeWidth="1.5"
+      />
+      <text x="153" y="104" textAnchor="middle" fontFamily="var(--font-display)" fontSize="18" fontWeight="600" fill={C.ink}>VM</text>
+      <text x="153" y="120" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>per user</text>
+      {/* three pillars below */}
+      {[
+        { x: 55, label: "persistent", label2: "state" },
+        { x: 160, label: "background", label2: "execution" },
+        { x: 265, label: "web", label2: "browser" },
+      ].map((p, i) => (
+        <g key={i}>
+          <line x1={p.x} y1="148" x2={p.x} y2="180" stroke={C.rule} strokeWidth="1.2" strokeDasharray="3 3" />
+          <rect x={p.x - 42} y="182" width="84" height="36" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.2" />
+          <text x={p.x} y="197" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.ink}>{p.label}</text>
+          <text x={p.x} y="209" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>{p.label2}</text>
+        </g>
+      ))}
+      {/* five dots for five products */}
+      <text x="160" y="248" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>shipped by all five</text>
+      {["xAI", "Spear St", "Meta", "OpenAI", "Anthro"].map((name, i) => {
+        const x = 60 + i * 50;
+        return (
+          <g key={i}>
+            <circle cx={x} cy="272" r="10" fill={C.rose} fillOpacity="0.25" stroke={C.terracotta} strokeWidth="1" />
+            <text x={x} y="275" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="6" fill={C.ink}>{name}</text>
+          </g>
+        );
+      })}
+      <text x="160" y="310" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>same stack, different distribution</text>
+    </svg>
+  );
+}
+
+/** Personal agent squeeze — the gap between platforms and indie builders. */
+export function SqueezeGapFigure() {
+  const platforms = ["Meta", "OpenAI", "xAI", "Anthropic", "Google"];
+  return (
+    <svg viewBox="0 0 320 320" className="w-full" role="img" aria-labelledby="squeeze-gap-title">
+      <title id="squeeze-gap-title">The squeeze: five platforms pressing down, indie builders at the bottom, a narrow gap in between</title>
+      <text x="160" y="20" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="9" fill={C.faint}>the squeeze</text>
+      {/* platform blocks pressing down */}
+      {platforms.map((name, i) => {
+        const x = 22 + i * 58;
+        return (
+          <g key={i}>
+            <rect x={x} y="32" width="52" height="52" rx="4" fill={C.rose} fillOpacity="0.2" stroke={C.terracotta} strokeWidth="1.3" />
+            <text x={x + 26} y="56" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fontWeight="600" fill={C.ink}>{name}</text>
+            {/* downward arrows */}
+            <line x1={x + 26} y1="84" x2={x + 26} y2="110" stroke={C.terracotta} strokeWidth="1.2" />
+            <path d={`M${x + 22} 106 L${x + 26} 112 L${x + 30} 106`} stroke={C.terracotta} strokeWidth="1.2" fill="none" />
+          </g>
+        );
+      })}
+      {/* narrow gap zone */}
+      <rect x="20" y="118" width="280" height="24" rx="2" fill={C.butter} fillOpacity="0.15" stroke={C.rule} strokeWidth="0.8" strokeDasharray="4 3" />
+      <text x="160" y="134" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8" fill={C.faint}>narrowing gap</text>
+      {/* Val Town — crossed out, falling */}
+      <g opacity="0.6">
+        <rect x="40" y="155" width="72" height="24" rx="4" fill={C.paper} stroke={C.faint} strokeWidth="1" />
+        <text x="76" y="170" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="8.5" fill={C.faint}>Val Town</text>
+        <line x1="44" y1="156" x2="108" y2="178" stroke={C.terracotta} strokeWidth="1.5" />
+        <line x1="108" y1="156" x2="44" y2="178" stroke={C.terracotta} strokeWidth="1.5" />
+      </g>
+      {/* Instinct — squeezing through */}
+      <g>
+        <rect x="148" y="152" width="90" height="30" rx="4" fill={C.sage} fillOpacity="0.2" stroke={C.moss} strokeWidth="1.2" />
+        <text x="193" y="165" textAnchor="middle" fontFamily="var(--font-display)" fontSize="9" fontWeight="600" fill={C.ink}>Instinct</text>
+        <text x="193" y="177" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.moss}>$10B</text>
+        {/* upward arrow — surviving */}
+        <line x1="193" y1="150" x2="193" y2="140" stroke={C.moss} strokeWidth="1.2" />
+        <path d="M189 144 L193 138 L197 144" stroke={C.moss} strokeWidth="1.2" fill="none" />
+      </g>
+      {/* indie builders block at bottom */}
+      <rect x="60" y="210" width="200" height="36" rx="6" fill={C.paper} stroke={C.ink} strokeWidth="1.3" />
+      <text x="160" y="232" textAnchor="middle" fontFamily="var(--font-display)" fontSize="11" fill={C.ink}>indie builders</text>
+      {/* upward arrows from indie blocked */}
+      {[110, 160, 210].map((x, i) => (
+        <g key={i}>
+          <line x1={x} y1="208" x2={x} y2="192" stroke={C.faint} strokeWidth="0.8" strokeDasharray="2 2" />
+        </g>
+      ))}
+      <text x="160" y="270" textAnchor="middle" fontFamily="var(--font-mono)" fontSize="7.5" fill={C.faint}>raise billions or build on their platforms</text>
+    </svg>
+  );
+}

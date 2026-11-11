@@ -110,6 +110,9 @@ import {
   DaemonCatalogFigure,
   DaemonBoundaryFigure,
   DaemonComparisonFigure,
+  SqueezeLaunchFigure,
+  SqueezeArchFigure,
+  SqueezeGapFigure,
 } from "./figures";
 
 export const mdxComponents = {
@@ -225,6 +228,9 @@ export const mdxComponents = {
   DaemonCatalogFigure,
   DaemonBoundaryFigure,
   DaemonComparisonFigure,
+  SqueezeLaunchFigure,
+  SqueezeArchFigure,
+  SqueezeGapFigure,
   LinkedInEmbed: () => (
     <iframe
       src="https://www.linkedin.com/embed/feed/update/urn:li:share:7429634994467414016?collapsed=1"
