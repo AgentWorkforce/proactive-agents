@@ -59,7 +59,76 @@ A proactive agent requires three primitives wired together:
 
 Together these form the "proactive runtime" — the infrastructure that sits underneath the agent and handles everything that isn't the agent's actual logic.
 
-Last updated: 2026-07-14
+Last updated: 2026-11-11
+
+---
+
+## Essay: The personal agent squeeze
+
+Published: 2026-11-11
+Author: Khaliq Gant
+URL: https://proactiveagents.dev/posts/the-personal-agent-squeeze/
+
+This series went quiet in mid-July. The space did not. Between August and October 2026, five products landed that reshaped the proactive agent category: [xAI](https://x.ai) shipped [Grok Bot](https://grok-bots.com/), [Spear Street Technology](https://instinct.ai) launched [Instinct](https://instinct.ai), [Meta](https://about.meta.com) debuted [Muse](https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/), [OpenAI](https://openai.com) announced [Dots](https://openai.com/index/introducing-dots/) at DevDay, and [Anthropic](https://anthropic.com) opened a research preview of [Claude Duet](https://www.cnbc.com/2026/10/21/anthropic-preview-of-claude-duet-personal-ai-agent-take-on-muse-dots.html). Each one gives the user an always-on personal agent backed by a dedicated cloud computer. Yesterday, [Val Town announced it's winding down](https://blog.val.town/winding-down).
+
+Those two facts belong in the same paragraph. The era when small teams could host proactive agents on general-purpose infrastructure is closing. The platforms arrived, and they brought subsidized compute with them.
+
+## Sixty days, five platforms
+
+[Grok Bot](https://grok-bots.com/) entered beta on August 11. Each Bot runs on a persistent cloud machine, signs into your existing tools, and works through multi-step jobs without supervision. Bots can delegate to each other, so one "chief of staff" agent can coordinate specialists. It runs on Grok 4.7 and costs roughly $120 per seat per month on Cursor Premium Teams. There is no public API or SDK yet.
+
+[Instinct](https://instinct.ai) opened its invite-only beta around the same time. It takes a radically different surface: no app, no chat window. You reach Instinct by texting it or calling it on the phone. Under the hood, a dedicated cloud computer runs around the clock, using vision-language models to operate websites and fill out forms the way a human would. Need to book a restaurant? Instinct Concierge places the phone call for you. Need to pay for something? It generates a one-time virtual card with a spending cap you approve. [TechCrunch raised concerns about the privacy model](https://techcrunch.com/2026/08/24/instincts-powerful-ai-assistant-is-raising-privacy-and-security-concerns/): the terms of service grant Instinct a broad license to use "user materials," including for training.
+
+[Meta Muse](https://about.fb.com/news/2026/09/introducing-muse-personal-ai-agent/) launched September 8 and [topped app store charts within weeks](https://www.cnbc.com/2026/10/07/meta-muse-personal-ai-agents-dazzle.html). Three tiers: free, $20/month, and $100/month. Each user gets their own virtual machine. Muse can manage tasks, break long-term goals into action plans, and interact with external services through a browser. Two weeks after launch, [Amazon blocked Muse from its retail site](https://www.cnbc.com/2026/09/27/meta-muse-ai-personal-agent.html), saying Meta hadn't authorized the agent and it didn't identify itself while browsing. That conflict revealed something about the friction ahead: when agents start acting on websites without API agreements, the web's implicit social contract breaks.
+
+[OpenAI Dots](https://openai.com/index/introducing-dots/) debuted at DevDay on September 29. A Dot is a persistent agent inside ChatGPT that keeps working after you close the tab. Each runs on GPT-6 Astra with its own cloud computer and browser, connecting to over 4,000 apps through the plugin ecosystem. The detail that caught my attention: when a Dot isn't actively working on a task, it does "proactive research" through read-only connections to your tools. It watches even when you don't ask, which is the listener primitive this series has been circling since day one.
+
+[Claude Duet](https://www.cnbc.com/2026/10/21/anthropic-preview-of-claude-duet-personal-ai-agent-take-on-muse-dots.html) entered research preview on October 21, the last of the five. It sends daily briefs, monitors connected apps, drafts replies, and follows up on unfinished threads. Anthropic drew a sharper privacy line than any competitor: Duet will never directly access passwords or sign-in tokens. It's available to Pro and Max subscribers in the United States during the preview.
+
+The architecture is nearly identical across all five products. The difference is distribution. Meta has three billion users and a free tier subsidized by ads. OpenAI has ChatGPT's install base. xAI has the Cursor developer audience. Anthropic has its subscription base. Instinct has neither platform nor model, which is why it needed to raise billions in venture capital instead.
+
+## Same architecture, five times
+
+Look past the branding and every product ships the same stack. A dedicated cloud VM per user. Persistent state that survives across sessions. Background execution that continues after you close the app. A web browser the agent controls to interact with services that don't offer APIs.
+
+This convergence wasn't inevitable, but it was predictable. We wrote about the [three primitives](/posts/three-primitives/) early in this series: a clock (scheduled execution), a listener (event-driven wakeup), and an inbox (a place to receive and queue work). Every platform now ships all three, bundled into a single product and backed by the compute to run them continuously.
+
+The primitives became table stakes. The differentiation moved to other layers. Distribution is the most obvious: Meta wins on reach, OpenAI on developer trust, Anthropic on safety reputation. But the trust model may matter more in the long run. Duet won't store credentials. Muse uses your data for training unless you opt out. Instinct's terms are broad enough that [TechCrunch flagged them](https://techcrunch.com/2026/08/24/instincts-powerful-ai-assistant-is-raising-privacy-and-security-concerns/). And then there's surface area, where each product carved out a different niche: Instinct makes phone calls, Dots does proactive research when idle, Muse controls macOS apps.
+
+<table>
+<thead>
+<tr><th>Product</th><th>Company</th><th>Launch</th><th>Price</th><th>Compute model</th><th>Unique surface</th></tr>
+</thead>
+<tbody>
+<tr><td>Grok Bot</td><td>xAI</td><td>Aug 11, 2026</td><td>~$120/seat/mo</td><td>Shared persistent VM</td><td>Bot-to-bot delegation</td></tr>
+<tr><td>Instinct</td><td>Spear Street</td><td>Aug 2026 (beta)</td><td>Free (beta)</td><td>Dedicated VM per user</td><td>Phone calls, virtual cards</td></tr>
+<tr><td>Muse</td><td>Meta</td><td>Sep 8, 2026</td><td>Free / $20 / $100</td><td>Dedicated VM per user</td><td>macOS app control</td></tr>
+<tr><td>Dots</td><td>OpenAI</td><td>Sep 29, 2026</td><td>Included with Pro</td><td>Cloud computer + browser</td><td>Proactive idle research</td></tr>
+<tr><td>Duet</td><td>Anthropic</td><td>Oct 21, 2026</td><td>Included with Pro/Max</td><td>Cloud agent runtime</td><td>No credential access</td></tr>
+</tbody>
+</table>
+
+We've tracked the [cost of always-on compute](/posts/what-proactive-agents-cost/) and the [shift from foreground to background](/posts/background-agents/) in earlier posts. What changed in this quarter is that the economics went from theoretical to real. Five companies are now paying for a VM per user, continuously, at scale. The viability question is settled. What remains is who can absorb the cost long enough to keep the lights on.
+
+[Val Town](https://www.val.town/) announced on November 10 that it's winding down. Services end January 10, 2027. The codebase goes open-source February 1. Founder Steve Krouse wrote that they "failed to compete in cloud computing." That phrase lands differently when you read it alongside the launches above. Val Town offered general-purpose serverless compute: write a function, deploy it, run it on a schedule. The platforms offer subsidized compute bundled with their AI model and delivered through a consumer product. When your competitor gives away VMs at cost because the real product is the model subscription or the ad-targeting data, selling compute on its own becomes structurally difficult.
+
+## Where the middle went
+
+The space bifurcated. On one side sit platforms with billions in compute budget, subsidizing personal agents as a strategy to deepen lock-in. Meta offers Muse for free because every interaction feeds data back into the ad-targeting pipeline. OpenAI bundles Dots into ChatGPT Pro because persistent agents increase engagement and API stickiness. Anthropic ships Duet as a research preview for existing subscribers, building toward a consumer product that justifies the model training investment. [Google shipped Gemini Spark at I/O](/posts/google-spark-io-2026/) earlier in the year with the same playbook.
+
+On the other side, [Instinct reportedly raised at a $10 billion valuation](https://techcrunch.com/2026/08/24/instincts-powerful-ai-assistant-is-raising-privacy-and-security-concerns/). That number makes sense only if you accept that offering an always-on cloud computer to every user, without an existing platform to amortize against, requires enormous capital. Instinct has no model to sell and no social network generating ad revenue, just a product that people text, where every message triggers compute on a dedicated machine. At that burn rate, the capital itself becomes the competitive advantage.
+
+The middle, where small teams built proactive agents on top of general-purpose infrastructure, got squeezed from both directions. Val Town is the most visible casualty, but the pattern extends further. When platforms hand out VMs at cost or below cost, building agent infrastructure as a standalone business gets very hard. The infrastructure layer that indie builders relied on is disappearing, and the replacement is platform-specific: Grok Bot runs on Cursor, Dots runs inside ChatGPT, Duet runs inside Claude, Muse runs inside Meta's ecosystem. The agent's compute is inseparable from the platform's identity.
+
+Privacy policies across these five products vary wildly. Meta's Muse uses your interactions for model training by default, requiring an explicit opt-out. Instinct's terms grant a broad license to use "user materials." Duet explicitly refuses to access passwords or sign-in tokens. Dots inherits ChatGPT's existing permission model. The builders who survive the squeeze may be the ones competing on trust: transparent data handling, narrow permissions, verifiable constraints on what the agent can see and do. We saw hints of this with [ChatGPT Pulse's limited scope](/posts/chatgpt-pulse/) and [Gemini Spark's MCP adoption](/posts/google-spark-io-2026/).
+
+## What changed, what's next
+
+Four months ago this series was examining whether platforms would ship proactive primitives. They did, all of them, in the same quarter, with the same architecture. Now the interesting questions are about ownership, cost, and terms of service rather than technical feasibility.
+
+For builders operating outside the platforms, the viable paths narrowed. You can build on top of the platform agents: tools, integrations, specialized knowledge that makes Dots or Duet or Muse more useful in a specific domain. You can work in spaces the platforms can't or won't reach, like regulated industries, on-premises deployments, or high-trust environments where a customer will never send data to Meta. You can raise enough capital to offer always-on compute independently, the way Instinct did. What you can no longer do is run a general-purpose agent hosting business and expect to compete with five companies that treat compute as a loss leader.
+
+The series will keep tracking this. The personal agent category just consolidated faster than most of us expected, and the second-order effects on developers, on infrastructure providers, and on users who now have five overlapping agents to choose from are only starting to show.
 
 ---
 
