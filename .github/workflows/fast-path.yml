@@ -73,6 +73,8 @@ jobs:
     permissions:
       contents: read
       deployments: write
+      # Only to start deploy.yml for main if main moved (see below).
+      actions: write
     # Share deploy.yml's group for main, so this never runs beside a normal
     # deploy; it waits instead of cancelling one.
     concurrency:
@@ -99,13 +101,19 @@ jobs:
         run: npm ci
       - name: Build static site
         run: npm run build
+      # Joining deploy.yml's group can displace its pending run for a newer
+      # main. If main moved, hand the deploy back to deploy.yml for main's
+      # tip instead of publishing this older commit.
       - name: Require that main has not moved past this commit
         env:
           SHA: ${{ needs.build.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           git fetch --no-tags origin main
-          if [ "$(git rev-parse origin/main)" != "$SHA" ]; then
-            echo "::error::main is now at $(git rev-parse origin/main), past $SHA; deploying would replace a newer release. Re-run the fast path on main."
+          tip="$(git rev-parse origin/main)"
+          if [ "$tip" != "$SHA" ]; then
+            gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+            echo "::error::main is now at $tip, past $SHA; started deploy.yml for main instead of replacing a newer release."
             exit 1
           fi
       - name: Sync secrets to Cloudflare Pages
