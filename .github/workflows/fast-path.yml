@@ -130,6 +130,7 @@ jobs:
           CRON_WEBHOOK_SECRET: ${{ secrets.CRON_WEBHOOK_SECRET }}
         run: npx tsx scripts/register-schedules.ts
       - name: Summary
+        if: always() && steps.pages.outcome == 'success'
         env:
           SHA: ${{ needs.build.outputs.sha }}
           URL: ${{ steps.pages.outputs.deployment-url }}
