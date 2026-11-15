@@ -3,7 +3,9 @@
 # access (people or agents) may start it; nothing runs until Khaliq approves
 # the fast-path environment.
 # The build job runs the same build as deploy.yml. The deploy job runs only
-# when `deploy` is true and the resolved commit is on main; it then repeats
+# when `deploy` is true and the resolved commit is main's current tip (so it
+# can never replace a newer release), in deploy.yml's concurrency group; it
+# then repeats
 # deploy.yml's steps (secret sync, Cloudflare Pages deploy to the main branch,
 # relaycron schedules). It moves no tag or channel beyond what a push to main
 # already does.
@@ -71,6 +73,11 @@ jobs:
     permissions:
       contents: read
       deployments: write
+    # Share deploy.yml's group for main, so this never runs beside a normal
+    # deploy; it waits instead of cancelling one.
+    concurrency:
+      group: pages-deploy-refs/heads/main
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -92,6 +99,15 @@ jobs:
         run: npm ci
       - name: Build static site
         run: npm run build
+      - name: Require that main has not moved past this commit
+        env:
+          SHA: ${{ needs.build.outputs.sha }}
+        run: |
+          git fetch --no-tags origin main
+          if [ "$(git rev-parse origin/main)" != "$SHA" ]; then
+            echo "::error::main is now at $(git rev-parse origin/main), past $SHA; deploying would replace a newer release. Re-run the fast path on main."
+            exit 1
+          fi
       - name: Sync secrets to Cloudflare Pages
         if: ${{ env.BUTTONDOWN_API_KEY != '' }}
         env:
