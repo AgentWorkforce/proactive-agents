@@ -27,8 +27,10 @@ on:
         default: false
 permissions:
   contents: read
+# Keyed by run too: a run waiting for approval must not be replaced by a
+# later dispatch of the same ref.
 concurrency:
-  group: fast-path-${{ inputs.ref }}
+  group: fast-path-${{ inputs.ref }}-${{ github.run_id }}
   cancel-in-progress: false
 jobs:
   build:
@@ -46,7 +48,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Build static site
@@ -96,7 +97,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Install dependencies
         run: npm ci
       - name: Build static site
