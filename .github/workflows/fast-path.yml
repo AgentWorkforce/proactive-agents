@@ -1,0 +1,146 @@
+# Fast path: build the site for any ref on Blacksmith runners, outside the
+# shared GitHub-hosted queue, and optionally deploy it. Anyone with write
+# access (people or agents) may start it; nothing runs until Khaliq approves
+# the fast-path environment.
+# The build job runs the same build as deploy.yml. The deploy job runs only
+# when `deploy` is true and the resolved commit is main's current tip (so it
+# can never replace a newer release), in deploy.yml's concurrency group; it
+# then repeats
+# deploy.yml's steps (secret sync, Cloudflare Pages deploy to the main branch,
+# relaycron schedules). It moves no tag or channel beyond what a push to main
+# already does.
+name: fast-path
+run-name: fast-path ${{ inputs.ref }} (${{ inputs.reason }})
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to build (a PR branch is fine)
+        required: true
+        default: main
+      reason:
+        description: Why this needs the fast path
+        required: true
+      deploy:
+        description: Deploy to Cloudflare Pages (only for a commit already on main)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: fast-path-${{ inputs.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    environment: fast-path
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 10
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - id: sha
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build static site
+        run: npm run build
+      - name: Summary
+        env:
+          REF: ${{ inputs.ref }}
+          SHA: ${{ steps.sha.outputs.sha }}
+          REASON: ${{ inputs.reason }}
+          DEPLOY: ${{ inputs.deploy }}
+        run: |
+          {
+            echo "### proactive-agents fast path"
+            echo "- ref: \`$REF\` at \`$SHA\`"
+            echo "- reason: $REASON"
+            echo "- build: passed; deploy requested: $DEPLOY"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  deploy:
+    needs: build
+    if: inputs.deploy
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      deployments: write
+      # Only to start deploy.yml for main if main moved (see below).
+      actions: write
+    # Share deploy.yml's group for main, so this never runs beside a normal
+    # deploy; it waits instead of cancelling one.
+    concurrency:
+      group: pages-deploy-refs/heads/main
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.build.outputs.sha }}
+      - name: Require a commit on main
+        env:
+          SHA: ${{ needs.build.outputs.sha }}
+        run: |
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$SHA" origin/main; then
+            echo "::error::$SHA is not on main; the fast path deploys only commits already on main."
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build static site
+        run: npm run build
+      # Joining deploy.yml's group can displace its pending run for a newer
+      # main. If main moved, hand the deploy back to deploy.yml for main's
+      # tip instead of publishing this older commit.
+      - name: Require that main has not moved past this commit
+        env:
+          SHA: ${{ needs.build.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --no-tags origin main
+          tip="$(git rev-parse origin/main)"
+          if [ "$tip" != "$SHA" ]; then
+            gh workflow run deploy.yml --repo "$GITHUB_REPOSITORY" --ref main
+            echo "::error::main is now at $tip, past $SHA; started deploy.yml for main instead of replacing a newer release."
+            exit 1
+          fi
+      - name: Sync secrets to Cloudflare Pages
+        if: ${{ env.BUTTONDOWN_API_KEY != '' }}
+        env:
+          BUTTONDOWN_API_KEY: ${{ secrets.BUTTONDOWN_API_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: echo "$BUTTONDOWN_API_KEY" | npx wrangler pages secret put BUTTONDOWN_API_KEY --project-name=proactive-agents
+      - name: Publish to Cloudflare Pages
+        id: pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4"
+          command: pages deploy ./out --project-name=proactive-agents --branch=main
+      - name: Upsert relaycron schedules
+        if: ${{ env.RELAYCRON_API_KEY != '' }}
+        env:
+          RELAYCRON_API_KEY: ${{ secrets.RELAYCRON_API_KEY }}
+          CRON_WEBHOOK_SECRET: ${{ secrets.CRON_WEBHOOK_SECRET }}
+        run: npx tsx scripts/register-schedules.ts
+      - name: Summary
+        if: always() && steps.pages.outcome == 'success'
+        env:
+          SHA: ${{ needs.build.outputs.sha }}
+          URL: ${{ steps.pages.outputs.deployment-url }}
+        run: |
+          echo "- deployed \`$SHA\` to Cloudflare Pages (main): $URL" >> "$GITHUB_STEP_SUMMARY"
