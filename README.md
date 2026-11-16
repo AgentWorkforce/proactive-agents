@@ -1,8 +1,6 @@
 # Proactive Agents
 
-A working manual on **proactive agents** — software that wakes up because time
-passed, data changed, or someone spoke. Less brochure, more textbook with
-opinions.
+An educational site about agents that react when time passes, data changes or someone speaks. Essays explain the ideas with worked examples and diagrams.
 
 → Read it: [proactiveagents.dev](https://proactiveagents.dev)
 
